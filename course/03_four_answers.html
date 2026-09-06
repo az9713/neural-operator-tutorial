@@ -13,8 +13,8 @@
 <div class="wrap">
 <p class="eyebrow">Module 3 of 13 · one week</p>
 <h1>Four answers to one cost problem</h1>
-<p class="dek">A kernel integral layer costs \(O(J^2)\) on \(J\) grid points. GNO, LNO, MGNO, and FNO are four ways to pay less. Each one is a classical numerical linear algebra idea: Nyström sampling, low rank, fast multipole, FFT.</p>
-<p class="meta">Absorbs theory plan Modules 3 (Green's functions, smoothing, spectra) and 6 (general neural operator layers). Primary source: JMLR 2023, Section 4, pages 12 to 24, and Tables 6 to 8, pages 45 to 46.</p>
+<p class="dek">A kernel integral layer costs \(O(J^2)\) on \(J\) grid points, which is unaffordable at any resolution worth having. GNO, LNO, MGNO and FNO are four ways to pay less, and each one is a numerical linear algebra idea that predates deep learning by decades: Nyström sampling, low rank, fast multipole, and the FFT.</p>
+<p class="meta">Absorbs theory plan Modules 3 (Green's functions, smoothing, spectra) and 6 (general neural operator layers). Primary source: JMLR 2023, Section 4 (p.12 to 24), Proposition 6 (p.28), Section 7.4 and Tables 6 to 8 (p.45 to 46), Section 10.1.2 (p.58).</p>
 
 <nav class="top">
 <a href="index.html">Course home</a>
@@ -30,61 +30,79 @@
 
 <section id="why">
 <h2>Why this module exists</h2>
-<p>Module 2 presented the Fourier layer as if it were the only choice. It is one of four in the JMLR paper, and it is the one with no learned kernel network, which is why it is fast and why it needs many parameters at small budgets (Table 8, below). If you only know FNO, you cannot read GINO, Transolver, or the geometry work in Module 6, because those reuse the graph and low rank ideas. This module gives all four answers and the one cost problem they answer.</p>
+<p>Module 2 derived the Fourier layer by making one assumption, that the kernel depends only on \(x-y\) on a periodic box, and it flagged at the time that this was a trade rather than a free win. This module is where the trade gets priced. The JMLR paper offers four parameterizations of the same general layer, and FNO is the one with no learned kernel network at all, which is exactly why it is the fastest and why it is the worst of the four at small parameter budgets.</p>
+<p>There is also a practical reason not to learn only FNO. The geometry architectures of Module 6, and GINO and Transolver in particular, are built out of the graph and low-rank ideas rather than the Fourier one, because their meshes are not uniform grids and the FFT has nothing to bite on. If the only layer you know is the spectral one, those papers read as unrelated inventions instead of as the obvious next move.</p>
 </section>
 
 <section id="green">
-<h2>Green's functions: the operator we are approximating</h2>
-<p>Start with the destination example from Module 0: \(-u'' = f\) on \((0,1)\), \(u(0) = u(1) = 0\).</p>
+<h2>Green's functions: the operator being approximated</h2>
+<p>Module 2 wrote down the Green's function of the destination example and checked it by its slope jump: for \(-u''=f\) on \((0,1)\) with zero boundary values,</p>
 <div class="math">
-<p><strong>Claim.</strong> \(u(x) = \int_0^1 g(x,y) f(y)\,dy\) with \(g(x,y) = \min(x,y)\,[1 - \max(x,y)]\).</p>
-<p><strong>Derivation.</strong> For fixed \(y\), the function \(x \mapsto g(x,y)\) is \(x(1-y)\) for \(x \le y\) and \(y(1-x)\) for \(x \ge y\). It is zero at \(x = 0\) and \(x = 1\), continuous at \(x = y\), and piecewise linear, so \(-\partial_{xx} g = 0\) away from \(x = y\). Its slope jumps from \((1-y)\) to \(-y\) at \(x = y\), a jump of \(-1\), so \(-\partial_{xx} g(\cdot, y) = \delta_y\) in the sense of distributions. Integrating against \(f\) gives \(-u'' = f\) with the right boundary values. \(\square\)</p>
-<p><strong>Spectrum.</strong> \(G[\sin(n\pi x)] = (n\pi)^{-2}\sin(n\pi x)\), because \(-\partial_{xx}\sin(n\pi x) = (n\pi)^2\sin(n\pi x)\) and \(G\) inverts \(-\partial_{xx}\) on functions with zero boundary values. So \(G\) is compact on \(L^2\), self adjoint, with eigenvalues \((n\pi)^{-2} \to 0\).</p>
-<p><strong>Truncation error.</strong> Keep the first \(m\) sine modes. The operator norm of the remainder is the largest discarded eigenvalue: \(\|G - G_m\|_{L^2 \to L^2} = [\pi(m+1)]^{-2}\). Contrast Module 0, Fact 3: the identity operator has no such bound. A smoothing operator does. This is the mathematical reason low rank methods work on elliptic problems and fail on advection, which is not smoothing (Module 1, JMLR Table 9).</p>
+<p>\[u(x) = \int_0^1 g(x,y)f(y)\,dy, \qquad g(x,y) = \min(x,y)\,\big[1 - \max(x,y)\big].\]</p>
 </div>
-<p>The JMLR paper learns this exact operator with a zero hidden layer neural operator and reaches relative test error \(10^{-7}\) with 1000 training pairs; its Figure 7 shows the learned kernel next to the analytic \(g\) (<code>research_notes/pdf-fno-jmlr.md:537-545</code>). The rest of the course approximates operators whose kernels are not known in closed form.</p>
+<p>What that module did not do is look at the operator's spectrum, and the spectrum is what decides whether any of the four cost-saving tricks below can work at all. Write \(G\) for the map \(f \mapsto u\).</p>
+<div class="math">
+<p><strong>Claim 1 (the eigenvalues).</strong> \(G\big[\sin(n\pi x)\big] = (n\pi)^{-2}\sin(n\pi x)\) for every \(n \ge 1\).</p>
+<p><strong>Proof.</strong> \(-\partial_{xx}\sin(n\pi x) = (n\pi)^2\sin(n\pi x)\), and \(\sin(n\pi x)\) vanishes at both endpoints, so it is in the domain where \(G\) inverts \(-\partial_{xx}\). Applying \(G\) to both sides and dividing by \((n\pi)^2\) gives the claim. \(\square\)</p>
+<p>The functions \(\sqrt2\sin(n\pi x)\) are an orthonormal basis of \(L^2(0,1)\), so \(G\) is diagonal in that basis with eigenvalues \(\lambda_n = (n\pi)^{-2}\): \(0.1013\) at \(n=1\), \(1.013\times10^{-3}\) at \(n=10\), \(1.013\times10^{-5}\) at \(n=100\).</p>
+<p><strong>Claim 2 (truncation has a uniform error, unlike the identity).</strong> Let \(G_m\) keep only the first \(m\) modes. Then
+\[\|G - G_m\|_{L^2\to L^2} = \frac{1}{\pi^2(m+1)^2}.\]</p>
+<p><strong>Proof.</strong> \(G - G_m\) is diagonal with entries \(\lambda_n\) for \(n &gt; m\) and zero otherwise. The norm of a diagonal operator is the supremum of the absolute values of its entries, which here is the largest surviving eigenvalue, \(\lambda_{m+1}\). \(\square\)</p>
+<p><strong>Consequence, and the contrast with Module 0.</strong> Fact 3 showed that truncating the <em>identity</em> has \(\|I-P_m\|=1\) for every \(m\), so no mode count gives a uniform guarantee on the unit ball. Truncating \(G\) has \(\|G-G_m\| = \pi^{-2}(m+1)^{-2}\), which does. Keeping ten modes bounds the error by \(8.4\times10^{-4}\) for <em>every</em> input of norm one, with no compactness assumption and no restriction on the input set at all. The difference is that \(G\) smooths and the identity does not. This also proves \(G\) is compact, since it is the norm limit of the finite-rank operators \(G_m\).</p>
+</div>
+<p>That contrast is the load-bearing fact of this module, and it is worth stating as a design rule. Low-rank and truncation methods work when the operator's spectrum decays, and elliptic solution operators have decaying spectra because they integrate. They degrade on operators that do not smooth, and the degradation shows up in robustness before it shows up in clean accuracy. The JMLR paper's Table 9 (p.47) makes the distinction sharply. On clean data FNO handles one-dimensional advection with a random square-wave input as well as anything: training error 0.002, test error 0.002. Add 10 percent input noise and that test error becomes 0.094, a factor of 47, while Darcy moves only from 0.011 to 0.012 and Navier-Stokes from 0.024 to 0.039. The paper's own reading is that FNO "is less robust on the advection equation, which is not smoothing, and on Burgers equation which, whilst smoothing also forms steep fronts". So a headline accuracy number on clean data does not tell you whether the operator's spectrum was on your side. Module 1 gave the theoretical half of the same point.</p>
+<p>The paper also checks all of this on the operator itself: a neural operator with zero hidden layers learns \(G\) to relative test error \(10^{-7}\), and its Figure 7 puts the learned kernel next to the analytic \(g\) (<code>research_notes/pdf-fno-jmlr.md:537-545</code>). Every remaining operator in the course has a kernel nobody can write down, so this is the last time the answer is checkable in closed form. Use it as the calibration point.</p>
 </section>
 
 <section id="layer">
-<h2>The general neural operator layer</h2>
-<p>JMLR Equation 6, page 10. Lift the input with a pointwise map \(P\), apply \(T\) layers, project with a pointwise map \(Q\):</p>
+<h2>The general neural operator layer, and its three kernels</h2>
+<p>Module 2 introduced the layer in its simplest form. The paper's Equation 6 on page 10 is the same object with the pieces named, and the naming matters because the four answers below each modify a different piece:</p>
 <div class="math">
-\[v_0 = P(a), \qquad v_{t+1}(x) = \sigma\Big(W_t v_t(x) + \int_D \kappa_t(x,y)\,v_t(y)\,dy + b_t(x)\Big), \qquad G_\theta(a) = Q(v_T).\]
-<p>\(W_t\) is a matrix acting on channels at one point (local). The integral is the only term that mixes locations (nonlocal). \(b_t\) is a bias <em>function</em>, not a vector. \(\sigma\) acts pointwise. Three kernel forms appear (Equations 7 to 9): \(\kappa(x,y)\); \(\kappa(x, y, a(x), a(y))\), better on Darcy where the coefficient matters; and \(\kappa(x, y, v_t(x), v_t(y))\), which makes the layer nonlinear and, with a softmax kernel and Nyström discretization, reduces to transformer attention (Proposition 6, <code>research_notes/pdf-fno-jmlr.md:453-463</code>).</p>
+<p>\[v_0 = P(a), \qquad v_{t+1}(x) = \sigma\Big(W_t\,v_t(x) + \int_D \kappa_t(x,y)\,v_t(y)\,dy + b_t(x)\Big), \qquad G_\theta(a) = Q(v_T).\]</p>
+<p>\(P\) and \(Q\) are pointwise lifting and projection maps. \(W_t\) is a matrix mixing channels at a single point, so it is local. The integral is the only term that moves information between locations, so it is the only term any of the four answers touch. \(b_t\) is a bias <em>function</em> of \(x\), not a vector, which is what lets a layer know where it is on a non-periodic domain. And \(\sigma\) acts pointwise.</p>
 </div>
-<h3>A stability bound for one layer</h3>
+<p>The paper allows the kernel to depend on more than the two positions, and the three forms it lists (Equations 7 to 9) are worth keeping straight because they have quite different consequences.</p>
+<ol class="steps">
+<li>\(\kappa(x,y)\), the plain form. The layer is linear in \(v_t\) before \(\sigma\), and the whole layer is a fixed integral operator plus a pointwise map.</li>
+<li>\(\kappa(x,y,a(x),a(y))\), which lets the kernel read the problem's coefficient field. This is the right form for Darcy, where the operator being learned genuinely depends on \(a\), and it is why a GNO on Darcy passes the coefficient into the kernel network rather than only into the lifting.</li>
+<li>\(\kappa(x,y,v_t(x),v_t(y))\), which makes the layer nonlinear in \(v_t\) before \(\sigma\) even touches it. This is the form that connects to attention.</li>
+</ol>
+<div class="callout"><p><strong>Attention is a special case, and the proof says which one.</strong> JMLR Proposition 6, on page 28, states that "the attention mechanism in transformer models is a special case of a neural operator layer". The proof picks the third kernel form, sets the bias to zero and \(W\) to the identity, chooses a softmax kernel, and discretizes the integral by Monte Carlo, at which point the layer becomes a pre-normalized single-headed attention block as in Vaswani et al. This is a real containment rather than a slogan, and it also shows what a transformer is missing: the Monte Carlo discretization is over the tokens you happen to have, so nothing in the construction makes the layer converge as the token set refines. That is the gap Module 6's Transolver has to close.</p></div>
+<h3>How much one layer can amplify</h3>
 <div class="math">
-<p><strong>Claim.</strong> For \(\kappa \in L^2(D \times D)\), \(\|Kv\|_2 \le \|\kappa\|_{L^2(D\times D)} \|v\|_2\).</p>
-<p><strong>Proof.</strong> Cauchy–Schwarz in \(y\): \(|Kv(x)|^2 \le \int |\kappa(x,y)|^2 dy \int |v(y)|^2 dy\). Integrate in \(x\). \(\square\)</p>
-<p>With a Lipschitz activation, \(\|\sigma(z_1) - \sigma(z_2)\| \le \mathrm{Lip}(\sigma)\|z_1 - z_2\|\), so one layer satisfies \(\|L(v) - L(w)\|_2 \le \mathrm{Lip}(\sigma)\,(\|W\| + \|\kappa\|_{L^2})\,\|v - w\|_2\), and \(T\) layers multiply these constants. The bound is loose but it names the amplification: depth times (local gain plus kernel gain). Note what it does not say. The layer is not compact in general, because \(W\) can contain an identity part, and the nonlinearity needs its own argument. Module 5 uses the same decomposition when it states the discretization theorem.</p>
+<p><strong>Claim 3.</strong> If \(\kappa \in L^2(D\times D)\) and \((Kv)(x) = \int_D\kappa(x,y)v(y)\,dy\), then \(\|Kv\|_2 \le \|\kappa\|_{L^2(D\times D)}\|v\|_2\).</p>
+<p><strong>Proof.</strong> Fix \(x\) and apply Cauchy-Schwarz in \(y\): \(|Kv(x)|^2 \le \int_D|\kappa(x,y)|^2dy \cdot \int_D|v(y)|^2dy\). Integrate over \(x\); the first factor integrates to \(\|\kappa\|^2_{L^2(D\times D)}\) and the second is a constant. \(\square\)</p>
+<p><strong>Consequence.</strong> With a Lipschitz activation, one layer obeys \(\|L(v)-L(w)\|_2 \le \mathrm{Lip}(\sigma)\big(\|W\| + \|\kappa\|_{L^2}\big)\|v-w\|_2\), and \(T\) layers multiply those constants. The bound is loose, but it names the amplification correctly: depth times local gain plus kernel gain. It also makes two limits visible. Because \(W\) may contain an identity component, the layer as a whole need not be compact even though \(K\) is; and the bound says nothing about accuracy, only about stability. Module 5 reuses this decomposition when it states the discretization theorem.</p>
 </div>
 </section>
 
 <section id="four">
 <h2>Four answers to the \(O(J^2)\) problem</h2>
-<p>On a mesh of \(J\) points the integral becomes a sum \(\sum_j \kappa(x_i, y_j) v(y_j)\,\Delta y\) for every \(i\): a dense \(J \times J\) matrix times a vector, \(O(J^2)\) per layer per channel pair (JMLR p.13, Eq. 14).</p>
+<p>Discretize the integral on a mesh of \(J\) points and it becomes \(\sum_j \kappa(x_i,y_j)v(y_j)\Delta y\) for every one of the \(J\) values of \(i\): a dense \(J\times J\) matrix times a vector, per layer, per channel pair (JMLR p.13, Equation 14).</p>
+<p>It is worth seeing how badly that scales before reading the four repairs. At \(J = 10^6\), which is a \(1024\times1024\) grid and modest by simulation standards, the dense kernel matrix has \(10^{12}\) entries. Stored in single precision that is 4 terabytes, for one channel pair in one layer, before any arithmetic happens. For comparison, Lab 03 runs a complete four-layer FNO forward pass at \(1024^2 = 1{,}048{,}576\) points in 143 ms using 1.02 GiB of peak memory on a laptop GPU (<code>../labs/03_scale/results_scale.json</code>). The gap between those two numbers is what this module is about.</p>
 <div class="grid">
-<div class="card"><h3>GNO: Nyström and truncation</h3><p>Subsample \(J' \ll J\) points and approximate the kernel matrix by the rank \(J'\) factorization \(K \approx K_{JJ'}K_{J'J'}^{-1}K_{J'J}\). Or restrict the integral to a ball of radius \(r\) around \(x\): cost \(O(r^d J^2)\). Composing \(L\) truncated layers with \(2^{L-1} r \ge 1\) recovers the full kernel's reach at cost \(O(L r^d J^2)\). Implemented as message passing on the mesh graph; the average over neighbours is the Monte Carlo estimate of the truncated integral. Pages 14 to 16.</p></div>
-<div class="card"><h3>LNO: low rank</h3><p>Impose \(\kappa(x,y) = \sum_{j=1}^r \varphi_j(x)\psi_j(y)\). Then \(u(x) = \sum_j \langle \psi_j, v\rangle \varphi_j(x)\) and the inner products do not depend on \(x\): cost \(O(rJ)\). This is a truncated SVD of a rank \(r\) operator, and it is the structure of DeepONet made discretization consistent (Module 4). Pages 16 to 17.</p></div>
-<div class="card"><h3>MGNO: multipole</h3><p>Split \(K = K_1 + \dots + K_L\) by interaction range. Short range is sparse and full rank; long range is dense and low rank. Build a hierarchy of coarser meshes \(J_1 \ge \dots \ge J_L\) with growing radii, and compute a V cycle down and up, as in multigrid. Choose \(J_l, r_l\) so that \(\sum_l J_l^2 r_l^d = O(J)\). Pages 17 to 20.</p></div>
-<div class="card"><h3>FNO: convolution theorem</h3><p>Impose \(\kappa(x,y) = \kappa(x - y)\) on a periodic box. Then \(Kv = \mathcal F^{-1}(\hat\kappa \cdot \hat v)\), and the multipliers \(\hat\kappa(k)\) for \(|k| \le k_{\max}\) are the parameters. Cost \(O(J \log J)\), dominated by the FFT. No kernel network at all. Requires a uniform grid. Pages 21 to 24. Module 2 derives this one.</p></div>
+<div class="card"><h3>GNO: Nyström and truncation</h3><p>Subsample \(J' \ll J\) points and approximate the kernel matrix by the rank-\(J'\) factorization \(K \approx K_{JJ'}K_{J'J'}^{-1}K_{J'J}\). Or truncate the integral to a ball of radius \(r\) around each \(x\), costing \(O(r^dJ^2)\). Truncation loses long-range interaction, but composing \(L\) truncated layers with \(2^{L-1}r \ge 1\) recovers the full reach at cost \(O(Lr^dJ^2)\). Implemented as message passing on the mesh graph, where averaging over neighbours is exactly the Monte Carlo estimate of the truncated integral. Pages 14 to 16.</p></div>
+<div class="card"><h3>LNO: low rank</h3><p>Impose \(\kappa(x,y)=\sum_{j=1}^r\varphi_j(x)\psi_j(y)\). Then \(u(x)=\sum_j\langle\psi_j,v\rangle\varphi_j(x)\), and the \(r\) inner products do not depend on \(x\), so they are computed once: cost \(O(rJ)\). This is a truncated SVD of a rank-\(r\) operator, and Claim 2 above is exactly the statement that it works when the spectrum decays. It is also DeepONet's structure made discretization-consistent, which Module 4 takes up. Pages 16 to 17.</p></div>
+<div class="card"><h3>MGNO: multipole</h3><p>Split \(K=K_1+\dots+K_L\) by interaction range. The short-range part is sparse and full rank; the long-range part is dense and low rank. Build a hierarchy of coarser meshes \(J_1\ge\dots\ge J_L\) with growing radii and run a V-cycle down and back up, as multigrid does. Choosing \(J_l\) and \(r_l\) so that \(\sum_l J_l^2r_l^d = O(J)\) makes the whole thing linear. Pages 17 to 20.</p></div>
+<div class="card"><h3>FNO: convolution theorem</h3><p>Impose \(\kappa(x,y)=\kappa(x-y)\) on a periodic box. Then \(Kv=\mathcal F^{-1}(\hat\kappa\cdot\hat v)\), and the multipliers \(\hat\kappa(k)\) for \(|k|\le k_{\max}\) are the parameters themselves. Cost \(O(J\log J)\), dominated by the FFT, with no kernel network to evaluate. The price is a uniform grid and a periodic domain, both of which Module 6 has to undo. Pages 21 to 24; derived in full in Module 2.</p></div>
 </div>
-<div class="callout"><p><strong>The CNN is not on the list on purpose.</strong> A convolution with a kernel of fixed radius \(r\) in physical units is a legitimate GNO layer. A standard CNN fixes the kernel in <em>grid points</em>. As \(J \to \infty\) its physical support shrinks to a point and the layer becomes local; the only fix is to grow the filter with \(J\), and then the parameter count diverges. That is JMLR Section 4.1, page 15 to 16 (<code>research_notes/pdf-fno-jmlr.md:372-379</code>), and it is what Lab 01 run C measures in Module 1.</p></div>
+<div class="callout"><p><strong>Why the CNN is not a fifth answer.</strong> A convolution with a kernel of fixed radius \(r\) in <em>physical</em> units is a legitimate GNO layer, and nothing here rules it out. A standard CNN fixes the kernel in <em>grid points</em>, so as \(J\to\infty\) its physical support shrinks to a point and the layer becomes local. The only repair is to grow the filter with \(J\), and then the parameter count diverges. That is JMLR Section 4.1, pages 15 to 16 (<code>research_notes/pdf-fno-jmlr.md:372-379</code>), and Module 1's Lab 01 run C measures it: the same weights that match an FNO exactly at 64 points give a relative error of 1.46 at 1024, worse than predicting zero.</p></div>
 </section>
 
 <section id="numbers">
 <h2>The numbers the four answers give</h2>
-<p>All from JMLR Section 7, single V100, Darcy flow unless stated, N = 1000, 4 layers, 500 epochs (<code>research_notes/pdf-fno-jmlr.md:527-535</code>, <code>:627-661</code>).</p>
+<p>All from JMLR Section 7.4, on a single V100, with \(N=1000\), 4 layers and 500 epochs (<code>research_notes/pdf-fno-jmlr.md:527-535</code>, <code>:627-661</code>). The last two columns are accuracy on the two benchmark problems; the timing column is what one epoch of Darcy costs.</p>
 <div class="table-wrap"><table>
 <tr><th>Method</th><th>Idea (Table 6)</th><th>Complexity (Table 7)</th><th class="num">s/epoch</th><th class="num">Darcy s=141 (Table 2)</th><th class="num">Burgers s=1024 (Table 3)</th></tr>
-<tr><td>GNO</td><td>Nyström, kernel network</td><td>\(O(J'^2 r^2)\)</td><td class="num">4</td><td class="num">0.0332</td><td class="num">0.0651</td></tr>
+<tr><td>GNO</td><td>Nyström, kernel network, graph-based</td><td>\(O(J'^2r^2)\)</td><td class="num">4</td><td class="num">0.0332</td><td class="num">0.0651</td></tr>
 <tr><td>LNO</td><td>low rank, kernel network</td><td>\(O(J)\)</td><td class="num">20</td><td class="num">0.0461</td><td class="num">0.0217</td></tr>
-<tr><td>MGNO</td><td>multi level graphs</td><td>\(\sim O(J)\)</td><td class="num">8</td><td class="num">0.0428</td><td class="num">0.0374</td></tr>
+<tr><td>MGNO</td><td>multi-level graphs on GNO</td><td>\(\sum_l O(J_l^2r_l^2) \sim O(J)\)</td><td class="num">8</td><td class="num">0.0428</td><td class="num">0.0374</td></tr>
 <tr><td>FNO</td><td>convolution theorem, no kernel network</td><td>\(O(J\log J)\)</td><td class="num">4</td><td class="num">0.0109</td><td class="num">0.0018</td></tr>
 </table></div>
-<p>Read the table with three cautions. LNO is \(O(J)\) on paper and the slowest in wall clock, because it carries a kernel network. FNO is the fastest because it carries none. And the full \(O(J^2)\) integration, which none of the four use, "still outperforms the FNO by about 40%, albeit at greater cost" (JMLR p.58, <code>research_notes/pdf-fno-jmlr.md:719-721</code>). Fast is not free.</p>
+<p>Three things in that table are worth more than the ranking. LNO is \(O(J)\) on paper and the slowest of the four in wall clock, five times slower than FNO, because it carries a kernel network that has to be evaluated; complexity classes do not settle wall clock when the constants differ by an order of magnitude. The FNO Burgers entry is the JMLR paper's 0.0018 rather than the ICLR paper's 0.0160 at the same resolution, for the reason Module 2 documents, and the other three entries are identical in both papers. And the honest sentence in the paper's own conclusion is that "the full \(O(J^2)\) integration method still outperforms the FNO by about 40%, albeit at greater cost" (p.58, <code>research_notes/pdf-fno-jmlr.md:719-721</code>). All four answers buy speed with accuracy. FNO buys the most of both.</p>
 
-<h3>Refinability: error versus parameter budget (Table 8, Darcy)</h3>
+<h3>Refinability: error against parameter budget</h3>
+<p>The most useful table in the paper is also the one most often skipped, because it is the only one where FNO loses.</p>
 <div class="table-wrap"><table>
 <tr><th>Method</th><th class="num">10³ params</th><th class="num">10⁴</th><th class="num">10⁵</th><th class="num">10⁶</th></tr>
 <tr><td>GNO</td><td class="num">0.075</td><td class="num">0.065</td><td class="num">0.060</td><td class="num">0.035</td></tr>
@@ -92,34 +110,39 @@
 <tr><td>MGNO</td><td class="num">0.070</td><td class="num">0.050</td><td class="num">0.040</td><td class="num">0.030</td></tr>
 <tr><td>FNO</td><td class="num">0.200</td><td class="num">0.035</td><td class="num">0.020</td><td class="num">0.015</td></tr>
 </table></div>
-<p>At one thousand parameters FNO is the worst of the four by a wide margin, 0.200 against 0.070 to 0.080. From ten thousand parameters up it is the best. The paper's own explanation, page 46: the three methods with kernel networks "can work with a very small number of parameters"; FNO has no sub network, so its expressivity comes only from the retained modes and the channel width (<code>research_notes/pdf-fno-jmlr.md:655-661</code>). This is the caveat to the headline tables and it is the point of this module's reading lab.</p>
+<p>At a budget of one thousand parameters FNO is the worst of the four by a factor of nearly three, 0.200 against 0.070 to 0.080. From ten thousand upward it is the best, and by \(10^6\) it is twice as accurate as the runner-up. The paper explains the shape rather than hiding it: the other three "have the kernel networks, the slope of their error rates are flat: they can work with a very small number of parameters. On the other hand, FNO does not have the sub-network. It needs at a larger magnitude of parameters to obtain an acceptable error rate" (p.46).</p>
+<div class="warn"><p><strong>Do not read fine structure into these sixteen numbers.</strong> The caption states that "the errors above are approximated value roundup to 0.05", and that each entry is the lowest test error the model reached subject to a parameter cap. So the difference between GNO's 0.075 and MGNO's 0.070 at \(10^3\) carries no information, and neither does GNO 0.060 against LNO 0.060 at \(10^5\). Exactly one comparison in the table is larger than the stated rounding: FNO's 0.200 at \(10^3\) against everything else in that column. That single number is the finding. Everything else is a tie within the paper's own error bars, and any course that ranks the four methods off this table is over-reading it.</p></div>
 </section>
 
 <section id="lab">
 <h2>Lab: the refinability curve, and one swap of transform</h2>
-<p><span class="grade g-lab">LAB</span> <strong>Part 1, not yet run.</strong> Reproduce two rows of Table 8 with <code>neuraloperator</code> on the bundled Darcy 16 data: FNO with <code>hidden_channels</code> and <code>n_modes</code> chosen to hit about 10³, 10⁴, 10⁵ parameters (use <code>count_model_params</code>), and <code>GNO</code>-style layers through <code>neuralop.layers.gno_block.GNOBlock</code>. Plot error against parameter count on log axes. The bundled Darcy files are <code>darcy_train_16.pt</code>, <code>darcy_test_16.pt</code>, <code>darcy_test_32.pt</code> in the library's GitHub data folder; they are not in the pip package, so download them into <code>../data/</code> the same way Lab 01 did. Expect the crossover between 10³ and 10⁴ parameters.</p>
-<p><strong>Part 2, reading.</strong> "Swap the transform" is a design family, not a trick. Laplace Neural Operator replaces Fourier with Laplace to get poles and residues for transient signals (arXiv 2303.10528). Wavelet Neural Operator uses wavelets for localization (arXiv 2205.02191). Spherical FNO uses spherical harmonics because the atmosphere is a sphere (arXiv 2306.03838). Read the three abstracts through <code>research_notes/lineage.md:148-168</code> and <code>:82-91</code>, and write one paragraph on which of the four cost answers each one is.</p>
+<p><span class="grade g-lab">LAB</span> <strong>Part 1, not yet run.</strong> Reproduce two rows of the refinability table with <code>neuraloperator</code> on the bundled Darcy 16 data: an FNO with <code>hidden_channels</code> and <code>n_modes</code> tuned to land near \(10^3\), \(10^4\) and \(10^5\) parameters, measured with <code>count_model_params</code>, against GNO-style layers through <code>neuralop.layers.gno_block.GNOBlock</code>. Plot error against parameter count on log axes. The bundled files <code>darcy_train_16.pt</code>, <code>darcy_test_16.pt</code> and <code>darcy_test_32.pt</code> live in the library's GitHub data folder rather than the pip package, so download them into <code>../data/</code> the way Lab 01 did. The prediction to test is the crossover between \(10^3\) and \(10^4\) parameters, and the thing to watch is whether it survives at all once the rounding in the warning above is taken seriously.</p>
+<p><strong>Part 2, reading.</strong> Swapping the transform is a design family rather than a trick, and each member picks a basis suited to the physics. Laplace Neural Operator replaces Fourier with Laplace to get poles and residues, which matters for transients that a periodic basis represents badly (arXiv 2303.10528). Wavelet Neural Operator uses wavelets to buy spatial localization back (arXiv 2205.02191). Spherical FNO uses spherical harmonics because the atmosphere is a sphere and a periodic box is the wrong domain for it (arXiv 2306.03838). Read the three abstracts through <code>research_notes/lineage.md:148-168</code> and <code>:82-91</code>, and write one paragraph placing each of the three against the four answers above. All three are variations on the fourth answer, and saying precisely why is the exercise.</p>
 </section>
 
 <section id="sources">
 <h2>Sources</h2>
 <ul class="src">
-<li><span class="grade g-a">A</span> JMLR 2023, Section 4 (four parameterizations), pages 12 to 24: <code>research_notes/pdf-fno-jmlr.md:352-426</code>.</li>
-<li><span class="grade g-a">A</span> JMLR 2023, Section 7.4, Tables 6, 7, 8, pages 45 to 46: <code>research_notes/pdf-fno-jmlr.md:627-661</code>.</li>
+<li><span class="grade g-a">A</span> JMLR 2023, Section 4 (the four parameterizations), pages 12 to 24: <code>research_notes/pdf-fno-jmlr.md:352-426</code>.</li>
+<li><span class="grade g-a">A</span> JMLR 2023, Proposition 6 (attention as a neural operator layer), read from <code>21-1524.pdf</code> p.28; notes at <code>research_notes/pdf-fno-jmlr.md:453-463</code>.</li>
+<li><span class="grade g-a">A</span> JMLR 2023, Section 7.4, Tables 6, 7 and 8 with the caption caveat, pages 45 to 46, read from <code>21-1524.pdf</code>; notes at <code>research_notes/pdf-fno-jmlr.md:627-661</code>.</li>
 <li><span class="grade g-a">A</span> JMLR 2023, Section 10.1.2, the 40 percent statement, page 58: <code>research_notes/pdf-fno-jmlr.md:719-721</code>.</li>
-<li><span class="grade g-a">A</span> JMLR 2023, Poisson Green's function experiment, pages 29 to 30 and 36 to 37: <code>research_notes/pdf-fno-jmlr.md:537-545</code>.</li>
+<li><span class="grade g-a">A</span> JMLR 2023, Poisson Green's function experiment and Figure 7, pages 29 to 30 and 36 to 37: <code>research_notes/pdf-fno-jmlr.md:537-545</code>. Advection robustness, Table 9, p.46.</li>
+<li><span class="grade g-lab">LAB</span> Forward-pass cost at \(1024^2\), 143 ms and 1.02 GiB: <code>../labs/03_scale/results_scale.json</code>. CNN failure at unseen grids: <code>../labs/01_burgers/results_c_rf49.json</code>.</li>
 <li><span class="grade g-b">B</span> GNO 2003.03485, MGNO 2006.09535, LNO 2303.10528, WNO 2205.02191, SFNO 2306.03838: <code>research_notes/lineage.md:38-58</code>, <code>:82-91</code>, <code>:148-168</code>.</li>
-<li>Theory plan Modules 3 and 6: Hunter's PDE notes, Chapter 2 (Green's functions), MIT 18.102 (compact operators, spectral theorem).</li>
+<li>Theory plan Modules 3 and 6. Reading: Hunter's PDE notes, Chapter 2 (Green's functions); MIT 18.102 (compact operators, spectral theorem).</li>
 </ul>
 </section>
 
 <section id="exit">
 <h2>Exit test</h2>
+<p>You can now say why truncation works on an elliptic solution operator and not on the identity, place any new operator architecture into one of four cost strategies, and read the refinability table without over-reading it.</p>
 <ol class="steps">
-<li>Derive the \(L^2 \to L^2\) error of keeping the first \(m\) sine modes of the Poisson Green's operator, and explain why the same computation gives no bound for the identity.</li>
-<li>Name which term of the general layer mixes spatial locations, and explain why the whole layer need not be compact.</li>
-<li>Given a mesh of \(J = 10^6\) points, estimate the cost of one layer under each of the four answers, and state the one assumption FNO needs that the other three do not.</li>
-<li>Explain the 0.200 in Table 8 without using the word "worse".</li>
+<li>Derive \(\|G-G_m\| = \pi^{-2}(m+1)^{-2}\) for the Poisson Green's operator, and explain why the same computation gives no bound at all for the identity.</li>
+<li>Name the one term of the general layer that mixes spatial locations, and explain why the layer as a whole need not be compact even though that term is.</li>
+<li>For a mesh of \(J=10^6\) points, estimate the storage of the dense kernel matrix and compare it with Lab 03's measured 1.02 GiB. Then state the cost of one layer under each of the four answers, and name the one assumption FNO needs that the other three do not.</li>
+<li>Explain FNO's 0.200 at \(10^3\) parameters without using the word "worse", and state which other comparisons in that table are and are not supported by it.</li>
+<li>Attention is a neural operator layer by Proposition 6. Say which of the three kernel forms the proof uses, and what property of a neural operator the resulting layer still lacks.</li>
 </ol>
 </section>
 
