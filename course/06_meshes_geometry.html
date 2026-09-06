@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Module 6 · Meshes, geometry, spheres, and attention</title>
+<link rel="stylesheet" href="course.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div class="wrap">
+<p class="eyebrow">Module 6 of 13 · one week</p>
+<h1>Meshes, geometry, spheres, and attention</h1>
+<p class="dek">The FFT needs a uniform grid on a periodic box. Real objects are meshes, spheres, and shapes that change between samples. This module covers the four ways out: message passing on the mesh, encoding geometry into a latent grid, changing the transform to match the manifold, and attention. The lab is the course's first semiconductor problem, a thermal die, on the one geometry an FNO handles directly.</p>
+<p class="meta">Primary sources: MeshGraphNets ICLR 2021 (read in full, <code>2010.03409v4.pdf</code>); GINO arXiv 2309.00583; SFNO arXiv 2306.03838; Transolver arXiv 2402.02366 and Transolver++ 2502.02414; CNO arXiv 2302.01178; JMLR Proposition 6, p.27 to 29. Lab: <code>../labs/02_thermal/</code>.</p>
+
+<nav class="top">
+<a href="index.html">Course home</a>
+<a href="#why">Why</a>
+<a href="#mgn">MeshGraphNets</a>
+<a href="#geometry">Geometry in a latent grid</a>
+<a href="#sphere">The sphere</a>
+<a href="#attention">Attention</a>
+<a href="#lab">Lab 02</a>
+<a href="#sources">Sources</a>
+<a href="#exit">Exit test</a>
+</nav>
+
+<section id="why">
+<h2>Why this module exists</h2>
+<p>The host's question at 08:44 of the seed episode is how transfer works across geometries. Anandkumar's answer in the earlier episode (01:11:36 to 01:12:14) is a shared latent geometric space into which arbitrary shapes are mapped (<code>research_notes/company-episode.md:80</code>). That is GINO, and it is public. The rest of the module is the evidence that "the architecture must match the manifold": a flat FFT on the globe blows up on long rollouts, and a grid CNN undersamples an airfoil's wake even with four times more cells.</p>
+</section>
+
+<section id="mgn">
+<h2>MeshGraphNets: the mesh as a graph, in two coordinate systems</h2>
+<p>Pfaff, Fortunato, Sanchez-Gonzalez, Battaglia, ICLR 2021. The state at time \(t\) is a mesh \(M^t = (V, E_M)\). Each node has a fixed mesh space coordinate \(u_i\) and, for Lagrangian systems where the mesh itself moves, a world space coordinate \(x_i\). Encode, process, decode (<code>research_notes/pdf-mgn-pdebench.md:19-44</code>):</p>
+<ol class="steps">
+<li><strong>Encoder.</strong> Mesh edges \(E_M\) from the mesh connectivity carry internal dynamics. <strong>World edges</strong> \(E_W\) connect nodes within a radius \(r_W\) in 3D space that are not mesh neighbours, and carry contact and collision. All edge features are <em>relative</em>: \(u_i - u_j\), \(|u_i - u_j|\), \(x_i - x_j\), \(|x_i - x_j|\). Nodes carry the dynamical quantities and a one hot node type. Everything is embedded to 128 dimensions by MLPs.</li>
+<li><strong>Processor.</strong> \(L = 15\) message passing blocks, each: \(e'_{ij} \leftarrow f^M(e_{ij}, v_i, v_j)\), \(e'^W_{ij} \leftarrow f^W(\cdot)\), \(v'_i \leftarrow f^V(v_i, \sum_j e'^M_{ij}, \sum_j e'^W_{ij})\), with residual connections. Compare Module 3: the sum over neighbours is the Monte Carlo estimate of a truncated integral operator; this is a GNO with a learned, input dependent kernel.</li>
+<li><strong>Decoder and integrator.</strong> An MLP outputs a time derivative; forward Euler with \(\Delta t = 1\) turns it into the next state, second order for cloth. The physics is learned; the time stepping is not.</li>
+</ol>
+<div class="table-wrap"><table>
+<tr><th>Dataset (Table 1, p.7)</th><th class="num">nodes</th><th class="num">steps</th><th class="num">ms/step GPU</th><th class="num">ms/step solver</th><th class="num">RMSE 1 step ×10⁻³</th><th class="num">rollout 50</th><th class="num">rollout all</th></tr>
+<tr><td>FlagSimple (cloth, ArcSim)</td><td class="num">1579</td><td class="num">400</td><td class="num">19</td><td class="num">4166</td><td class="num">1.08</td><td class="num">92.6</td><td class="num">139.0</td></tr>
+<tr><td>DeformingPlate (hyperelastic, COMSOL, tetrahedral)</td><td class="num">1271</td><td class="num">400</td><td class="num">24</td><td class="num">2893</td><td class="num">0.25</td><td class="num">1.8</td><td class="num">15.1</td></tr>
+<tr><td>CylinderFlow (incompressible NS, COMSOL)</td><td class="num">1885</td><td class="num">600</td><td class="num">21</td><td class="num">820</td><td class="num">2.34</td><td class="num">6.3</td><td class="num">40.88</td></tr>
+<tr><td>Airfoil (compressible NS, SU2)</td><td class="num">5233</td><td class="num">600</td><td class="num">37</td><td class="num">11015</td><td class="num">314</td><td class="num">582</td><td class="num">11529</td></tr>
+</table></div>
+<p>The numbers that carry the argument (<code>:104-119</code>): removing world edges raises rollout RMSE by 51 percent on FlagDynamic and 92 percent on SphereDynamic, where cloth and obstacle are not mesh connected at all. Using absolute instead of relative positions gives rollout RMSE 26.5 on Airfoil. A U-Net on a 128×128 grid undersamples the wake at the wing tip "even while using 4× more cells" to cover a region 16× smaller than the mesh; Airfoil edge lengths span \(2 \times 10^{-4}\) m to 3.5 m. A model trained on flags with about 1.5k to 2.8k nodes runs on a 20k node windsock, and 50 step error shows no trend with node count (Appendix A.5.3). Speed ups against the solvers on the same CPU are 4 to 22×, on a GPU 11 to 290×, and the paper says a true hardware agnostic comparison is hard (<code>:91-102</code>). The learned remesher: the model predicts a sizing tensor \(S_i\) per node, an edge is valid if \(u_{ij}^\top S_i u_{ij} \le 1\), and a generic remesher does the rest (<code>:46-48</code>). History hurts: \(h = 0\) or 1 is best, more overfits, the opposite of GNS (<code>:124</code>).</p>
+<div class="callout"><p><strong>The code caveat.</strong> DeepMind's release is TensorFlow 1 with Sonnet under 2 (<code>research_notes/repos.md:287-289</code>). The maintained PyTorch path is NVIDIA PhysicsNeMo's <code>MeshGraphNet</code>, with <code>structural_mechanics/deforming_plate</code> mirroring the paper's dataset; PhysicsNeMo was mid refactor to v2.0 in 2026, so pin a version (<code>:349-350</code>). This course does not install it (decision 4); the lab below stays on the grid.</p></div>
+</section>
+
+<section id="geometry">
+<h2>Geometry in a latent grid: GINO, and the family after it</h2>
+<p><strong>GINO</strong> (Li, Kovachki, Choy, et al., arXiv 2309.00583). Encode the shape as a signed distance function and a point cloud; a GNO layer moves from the irregular points to a regular latent grid; an FNO works there; a GNO layer decodes back to the mesh. On 3D vehicle aerodynamics at Reynolds numbers up to five million: 26,000× faster than optimized GPU CFD for the drag coefficient, one quarter the error of other deep learning methods on unseen geometries (<code>research_notes/lineage.md:60-69</code>). The <code>neuraloperator</code> library has <code>GINO</code>, <code>FNOGNO</code>, and the mini car dataset <code>data/mini_car.pt</code> with <code>plot_OTNO_car_cfd.py</code> as its only bundled irregular geometry example (<code>repos.md:41-45</code>, <code>:74</code>, <code>:102</code>).</p>
+<p><strong>CNO</strong> (Raonić et al., arXiv 2302.01178) goes the other way: keep the CNN but band limit every convolution and nonlinearity so the network is a well defined operator with a universality proof. This is the constructive answer to Module 1's CNN counterexample, and the ReNO analysis by the same group shows FNO is not perfectly alias free either, because ReLU reintroduces frequencies outside the band (<code>web-papers.md:689-700</code>; Lab 01's spectrum in Module 2 is the measurement).</p>
+<p><strong>Localized kernels</strong> (Liu-Schiaffini et al., ICML 2024, arXiv 2402.16845): add differential and local integral kernels to FNO to fix over smoothing; 34 to 72 percent lower relative L2 on turbulent 2D Navier–Stokes and spherical shallow water (<code>lineage.md:170-179</code>). In the library: <code>LocalNO</code> and <code>FiniteDifferenceConvolution</code> (<code>repos.md:38</code>, <code>:53</code>).</p>
+</section>
+
+<section id="sphere">
+<h2>The sphere</h2>
+<p>SFNO (Bonev et al., arXiv 2306.03838) replaces the discrete Fourier transform with a spherical harmonic transform, because a flat FFT on the globe introduces artifacts and unphysical dissipation and long rollouts blow up. Result: a stable autoregressive rollout for a full simulated year, 1,460 six hourly steps (<code>lineage.md:82-91</code>). FourCastNet v1 used flat adaptive Fourier layers; v2 switched to SFNO; FourCastNet 3 builds a geometric probabilistic ensemble on it (Module 12). Anandkumar's version, earlier episode 01:03:11 to 01:03:59: "none of the other architectures work for climate because climate requires us to assume the world is a globe", with the concession that the spherical model still shows some instability near the poles (<code>company-episode.md:57</code>). Library: <code>SFNO</code> and <code>SphericalConv</code>, importable only if <code>torch_harmonics</code> is installed (<code>repos.md:37</code>, <code>:49</code>).</p>
+</section>
+
+<section id="attention">
+<h2>Attention as a neural operator layer, and its two limits</h2>
+<p>JMLR Proposition 6, page 27 to 29: choose the input dependent kernel \(\kappa(x, y, v(x), v(y)) = g(v(x), v(y)) R\) with \(g\) a softmax normalized exponential of \(\langle A v(x), B v(y)\rangle/\sqrt m\), discretize by Nyström on \(k\) points, and the layer is \(u_j = \sigma(v_j + R_{\text{out}}\sum_q S_j(z_q) R_{\text{val}} v_q)\): single head self attention without layer norm. Multi head is a sum of such kernels (<code>pdf-fno-jmlr.md:453-463</code>). Two limits follow. Cost: the kernel is dense in \(k\), so \(O(k^2)\), which is Module 9's arithmetic. Discretization: the softmax over exactly \(k\) tokens and CNN patch tokenization (ViT) break convergence to a continuum limit, so "many efficient vision transformers are not special cases of neural operators" (p.29).</p>
+<p>The transformer branch of the field answers the cost limit. Galerkin Transformer (Cao, NeurIPS 2021, arXiv 2105.14995) drops softmax and reads linear attention as a Petrov–Galerkin projection. OFormer (2205.13671) uses cross attention so inputs and queries can be sampled anywhere. GNOT (2302.14376) adds heterogeneous normalized attention and geometric gating for several input functions on irregular meshes. Transolver (ICML 2024 spotlight, 2402.02366) groups mesh points into learnable slices by physical state and attends over slices, linear in points, 22 percent average gain on six benchmarks; Transolver++ (2502.02414) reaches million point car and aircraft meshes on one GPU with 13 percent more on the benchmarks and over 20 percent on the industrial cases (<code>lineage.md:126-146</code>, <code>:192-223</code>). The attention based foundation models of Module 10 (MPP, DPOT, Poseidon, Aurora) all use patching or Fourier attention for the same reason.</p>
+</section>
+
+<section id="lab">
+<h2>Lab 02: a thermal die on a square</h2>
+<p><span class="grade g-lab">LAB</span> <code>../labs/02_thermal/run_thermal.py</code>. No public neural operator semiconductor benchmark exists (<code>lineage.md:328-329</code>), so the data is generated here. <strong>Every parameter below is a modelling choice made for this course, not a value from a paper.</strong></p>
+<h3>The model</h3>
+<div class="math">
+<p>A thin silicon die as a 2D plate: \(-k\,t\,(T_{xx} + T_{yy}) = q(x,y)\) on \((0, L)^2\), \(T = 0\) on the four edges. \(L = 10\) mm, \(k = 130\) W/(m·K), the conductivity of silicon near 100 °C, \(t = 0.5\) mm die thickness. \(q\) is the heat flux density in W/m², built from 2 to 5 random rectangles ("cores") with sides 1 to 4 mm and flux uniform in 0.2 to 2.0 MW/m², allowed to overlap. \(T\) is the rise above the edge temperature. The learned operator is \(q \mapsto T\), which is linear; the learning problem is not easier for that, since the FNO does not know it.</p>
+<p><strong>Solver.</strong> Five point finite differences on a 256×256 grid of cell centres with ghost cell Dirichlet boundaries, one sparse LU factorization reused for all 1200 right hand sides. <strong>Check.</strong> For \(q = q_0 \sin(\pi x/L)\sin(\pi y/L)\) the exact solution is \(T = q_0 L^2/(2\pi^2 k t)\) times the same sine product. The script asserts the relative error is under \(10^{-3}\); it is \(1.25 \times 10^{-5}\), with a peak rise of 77.9 K for \(q_0 = 1\) MW/m². A separate block load check gave a 256 grid peak of 49.32 K against 49.32 K on a 128 grid, relative field difference \(8.3 \times 10^{-5}\), for a 15 W block. Data generation: 1200 samples in 14 s; peak rises range from 5.8 to 201.1 K and die powers from 2.8 to 73.2 W.</p>
+</div>
+<h3>Training</h3>
+<p>Block average the 256² fields to 64² for training (so a rectangle edge between cells is represented by its area fraction, not dropped) and to 128² for the second test grid. Normalize \(q\) by \(10^6\) W/m² and \(T\) by 100 K. 2D FNO, <code>n_modes=(16, 16)</code> (in this library that keeps 16 bins on the first axis and 9 on the real FFT axis; see Module 2), 32 hidden channels, 4 layers, relative L2 loss, Adam \(10^{-3}\) halved every 50 epochs, 200 epochs, batch 20. Metrics beyond field error: the peak temperature rise in kelvin, the hot spot position in millimetres, and the fraction of dies whose predicted hot spot lies within 0.5 mm of the true one. These are the numbers a thermal engineer asks for; Module 8 says why field RMSE is not enough.</p>
+<div id="thermal-results">
+<h3>Results</h3>
+<p>Model: 1,192,801 parameters. 200 epochs, 614 s on the GPU with no other job. Train relative L2 0.0047 after training (<code>results_thermal.json</code>).</p>
+<div class="table-wrap"><table>
+<tr><th>Test grid</th><th class="num">Relative L2</th><th class="num">Peak error, mean (K)</th><th class="num">Peak error, max (K)</th><th class="num">Hot spot distance, mean (mm)</th><th class="num">Within 0.5 mm</th><th class="num">True peak, mean (K)</th></tr>
+<tr><td>64² (training grid)</td><td class="num">0.0065</td><td class="num">0.20</td><td class="num">1.27</td><td class="num">0.035</td><td class="num">100 percent</td><td class="num">58.5</td></tr>
+<tr><td>128² (never seen)</td><td class="num">0.0814</td><td class="num">1.55</td><td class="num">6.21</td><td class="num">0.158</td><td class="num">98.5 percent</td><td class="num">58.6</td></tr>
+</table></div>
+<figure><img src="../labs/02_thermal/fig_thermal_samples.png" alt="Three test dies at 128 by 128: power map, finite difference temperature, FNO temperature, and absolute error, with horizontal stripes visible in the FNO output and error"><figcaption>Three test dies evaluated at 128², trained at 64². Left to right: power map in MW/m², true temperature rise, FNO, absolute error in kelvin. The FNO panels and the error maps carry horizontal stripes: a grid scale oscillation along one axis.</figcaption></figure>
+<figure><img src="../labs/02_thermal/fig_thermal_hotspot.png" alt="Scatter of predicted against true peak rise at 128 by 128, and a histogram of the peak error, mostly between 0 and 3 K"><figcaption>At 128²: predicted against true peak rise over 200 test dies, and the histogram of the peak error. The error is biased positive, the FNO over predicts the peak by 1.55 K on average, and the bias grows with the peak.</figcaption></figure>
+<p>Three readings. First, at the training grid the surrogate is good enough for the engineering question: 0.65 percent field error, 0.20 K mean error on a 58 K mean peak, and the hot spot found within 0.5 mm on every one of 200 dies. Second, at the unseen 128² grid the field error rises twelve times to 8.1 percent, the mean peak error to 1.55 K, and 3 of 200 hot spots move more than 0.5 mm. This is much worse than Lab 01's 18 to 56 percent rise, and the pictures say why: the output carries a grid scale stripe pattern along one axis. The block averaged input at 128² has sharper rectangle edges than any input the model saw at 64², and the coarse-to-fine step exposes the same unseen-Nyquist behaviour that Module 2's spectrum found in one dimension. Third, the stripes run along one axis. Two candidate causes: <code>n_modes=(16, 16)</code> keeps 16 two-sided bins on the first axis and 9 one-sided bins on the real FFT axis, so the two axes are almost but not exactly alike; and the coordinate channel is a fixed function of grid position. Neither was tested. Module 8's banded and boundary metrics quantify the stripes; Module 2's exercise 2 (not yet run) is the test of which cause, if either, is responsible.</p>
+<p>Timing: 614 s for 200 epochs of 50 steps at 64² is 61 ms per step on this GPU; the 128² evaluation of 200 dies in chunks of 20 takes under a second. The first run of this lab evaluated 200 dies at 128² in one batch next to another training job and thrashed the 4 GB card; that is the smallest possible lesson of Module 9.</p>
+</div>
+<h3>What this lab does not do, and what comes next</h3>
+<p>The die is a square with uniform conductivity and a fixed edge temperature, so an FFT based model fits it and the "geometry" content of this module is not exercised. The next physics in the capstone's semiconductor path (Module 13): a heat spreader as a second material, which makes \(k\) a field and the operator nonlinear in the coefficient as in Darcy; then an irregular package outline, which is where GINO's encode–FNO–decode or a mesh model becomes necessary; then inverse design, placing the blocks to minimize the peak, which is Module 12's seismic pattern of differentiating through the operator.</p>
+</section>
+
+<section id="sources">
+<h2>Sources</h2>
+<ul class="src">
+<li><span class="grade g-a">A</span> MeshGraphNets, architecture p.3 to 5, Table 1 p.7, ablations p.8 to 9, timing Appendix A.5.1, scaling A.5.3: <code>research_notes/pdf-mgn-pdebench.md:19-146</code>.</li>
+<li><span class="grade g-b">B</span> GINO 2309.00583, SFNO 2306.03838, CNO 2302.01178, localized kernels 2402.16845, Galerkin Transformer 2105.14995, OFormer 2205.13671, GNOT 2302.14376, Transolver 2402.02366, Transolver++ 2502.02414: <code>research_notes/lineage.md</code>, per paper sections.</li>
+<li><span class="grade g-a">A</span> JMLR Proposition 6, p.27 to 29: <code>research_notes/pdf-fno-jmlr.md:453-463</code>. ReNO and CNO alias analysis: <code>research_notes/web-papers.md:689-700</code>.</li>
+<li><span class="grade g-a">A</span> Library support (<code>GINO</code>, <code>FNOGNO</code>, <code>SFNO</code>, <code>LocalNO</code>, mini car data), PhysicsNeMo and TF1 caveats: <code>research_notes/repos.md:34-53</code>, <code>:270-303</code>, <code>:306-350</code>.</li>
+<li><span class="grade g-c">C</span> Earlier episode 01:03:11 to 01:03:59 and 01:11:36 to 01:12:14: <code>research_notes/company-episode.md:57</code>, <code>:80</code>.</li>
+<li><span class="grade g-lab">LAB</span> <code>../labs/02_thermal/results_thermal.json</code>, <code>model_thermal.pt</code>, seed 0.</li>
+</ul>
+</section>
+
+<section id="exit">
+<h2>Exit test</h2>
+<ol class="steps">
+<li>Explain why SphereDynamic cannot be simulated without world edges, and give the 51 and 92 percent numbers with their datasets.</li>
+<li>Write the attention layer as a neural operator kernel and name the two things that stop a ViT from being one.</li>
+<li>State every modelling choice in Lab 02 that a paper did not supply, and say which one you would change first to make the problem harder for an FNO.</li>
+</ol>
+</section>
+
+<nav class="foot"><a href="05_theorems.html">← Module 5: What the theorems say</a><a href="07_time.html">Module 7: Time →</a></nav>
+</div>
+</body>
+</html>

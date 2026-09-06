@@ -1,0 +1,14 @@
+# Terminal session logs (local only)
+.ignore/
+
+# Private session resume file (local only)
+HANDOFF.md
+
+# Third-party paper PDFs; see README for the arXiv and JMLR links
+*.pdf
+
+# 601 MB training tensor; regenerate with labs/02_thermal/run_thermal.py
+labs/02_thermal/thermal_data.pt
+
+__pycache__/
+*.pyc

@@ -1,0 +1,50 @@
+{
+  "run": "thermal",
+  "model": "-k t Lap T = q, T=0 on edges, L=10mm, k=130, t=0.5mm",
+  "q_law": "2-5 rectangles, 1-4 mm sides, flux U(0.2e6, 2e6) W/m^2, may overlap",
+  "solver": "5-point FD, 256^2 cell centres, sparse LU",
+  "solver_check_rel_err": 1.254994573714318e-05,
+  "n_train": 1000,
+  "n_test": 200,
+  "train_res": 64,
+  "test_res": [
+    64,
+    128
+  ],
+  "k_max": 16,
+  "width": 32,
+  "n_layers": 4,
+  "epochs": 200,
+  "batch": 20,
+  "optimizer": "Adam lr 1e-3, halved every 50 epochs",
+  "loss": "relative L2",
+  "normalisation": {
+    "q_div": 1000000.0,
+    "T_div": 100.0
+  },
+  "params": 1192801,
+  "seed": 0,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "train_rel_l2": 0.004705431871116161,
+  "test": {
+    "64": {
+      "rel_l2": 0.006514257751405239,
+      "peak_abs_err_K_mean": 0.20206181704998016,
+      "peak_abs_err_K_max": 1.2721710205078125,
+      "hotspot_dist_mm_mean": 0.035345807671546936,
+      "hotspot_within_0p5mm_frac": 1.0,
+      "peak_true_K_mean": 58.526611328125
+    },
+    "128": {
+      "rel_l2": 0.08144679665565491,
+      "peak_abs_err_K_mean": 1.5521258115768433,
+      "peak_abs_err_K_max": 6.206329345703125,
+      "hotspot_dist_mm_mean": 0.15819326043128967,
+      "hotspot_within_0p5mm_frac": 0.98499995470047,
+      "peak_true_K_mean": 58.571468353271484
+    }
+  },
+  "train_seconds": 613.5308685302734,
+  "torch": "2.11.0+cu128"
+}

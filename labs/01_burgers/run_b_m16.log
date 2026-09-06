@@ -1,0 +1,16 @@
+solver check: rel diff dt vs dt/2 = 1.94e-12; norm ratio 0.615
+generated 1200 samples on 1024 points in 120s
+[0] train 0.4934  test64 0.2004  test256 0.2059  1s
+[50] train 0.0264  test64 0.0402  test256 0.0510  35s
+[100] train 0.0161  test64 0.0229  test256 0.0364  64s
+[150] train 0.0137  test64 0.0218  test256 0.0363  93s
+[200] train 0.0109  test64 0.0219  test256 0.0344  120s
+[250] train 0.0092  test64 0.0213  test256 0.0347  154s
+[300] train 0.0079  test64 0.0219  test256 0.0346  182s
+[350] train 0.0069  test64 0.0224  test256 0.0349  210s
+[400] train 0.0058  test64 0.0221  test256 0.0345  239s
+[450] train 0.0057  test64 0.0224  test256 0.0346  269s
+[499] train 0.0051  test64 0.0224  test256 0.0348  297s
+rel L2 by test resolution: {64: 0.0224, 128: 0.035, 256: 0.0348, 1024: 0.0348} train 0.0049
+wrote results_b.json, spectrum_b.npz, fig_b_spectrum.png, fig_b_samples.png
+exit 0

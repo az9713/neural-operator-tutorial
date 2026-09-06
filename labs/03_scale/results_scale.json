@@ -1,0 +1,84 @@
+{
+  "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "rows": [
+    {
+      "n_modes": 16,
+      "grid": 64,
+      "points": 4096,
+      "peak_MiB": 16.79248046875,
+      "ms": 3.2136000008904375,
+      "params": 602977
+    },
+    {
+      "n_modes": 16,
+      "grid": 128,
+      "points": 16384,
+      "peak_MiB": 29.27685546875,
+      "ms": 3.0790000018896535,
+      "params": 602977
+    },
+    {
+      "n_modes": 16,
+      "grid": 256,
+      "points": 65536,
+      "peak_MiB": 77.74560546875,
+      "ms": 9.72159999946598,
+      "params": 602977
+    },
+    {
+      "n_modes": 16,
+      "grid": 512,
+      "points": 262144,
+      "peak_MiB": 272.18310546875,
+      "ms": 36.237999996956205,
+      "params": 602977
+    },
+    {
+      "n_modes": 16,
+      "grid": 1024,
+      "points": 1048576,
+      "peak_MiB": 1049.68310546875,
+      "ms": 142.58130000234814,
+      "params": 602977
+    },
+    {
+      "n_modes": 64,
+      "grid": 128,
+      "points": 16384,
+      "peak_MiB": 102.21435546875,
+      "ms": 4.050800002005417,
+      "params": 8663905
+    },
+    {
+      "n_modes": 64,
+      "grid": 256,
+      "points": 65536,
+      "peak_MiB": 139.18310546875,
+      "ms": 11.021599999367027,
+      "params": 8663905
+    },
+    {
+      "n_modes": 64,
+      "grid": 512,
+      "points": 262144,
+      "peak_MiB": 333.68310546875,
+      "ms": 37.47590000057244,
+      "params": 8663905
+    },
+    {
+      "n_modes": 64,
+      "grid": 1024,
+      "points": 1048576,
+      "peak_MiB": 1111.18310546875,
+      "ms": 143.8224999983504,
+      "params": 8663905
+    }
+  ],
+  "extrapolation": {
+    "from_grid": 1024,
+    "target_points": 1000000000,
+    "est_forward_peak_GiB_batch1": 977.5935723155271,
+    "est_forward_seconds_this_gpu": 203.26630766631484,
+    "note": "linear memory and n log n time scaling from the largest 2-D row; a 3-D FNO also needs n_modes^3 weights per channel pair per layer: 16^3 x 32^2 x 4 layers x 8 bytes = 128 MiB, versus 16^2 in 2-D"
+  }
+}

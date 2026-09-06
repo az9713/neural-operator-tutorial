@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Module 10 · Physics foundation models and the transfer question</title>
+<link rel="stylesheet" href="course.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div class="wrap">
+<p class="eyebrow">Module 10 of 13 · one week, plus the capstone</p>
+<h1>Physics foundation models and the transfer question</h1>
+<p class="dek">The course's research module. The claim under test: one model pretrained on several physical systems needs less data on a new system than an equal size model trained on that system alone. The public record supports a narrow version with exact numbers and complicates the broad version with documented negative transfer. This module gives both, then the experiment that can decide it for your own systems.</p>
+<p class="meta">Primary source: <code>research_notes/foundation.md</code>, compiled from the arXiv abstract pages and HTML full texts of MPP 2310.02994, Poseidon 2405.19101, DPOT 2403.03542, UPT 2402.12365, UPS 2403.07187, ICON 2304.07993, Subramanian et al. 2306.00258, The Well 2412.00568, Aurora 2405.13063, GraphCast 2212.12794, GenCast 2312.15796, NeuralGCM 2311.07222.</p>
+
+<nav class="top">
+<a href="index.html">Course home</a>
+<a href="#why">Why</a>
+<a href="#claim">The claim, made testable</a>
+<a href="#evidence">Evidence for</a>
+<a href="#against">Evidence against</a>
+<a href="#verdict">Verdict</a>
+<a href="#lab">Lab: the matrix</a>
+<a href="#sources">Sources</a>
+<a href="#exit">Exit test</a>
+</nav>
+
+<section id="why">
+<h2>Why this module exists</h2>
+<p>Accelerated Understanding's stated core finding is "the shared model wins": a multi physics model beats equal parameter single domain specialists (<code>research_notes/company-episode.md:153</code>). The company has published no benchmark; a Tech Times headline on 26 August 2026 says so in its title (<code>:123</code>). Anandkumar's own co-authored paper on the subject, DPOT, is public. So are five other groups' papers. This module reads them for the claim, not for the architecture.</p>
+</section>
+
+<section id="claim">
+<h2>The claim, made testable</h2>
+<div class="callout"><p><strong>Hypothesis.</strong> A model pretrained on systems \(S_1, \dots, S_k\) and fine tuned on a fraction \(f\) of the data of a held out system \(S_{k+1}\) reaches lower test error on \(S_{k+1}\) than an equal parameter, equal compute model trained from scratch on the same fraction, for several seeds, and the gap is largest at small \(f\). <strong>Alternative outcomes.</strong> The gap is zero (no transfer); the gap is negative (interference); the gap depends on which systems are in the pretraining set (structure dependent transfer); the gap vanishes as \(f \to 1\) (data regime dependent).</p></div>
+<p>Three words in the hypothesis do work. "Equal parameter": a bigger pretrained model beating a smaller scratch model proves nothing. "Held out": a system present in pretraining is not a transfer target. "Fraction": the claim is about data efficiency, and the curve of error against \(f\) is the result, not any single point on it. The project kit's experiment matrix (<code>../05_physics_foundation_model_study_kit.html</code>) is this hypothesis with four arms.</p>
+</section>
+
+<section id="evidence">
+<h2>Evidence for: five independent groups, exact numbers</h2>
+<div class="table-wrap"><table>
+<tr><th>Paper</th><th>Pretraining set</th><th>Transfer result</th><th>Grade</th></tr>
+<tr><td>Poseidon (Herde et al., ETH, arXiv 2405.19101)</td><td>4 compressible Euler and 2 incompressible Navier–Stokes operators, 77,840 trajectories, 11 snapshots each, about 5.11 million pairs by all-to-all pairing</td><td>On the median of 15 downstream tasks, 20 fine tuning samples reach the error FNO needs 1024 samples for, about 50×. Per task efficiency gain up to 890.6× (NS-PwC), 552.5× (NS-BB), 502.9× (NS-SVS), 78.3× (Helmholtz), 62.1× (Wave-Gauss). At 128 samples the accuracy gain is "an entire order of magnitude" on average. On 13 of 15 tasks Poseidon-L needs an order of magnitude fewer samples than FNO. 9 of the 15 tasks involve physics absent from pretraining.</td><td><span class="grade g-a">A</span> <code>foundation.md:29-41</code></td></tr>
+<tr><td>Subramanian et al. (NeurIPS 2023, arXiv 2306.00258)</td><td>Three 2D steady systems: Poisson, advection–diffusion, Helmholtz; FNO throughout</td><td>Poisson: target error \(10^{-2}\) needs about 64 fine tuning examples with pretraining versus about 8,000 from scratch, about 100×. Advection–diffusion: similar \(10^3\) to \(10^4\) savings in few shot regimes. Across 64K to 256M parameters, fine tuned error drops monotonically with size and gains more from parameters than scratch training does.</td><td><span class="grade g-a">A</span> <code>foundation.md:97-102</code></td></tr>
+<tr><td>DPOT (Hao et al. with Anandkumar, arXiv 2403.03542)</td><td>12 datasets from FNO Navier–Stokes, PDEBench, PDEArena, CFDBench; more than 100k trajectories; up to 0.5B parameters</td><td>High resolution 2D turbulence: 16.7 to 13.5 percent, about 19 percent relative. 3D Navier–Stokes transfer: 41 to 22.6 percent, about 45 percent relative. Long Kolmogorov rollout: 82.2 to 33.5 percent. Claimed up to 52 percent reduction over baselines.</td><td><span class="grade g-b">B</span> <code>foundation.md:45-56</code></td></tr>
+<tr><td>Aurora (Microsoft, arXiv 2405.13063)</td><td>"Over a million hours" of ERA5, HRES, IFS ensembles, GFS, GEFS, CMIP6, MERRA-2, CAMS; 150k steps on 32 A100s</td><td>Air quality: matches or beats CAMS on 74 percent of targets, 89 percent at 3 days; pretraining beats scratch by 54 percent on average. High resolution weather at 0.1°: lower RMSE than IFS HRES on 92 percent of targets; pretrained beats scratch by 25 percent. Flexible encoder ingests different native resolutions.</td><td><span class="grade g-a">A</span> <code>foundation.md:129-138</code></td></tr>
+<tr><td>UPT (Alkin et al., NeurIPS 2024, arXiv 2402.12365)</td><td>ShapeNet-Car, 10K transient pipe flows, Lagrangian Taylor–Green</td><td>Not multi PDE family. The relevant result is resolution: trained with 2048 supernodes and 16K queries, "generalizes across a wide range of different number of input or output positions, with even slight performance increases when using more input points". 400× speedup over pisoFoam in latent rollout.</td><td><span class="grade g-a">A</span> <code>foundation.md:60-67</code></td></tr>
+</table></div>
+<p>The two cleanest numbers to quote are Poseidon's 20 versus 1024 samples and Subramanian's 64 versus 8,000 examples. They come from two groups with two architectures.</p>
+</section>
+
+<section id="against">
+<h2>Evidence against, or that complicates</h2>
+<ol class="steps">
+<li><strong>Multi task pretraining hurts individual tasks before fine tuning.</strong> MPP's authors write that "the multi-task training does hurt performance on individual tasks". Shallow water: MPP-AViT-B 0.00240 against a task specific 0.00047, five times worse, and worse at every model scale tested (<code>foundation.md:16-24</code>). Compressible Navier–Stokes at Mach 0.1 and 1.0 and diffusion–reaction improve.</li>
+<li><strong>Transfer is conditional on distribution shift.</strong> Subramanian et al.: under large out of distribution parameter shifts, zero and few shot performance is poor; Helmholtz "shows larger performance drops as we go OOD"; and the pretraining advantage plateaus once fine tuning data approaches the pretraining set size, about \(2^{15}\) examples (<code>:103-107</code>). Module 5's ERM argument is the reason: \(\mu\) samples leave \(\nu\) predictions free.</li>
+<li><strong>One multi physics model does not dominate another.</strong> On CFDBench zero shot, MPP-L 0.00650 beats DPOT-L 0.00749; DPOT's authors concede "room left for improvement" (<code>:56</code>).</li>
+<li><strong>The pretraining sets are narrow.</strong> MPP, DPOT, and Poseidon pretrain on fluid dynamics family PDEs plus a few elliptic problems. No paper in the survey trains one model across fluids, electromagnetism, solid mechanics, and quantum systems and beats specialists on all. The one paper spanning genuinely different physics through The Well (arXiv 2511.21861, Mamba backbone, 12 datasets) reaches state of the art on 6 of 12 domains, a 46 percent mean VRMSE reduction on average and, by implication, not the best on the other 6 (<code>:166</code>).</li>
+<li><strong>Rollout is a separate unsolved problem.</strong> DPOT's 33.5 percent after pretraining; arXiv 2509.02846 in 2025 to 2026 states that PDE foundation models "struggle with auto-regressive rollout performance, especially in out-of-distribution cases" (<code>:163</code>). Module 7.</li>
+<li><strong>In context operator learning has no baseline.</strong> ICON reaches under 6 percent error with one demo and about 2 percent with five, but reports no comparison with a fine tuned or scratch model, and its authors say a network trained on one ODE family "can hardly generalize... beyond" it (<code>:80-86</code>).</li>
+</ol>
+</section>
+
+<section id="verdict">
+<h2>Verdict</h2>
+<div class="callout"><p>The narrow claim, that pretraining on a family of related PDEs reduces downstream data needs by one to two orders of magnitude in the low data, near distribution regime, is supported by multiple independent results with reproducible numbers. The broad claim, one model across genuinely different areas of physics beating equal size specialists everywhere, has one partial result (6 of 12) and several documented counterexamples. Anandkumar's own statement in the earlier episode is the narrow one: a model cannot transfer to a regime with zero related data, but coupled physics fine tuning, such as heat plus stretching, needs far fewer samples than scratch training (01:14:20 to 01:15:48, <code>company-episode.md:82</code>). Weather is the one domain where the multi source, multi resolution model already beats the operational alternative on holdout data: GraphCast beats ECMWF HRES on 90 percent of 1,380 targets, GenCast beats ENS on 97.2 percent of 1,320 targets (<code>foundation.md:140-146</code>).</p></div>
+</section>
+
+<section id="lab">
+<h2>Lab: the experiment matrix, on systems you generated yourself</h2>
+<p><span class="grade g-lab">LAB</span> <strong>Not yet run.</strong> This is the capstone's core and is specified here so the capstone page can refer to it. Sources: Lab 01's Burgers generator (ν = 0.1, and a second viscosity 0.02 as a shifted regime) and a 1D advection–diffusion generator built the same way (\(u_t + c u_x = \nu u_{xx}\), exact in Fourier space, ten lines). Target: the die thermal operator of Lab 02, which is elliptic and 2D, so it is a genuine physics shift, or, for the first pass, Burgers at the unseen viscosity, which is a parameter shift.</p>
+<div class="table-wrap"><table>
+<tr><th>Arm</th><th>Training</th><th>What it isolates</th></tr>
+<tr><td>A</td><td>Scratch FNO on the target only, at each data fraction</td><td>the baseline curve</td></tr>
+<tr><td>B</td><td>Multi task FNO on sources plus target jointly, with an equation identifier channel</td><td>interference versus sharing</td></tr>
+<tr><td>C</td><td>Pretrain on sources, fine tune on the target fraction</td><td>the transfer claim</td></tr>
+<tr><td>D</td><td>C plus a normalized PDE residual penalty during fine tuning</td><td>Module 11's question</td></tr>
+</table></div>
+<p>Hold constant: parameter count, optimizer budget in steps, normalization, solver fidelity, evaluation grid. Fractions \(f \in \{0.01, 0.05, 0.10, 0.25, 1.0\}\) of 1000 target samples; at least 3 seeds per cell. Split by initial condition family and coefficient regime, not by random frames. The deliverable is the plot of error against \(f\) for the four arms with seed bands, plus a one page transfer map stating where C beat A and where it did not. A negative result with these controls is a result. Failure modes to look for, from the kit: aliasing mistaken for super resolution (Module 2's spectrum), target leakage, an equation token that lets the model memorize, residual losses that dominate, and single final time images instead of rollout and invariant errors.</p>
+<p>Expected cost on this machine: each FNO run in Lab 01 took about 5 minutes; 4 arms × 5 fractions × 3 seeds is 60 runs, about 5 hours, less with early stopping on small fractions. The thermal target at 64² costs more per run (Lab 02's time is on the Module 6 page).</p>
+</section>
+
+<section id="sources">
+<h2>Sources</h2>
+<ul class="src">
+<li><span class="grade g-a">A</span> Poseidon arXiv 2405.19101, Table 1 and efficiency gains: <code>research_notes/foundation.md:29-41</code>.</li>
+<li><span class="grade g-a">A</span> Subramanian et al. arXiv 2306.00258: <code>:97-107</code>.</li>
+<li><span class="grade g-a">A</span> MPP arXiv 2310.02994, Table 1: <code>:10-25</code>.</li>
+<li><span class="grade g-b">B</span> DPOT arXiv 2403.03542: <code>:45-56</code>. UPS 2403.07187: <code>:71-76</code>. ICON 2304.07993: <code>:80-86</code>. The Well 2412.00568: <code>:111-116</code>. arXiv 2511.21861 and 2509.02846: <code>:163-166</code>.</li>
+<li><span class="grade g-a">A</span> UPT arXiv 2402.12365: <code>:60-67</code>. Aurora 2405.13063: <code>:129-138</code>. GraphCast, GenCast, NeuralGCM: <code>:140-150</code>.</li>
+<li><span class="grade g-c">C</span> Company claims and the absence of a benchmark: <code>research_notes/company-episode.md:102-124</code>, <code>:146-156</code>.</li>
+<li>Project kit experiment matrix: <code>../05_physics_foundation_model_study_kit.html</code>.</li>
+</ul>
+</section>
+
+<section id="exit">
+<h2>Exit test</h2>
+<ol class="steps">
+<li>State the transfer hypothesis with all three controls, and name one published result for it and one against it with their numbers.</li>
+<li>Explain why MPP's shallow water result and Subramanian's Helmholtz result are two different failure modes.</li>
+<li>Design the arm that would distinguish "the equation token lets the model memorize" from "the model shares structure", using only the matrix above.</li>
+</ol>
+</section>
+
+<nav class="foot"><a href="09_scale.html">← Module 9: Scale</a><a href="11_physics_as_signal.html">Module 11: Physics as data engine and as reward →</a></nav>
+</div>
+</body>
+</html>

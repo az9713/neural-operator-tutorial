@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Neural operators for AI: course research report</title>
+  <style>
+    :root{--bg:#0f172a;--panel:#1e293b;--ink:#e2e8f0;--ink2:#cbd5e1;--muted:#94a3b8;--line:#334155;--orange:#fb923c;--teal:#2dd4bf;--red:#fca5a5;--green:#86efac}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;background:linear-gradient(130deg,#0f172a,#111c30);color:var(--ink);font:17px/1.62 Georgia,serif}
+    .wrap{max-width:1100px;margin:auto;padding:50px 25px}
+    a{color:var(--teal);text-underline-offset:3px}a:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
+    .eyebrow{font:700 12px Arial,sans-serif;letter-spacing:.11em;text-transform:uppercase;color:var(--orange);margin-top:10px}
+    h1{font:700 clamp(2.2rem,5vw,4.2rem)/.95 Arial,sans-serif;letter-spacing:-.05em;max-width:950px;margin:14px 0 18px}
+    .dek{font-size:1.2rem;color:var(--ink2);max-width:950px}
+    .meta,.fine{font:14px/1.55 Arial,sans-serif;color:var(--muted)}
+    nav{display:flex;gap:14px;overflow:auto;white-space:nowrap;border-block:1px solid var(--line);padding:13px 0;margin:28px 0}
+    nav a{font:700 12px Arial,sans-serif;text-transform:uppercase;letter-spacing:.06em}
+    section{scroll-margin-top:20px;margin:44px 0}
+    h2{font:700 clamp(1.5rem,3vw,2.1rem)/1.05 Arial,sans-serif;letter-spacing:-.04em;margin:0 0 15px}
+    h3{font:700 1.12rem/1.2 Arial,sans-serif;margin:26px 0 8px}
+    h4{font:700 1rem/1.2 Arial,sans-serif;margin:18px 0 6px;color:var(--ink2)}
+    p{margin:0 0 14px}
+    .lead{font-size:1.08rem}
+    .callout{background:var(--panel);border-left:5px solid var(--orange);padding:20px 22px;margin:18px 0;font-size:1.05rem}
+    .callout p:last-child{margin:0}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+    .card{background:var(--panel);border:1px solid var(--line);padding:18px}
+    .card h3{margin:0 0 8px}.card p{margin:0 0 8px;color:var(--ink2)}.card p:last-child{margin:0}
+    .table-wrap{overflow:auto;border:1px solid var(--line);margin:14px 0}
+    table{border-collapse:collapse;width:100%;min-width:720px;font-size:.92rem}
+    th,td{text-align:left;vertical-align:top;padding:11px 13px;border-bottom:1px solid var(--line)}
+    th{font:700 12px Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#b8c7d6;background:#18263a}
+    tr:last-child td{border-bottom:0}
+    .warn{background:#302228;border:1px solid #744651;color:#f2d5d7;padding:18px;margin:16px 0}
+    .ok{background:#1f2f27;border:1px solid #3f6b52;color:#d8f0df;padding:18px;margin:16px 0}
+    .code{font:14px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;background:#09111f;border:1px solid var(--line);padding:16px;white-space:pre-wrap;color:#d7e5ef;margin:14px 0}
+    ul,ol{padding-left:24px;margin:0 0 14px}li{margin:0 0 7px}
+    .tag{display:inline-block;font:700 11px Arial,sans-serif;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:3px;margin-right:6px;vertical-align:middle}
+    .t-ok{background:#1f3d2b;color:var(--green)}.t-part{background:#3d2f1f;color:var(--orange)}.t-no{background:#3d1f22;color:var(--red)}.t-unv{background:#2b3345;color:var(--muted)}
+    .module{background:var(--panel);border:1px solid var(--line);padding:18px 20px;margin:14px 0}
+    .module h3{margin:0 0 6px}.module .why{color:var(--muted);font:14px/1.5 Arial,sans-serif;margin-bottom:10px}
+    .steps{counter-reset:item;display:grid;gap:12px}
+    .step{display:grid;grid-template-columns:40px 1fr;gap:15px;padding:16px;background:var(--panel);border:1px solid var(--line)}
+    .n{font:700 1.5rem/1 Arial,sans-serif;color:var(--orange)}
+    .step h3{margin:0 0 6px}.step p{margin:0;color:var(--ink2)}
+    .qs li{margin-bottom:12px}
+    @media(max-width:720px){.wrap{padding:32px 18px}.grid{grid-template-columns:1fr}.step{grid-template-columns:30px 1fr}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+    @media print{body{background:#fff;color:#000}.wrap{max-width:none;padding:20px}.card,.callout,.step,.warn,.ok,.module{background:#fff;color:#000;border-color:#888}.card p,.step p,.dek,.meta,.fine{color:#222}a{color:#000}nav{display:none}}
+  </style>
+</head>
+<body><main class="wrap">
+  <div class="eyebrow">Research report · 5 September 2026 · research only, nothing implemented</div>
+  <h1>Neural operators for AI: what a course must teach, and what the evidence supports.</h1>
+  <p class="dek">Findings from the four local papers, the two reference papers the study kit cites, seven more theory and hybrid papers, 26 verified lineage papers, 23 foundation model, weather, and rollout papers, seven code bases, fifteen existing courses, books, and tutorials, and both Latent Space episodes with Anima Anandkumar. The report ends with a candidate course skeleton and the questions only you can answer.</p>
+  <p class="meta">Seed video: <a href="https://www.youtube.com/watch?v=KS_IpnX7n9I">Latent Space, Anima Anandkumar and Benedikt Jenik on Accelerated Understanding</a> (4 September 2026). Companion files: a video summary (not in this repository), <a href="05_physics_foundation_model_study_kit.html">project kit</a>, a theory study plan (not in this repository). Every arXiv identifier below was checked against its abstract page on 5 September 2026. Items that could not be reached are marked <span class="tag t-unv">unverified</span>.</p>
+  <nav aria-label="Report navigation"><a href="#summary">Summary</a><a href="#claims">Video claims vs evidence</a><a href="#episode">Earlier episode</a><a href="#core">Core papers</a><a href="#lineage">Lineage</a><a href="#foundation">Foundation models</a><a href="#software">Software</a><a href="#courses">Existing courses</a><a href="#skeleton">Course skeleton</a><a href="#questions">Questions</a><a href="#ledger">Verification ledger</a></nav>
+
+  <section id="summary"><h2>Ten findings that shape the course</h2>
+    <ol>
+      <li><strong>The video is not the neural operator lesson.</strong> The seed episode spends four minutes on neural operators (08:42 to 12:21) and points to the earlier episode. That earlier episode, <a href="https://www.youtube.com/watch?v=79mIutht1f4">"We have foundation models for language, not for physics"</a> (26 August 2026, 1h23m), holds the actual explanation: function spaces, resolution flexibility, FNO as "a transformer with the Fourier transform in place of attention", FourCastNet, plasma, CO2, and the PINN contrast. Its transcript is saved as <code>research_notes/earlier_episode_transcript.txt</code> and is summarized in <a href="#episode">section 3</a>.</li>
+      <li><strong>Discretization invariance has a three part formal definition, and most "resolution invariant" models fail one part.</strong> The JMLR paper (Definition 4, page 9) requires: accept any input point set, query any output point, and converge to one continuum operator as the mesh refines. Transformers and graph networks pass the first two and fail the third (page 2); Table 1 on page 5 compares neural networks, DeepONets, interpolation, and neural operators on the same properties. This is the single most important idea in the course and the one the video uses loosely as "context length equals resolution".</li>
+      <li><strong>FNO's headline results are reproducible on paper but come with three documented weaknesses.</strong> Parameter hunger at small budgets (JMLR Table 8: error 0.200 at 10³ parameters versus 0.075 for GNO), poor robustness on discontinuous problems (JMLR Table 9: advection error 0.094 under 10% input noise), and Gibbs-type failure near shocks (PDEBench: high band Fourier error rises two orders of magnitude as Burgers viscosity drops). A course that omits these produces students who over-trust the method.</li>
+      <li><strong>Multi PDE pretraining is real and quantified, but "multiple areas of physics" is not yet shown.</strong> Poseidon needs about 20 fine tuning samples where FNO needs 1024 on the median of 15 tasks. Subramanian et al. need about 64 samples with pretraining versus about 8000 from scratch for Poisson at 1e-2 error. DPOT, co-authored by Anandkumar, cuts error 19 to 52 percent. All three pretraining sets are dominated by fluid family PDEs. The one 2025 paper spanning hydrodynamic, radiative, elastic and astrophysical data reaches state of the art on 6 of 12 domains. MPP's authors state multi task training "does hurt performance on individual tasks". Details in <a href="#foundation">section 6</a>.</li>
+      <li><strong>Autoregressive rollout is a separate, partly solved problem.</strong> The video prefers "full rollout" to avoid error build up. The public record shows the mechanisms: MeshGraphNets uses training noise injection, PDEBench and Brandstetter et al. use the pushforward trick (up to 58x error reduction on Burgers), and DPOT still has 33.5 percent long rollout error after pretraining. PDEBench also shows FNO error grows monotonically past the trained time window.</li>
+      <li><strong>PINN failures are optimization failures, not capacity failures.</strong> Krishnapriyan et al. show a standard PINN reaches about 100 percent error on 1D convection once the speed passes about 10, and curriculum training cuts that 44x. This is why PINO and physics informed DeepONet exist. It is also why the video's "laws of physics as dense feedback" needs the qualifier that the feedback shapes an ill conditioned loss.</li>
+      <li><strong>The "physics as self improvement signal" idea has thin but real public precedent.</strong> A 2023 workshop paper reaches 1.07x and 1.02x the error of fully supervised FNO on Burgers and Darcy using only PDE residual pseudo labels. Two 2025 to 2026 papers add reward driven inference time scaling and physics informed fine tuning of PDE foundation models. None is at the scale the company claims.</li>
+      <li><strong>The company's claims are self reported.</strong> Accelerated Understanding launched 25 August 2026. The trillion parameter, five trillion context, 22 terabyte output, and "broad beats narrow" statements have no public benchmark. One trade headline says so directly: "No Benchmark Proof Yet". No funding or investors are disclosed. No Anandkumar group paper on semiconductor physics exists in the public record.</li>
+      <li><strong>No existing course covers the gap.</strong> ETH Zurich's "AI in the Sciences and Engineering" is the closest analogue and covers PINN, FNO, CNO, GNN and transformers with public notebooks. Nothing found teaches multi physics foundation models, resolution invariance tested in practice, aliasing, rollout metrics, physics based self improvement, or an FNO versus DeepONet versus CNO versus GNN comparison on shared benchmarks. Those seven gaps define the course's contribution.</li>
+      <li><strong>The three companion documents already partition the work.</strong> The theory plan owns the mathematics. The project kit owns the first experiment. The new course should own the middle: architecture, evaluation, transfer evidence, and applications, and should hand off to the other two at defined points.</li>
+    </ol>
+  </section>
+
+  <section id="claims"><h2>The video's claims, checked against the public record</h2>
+    <p class="lead">Each row pairs one statement from the seed episode with the best public evidence found. The verdict grades the evidence, not the speakers.</p>
+    <div class="table-wrap"><table><thead><tr><th>Claim in the video (time)</th><th>What the public record shows</th><th>Verdict</th></tr></thead><tbody>
+      <tr><td>Neural operators are the basis because they make the model resolution invariant (09:20 to 10:55).</td><td>JMLR Theorem 8 (page 54) proves discretization invariance for neural operators under stated hypotheses. JMLR Table 5 (page 42): FNO-3D error 0.0098 to 0.0106 across 64 to 256 grid while U-Net goes 0.0253 to 0.0344. The ReNO paper shows pointwise nonlinearities can still alias in practice.</td><td><span class="tag t-ok">supported</span> with the aliasing caveat</td></tr>
+      <tr><td>A same size model on multiple physics beats separate models given all the parameters (08:07 to 08:42).</td><td>Poseidon, DPOT, Subramanian et al. and Aurora show pretraining beats scratch by large margins in the low data regime. MPP shows per task harm before fine tuning. Sets are fluid dominated. No public paper spans truly disparate physics with a clean sweep.</td><td><span class="tag t-part">partly supported</span></td></tr>
+      <tr><td>Transformers cannot reach five trillion context; the physical world has more structure than all to all correlation (11:00 to 11:26).</td><td>FNO layer cost is O(n log n) (FNO page 6). JMLR Proposition 6 (page 27) shows attention is a special case of a neural operator layer with a data dependent kernel. But the public physics foundation models (MPP, Poseidon, DPOT, Aurora) are attention based with patching or Fourier attention, and Transolver++ reaches million point meshes on one GPU with linear attention.</td><td><span class="tag t-ok">supported</span> against vanilla quadratic attention only; efficient attention is a live alternative</td></tr>
+      <tr><td>Full rollout in time avoids autoregressive error build up (05:44 to 06:08).</td><td>FNO-3D maps initial steps to the full trajectory and is "more expressive and easier to train" than FNO-2D recurrence (FNO page 8), but it is fixed to one time interval. PDEBench shows monotonic error growth beyond the trained window for FNO. No public result shows full rollout at trillion context.</td><td><span class="tag t-part">plausible, unshown at scale</span></td></tr>
+      <tr><td>Simulators give unlimited data and a curriculum from easy to hard (16:35 to 17:16).</td><td>Curriculum in coefficient space cuts PINN error 44x (Krishnapriyan). Incremental FNO grows modes and resolution during training for 10% lower error at 30% less time. Poseidon pretrains on 77,840 simulated trajectories. This practice is standard.</td><td><span class="tag t-ok">supported</span></td></tr>
+      <tr><td>Physics laws give dense feedback for self improvement beyond the data quality (17:33 to 18:28).</td><td>PINO reaches 0.9% error on Kolmogorov flow where PINN reaches 18.7%. Self training with residual pseudo labels reaches within 2 to 7 percent of supervised accuracy on two small PDEs. Residuals are known to create ill conditioned losses. No public result shows this at foundation model scale.</td><td><span class="tag t-part">precedent exists, scale unshown</span></td></tr>
+      <tr><td>Trillion context training, five trillion context inference, 22 terabyte outputs, trillion parameter models (06:20 to 07:40, 13:06 to 13:16).</td><td>Company statements only. Trade press notes no benchmark. The arithmetic (1000³ grid times 1000 steps equals 10¹²) is correct.</td><td><span class="tag t-unv">unverified</span></td></tr>
+      <tr><td>Multiscale: start with cheap coarse solvers, fine tune with fine scale solvers; neural operators mix scales inside the model (19:06 to 20:10).</td><td>Multipole GNO builds the hierarchy into the kernel. Nested FNO for CO2 nests refinement levels for a reported 700,000x speed up. MG-TFNO adds multi grid domain decomposition with 150x compression. Aurora's encoder ingests several native resolutions.</td><td><span class="tag t-ok">supported</span></td></tr>
+      <tr><td>Semiconductor design and manufacturing are the first market (20:27 to 22:58).</td><td>No neural operator paper from the group on chip physics. Unrelated groups apply PINNs and operators to EUV lithography masks. The earlier episode mentions inverse lithography mask design as a demonstration (01:16:00).</td><td><span class="tag t-no">no public evidence</span></td></tr>
+    </tbody></table></div>
+  </section>
+
+  <section id="episode"><h2>What the earlier episode adds</h2>
+    <p class="lead">The 26 August episode is the primary source for "neural operators as discussed in the video". Timestamps refer to the cleaned transcript at <code>research_notes/earlier_episode_transcript.txt</code>.</p>
+    <div class="grid">
+      <article class="card"><h3>The mental model (00:16:12 to 00:19:07)</h3><p>Standard networks map fixed size vectors. Neural operators map functions to functions, so input and output can be resolved at any resolution. Zero shot super resolution is guided by adding PDE constraints as loss terms at the higher resolution, not as hard constraints.</p></article>
+      <article class="card"><h3>Why not PINNs (00:11:58 to 00:15:45)</h3><p>A PINN solves one PDE instance by optimization, and that landscape is often intractable for time dependent or turbulent problems. Neural operators train on many instances first and can still add physics at test time: "data driven and physics informed together".</p></article>
+      <article class="card"><h3>Why Fourier (00:19:19 to 00:25:53)</h3><p>The Fourier domain captures non local effects at quasi linear cost. The architecture keeps nonlinearity, residual connections and channel lifting around the Fourier layers so the model finds a latent space, not just the raw Fourier basis. She describes it as a transformer with the Fourier transform where attention would be.</p></article>
+      <article class="card"><h3>The scale argument (01:09:14 to 01:11:47)</h3><p>Industrial grids start near 1000 points per dimension. With time that gives hundreds of billions to a trillion context. Video models run at lower resolution and optimize for looking good, not fidelity.</p></article>
+      <article class="card"><h3>FourCastNet facts (00:28:25, 00:35:36 to 00:38:30, 01:00:03 to 01:02:21)</h3><p>About 50,000 training samples at 0.25 degree. Trained to predict six hours ahead with a little multi step fine tuning, yet stable for months. Flat projections destabilize long rollouts; FourCastNet 3 uses spherical harmonics. She concedes residual instability near the poles.</p></article>
+      <article class="card"><h3>Plasma, CO2, geometry, inverse design (00:43:44, 01:04:08 to 01:06:59, 01:10:36 to 01:17:15)</h3><p>Tokamak MHD digital twin a million times faster from a few thousand samples, with the UK Atomic Energy Authority. CO2 plume migration over decades. Cars and aircraft mapped into a shared latent geometry. Inverse lithography masks and quantum dot gates as design examples.</p></article>
+    </div>
+    <div class="warn"><strong>Correction to the study kit's framing.</strong> The catheter design example does not appear in the earlier episode transcript. It comes from the seed episode's secondary coverage and from the 2023 paper (arXiv 2304.14554). The open problem she names directly (00:41:14 to 00:42:03): enforcing physical constraints through very long rollouts without washing out fine detail or keeping unphysical detail.</div>
+  </section>
+
+  <section id="core"><h2>The core papers, distilled for teaching</h2>
+    <p class="lead">All four local PDFs were read in full. The DeepONet and PINN papers were read from arXiv. Numbers are quoted from the papers with page references.</p>
+
+    <h3>Fourier Neural Operator (Li et al., ICLR 2021, arXiv 2010.08895)</h3>
+    <p>The layer is v ↦ σ(Wv + F⁻¹(R · Fv) + b), with R a learned complex tensor on the lowest k_max modes per axis (Definition 3, page 5). The convolution theorem is the whole trick: a translation invariant kernel is diagonal in Fourier space, so the O(n²) integral becomes O(n log n). Four Fourier layers, k_max 12 in 2D, width 32, ReLU, Adam, 500 epochs (page 6). The local term W is what handles non periodic boundaries (page 9).</p>
+    <div class="table-wrap"><table><thead><tr><th>Experiment</th><th>Setup</th><th>Result</th><th>Where</th></tr></thead><tbody>
+      <tr><td>Burgers 1D, ν=0.1</td><td>1000 train, 200 test, grids 256 to 8192</td><td>FNO 0.0149 to 0.0139 relative L2, flat across grids; FCN grows 0.0958 to 0.3238</td><td>Table 3, page 7</td></tr>
+      <tr><td>Darcy 2D</td><td>grids 85 to 421</td><td>FNO 0.0108 to 0.0098; about one order below GNO, LNO, MGNO</td><td>Table 4, page 8</td></tr>
+      <tr><td>Navier Stokes 64×64</td><td>ν=1e-3, T=50, N=1000</td><td>FNO-3D 0.0086; U-Net 0.0245</td><td>Table 1, page 8</td></tr>
+      <tr><td>Navier Stokes, scarce data</td><td>ν=1e-4 or 1e-5, N=1000</td><td>every method above 15% error; FNO-2D lowest</td><td>Table 1, page 8</td></tr>
+      <tr><td>Zero shot super resolution</td><td>train 64×64×20, test 256×256×80</td><td>only FNO among the baselines can do it, in space and time</td><td>Section 5.4, page 9</td></tr>
+      <tr><td>Bayesian inverse problem</td><td>30,000 forward evaluations, 256×256</td><td>0.005 s per evaluation versus 2.2 s; 2.5 minutes versus over 18 hours</td><td>Section 5.5, page 9</td></tr>
+    </tbody></table></div>
+    <p><strong>Teachable moments.</strong> Truncating modes does not band limit the output: truncating a Navier Stokes solution at 20 modes gives about 2% error, yet FNO with 12 modes reaches at most 1%, because the nonlinearities regenerate high frequencies (Appendix A.2, page 13). Discretization invariance is a property of the representation: R lives in Fourier space and the basis functions exist everywhere (page 6). The stated limitation is data cost: ν=1e-4 needed 10,000 simulator solves (page 9).</p>
+
+    <h3>Neural Operator: learning maps between function spaces (Kovachki et al., JMLR 2023)</h3>
+    <p>The general layer sums a local linear operator, a non local integral kernel operator, and a bias function, then applies a pointwise nonlinearity (Equation 6, page 10). Four ways to compute the O(J²) kernel cheaply: Nyström and truncation in graph form (GNO), rank r factorization (LNO, O(J)), a fast multipole hierarchy (MGNO, O(J)), and the Fourier convolution (FNO, O(J log J)) (Section 4, pages 12 to 24). Proposition 5 (page 25) shows DeepONet is a neural operator with a pointwise first kernel, which is why it is not discretization invariant. Proposition 6 (page 27) shows transformer attention is a neural operator layer with a data dependent kernel.</p>
+    <div class="table-wrap"><table><thead><tr><th>Result unique to the JMLR version</th><th>Numbers</th><th>Where</th></tr></thead><tbody>
+      <tr><td>Resolution study on Navier Stokes</td><td>FNO-3D 0.0098, 0.0101, 0.0106 at 64, 128, 256; U-Net 0.0253, 0.0289, 0.0344</td><td>Table 5, page 42</td></tr>
+      <tr><td>Refinability: error versus parameter budget on Darcy</td><td>at 10³ parameters GNO 0.075, LNO 0.080, MGNO 0.070, FNO 0.200; at 10⁶ FNO 0.015 is best</td><td>Table 8, page 46</td></tr>
+      <tr><td>Robustness to 10% input noise</td><td>Darcy 0.011 to 0.012; Navier Stokes 0.024 to 0.039; advection 0.002 to 0.094</td><td>Table 9, page 46 to 48</td></tr>
+      <tr><td>Poisson Green's function sanity check</td><td>relative error 10⁻⁷ with a zero hidden layer operator; learned kernel matches the analytic Green's function</td><td>Section 7.1, pages 36 to 37</td></tr>
+      <tr><td>Full O(J²) integration versus FNO</td><td>the full method still beats FNO by about 40 percent at higher cost</td><td>page 58</td></tr>
+    </tbody></table></div>
+    <p><strong>Theory to state exactly.</strong> Theorem 8 (page 54): discretization invariance for neural operators on Banach spaces continuously embedded in C(D̄) with continuous activations. Theorems 11 to 14 (pages 56 to 57): universal approximation for continuous operators between Lebesgue, Sobolev, and continuous function spaces (Assumptions 9 and 10, page 55), in worst case over compact sets and in Bochner norm. The authors state twice that the proofs reduce to linear approximation and do not explain the empirical benefit of nonlinear approximation or depth (pages 52, 58). The four sources of error (pages 50 to 51): approximation, discretization, finite sample, optimization. The theorems control the first two only.</p>
+
+    <h3>DeepONet (Lu, Jin, Karniadakis, arXiv 1910.03193; Nature Machine Intelligence 2021)</h3>
+    <p>A branch net reads the input function at m fixed sensors and a trunk net reads the query location; the output is their dot product plus a bias (Equation 2). The design implements the Chen and Chen 1995 operator approximation theorem. Reported rates: below about 10⁴ training samples the error falls exponentially, above that the generalization error falls as x⁻¹ (page 12). The journal version adds two authors; its body is paywalled and was not read. Lanthaler, Mishra and Karniadakis (arXiv 2102.09618) split total error into encoding, approximation, and reconstruction (Theorem 3.3), bound reconstruction error below by the tail of the output covariance spectrum (Theorems 3.6 and 3.8), and prove algebraic rather than exponential network growth for four concrete PDE operators.</p>
+
+    <h3>Physics informed neural networks (Raissi, Perdikaris, Karniadakis, JCP 2019; arXiv 1711.10561 and 1711.10566)</h3>
+    <p>One network represents one solution u(t,x); the PDE residual is computed by automatic differentiation and added to the loss at collocation points. Burgers with 100 data points and 10,000 collocation points reaches 6.7×10⁻⁴ relative L2 (Part I). Part II learns unknown coefficients; Burgers viscosity error is 0.469% noise free and 6.391% at 10% noise. The authors state PINNs are not replacements for classical solvers and that collocation cost grows exponentially with dimension. Krishnapriyan et al. (arXiv 2109.01050) show the failure at higher coefficients is an optimization problem with condition number scaling as (βN)² for convection and (νN²)² for diffusion, and that curriculum or time marching training recovers 39x to 44x.</p>
+
+    <h3>MeshGraphNets (Pfaff et al., ICLR 2021, arXiv 2010.03409)</h3>
+    <p>Encode, process, decode on a graph built from the mesh, with a second set of world space edges for contact (radius r_W). Edges carry relative displacements, which gives equivariance. The decoder predicts a derivative, integrated by forward Euler. Fifteen message passing steps, history of zero or one step, noise injection during training for stable rollouts (pages 3 to 5, 14 to 15). The model learns its own sizing field for adaptive remeshing (Section 3.2).</p>
+    <div class="table-wrap"><table><thead><tr><th>Dataset</th><th>Solver</th><th>Nodes</th><th>Rollout RMSE (×10⁻³)</th><th>GPU speed up</th></tr></thead><tbody>
+      <tr><td>FlagSimple (cloth)</td><td>ArcSim</td><td>1579</td><td>139.0 all, 92.6 at 50 steps</td><td>214.7x</td></tr>
+      <tr><td>DeformingPlate</td><td>COMSOL</td><td>1271</td><td>15.1</td><td>89.0x</td></tr>
+      <tr><td>CylinderFlow</td><td>COMSOL</td><td>1885</td><td>40.88</td><td>35.3x</td></tr>
+      <tr><td>Airfoil</td><td>SU2</td><td>5233</td><td>11529</td><td>289.1x</td></tr>
+    </tbody></table></div>
+    <p><strong>Teachable moments.</strong> Removing world edges raises rollout error 51% on FlagDynamic and 92% on SphereDynamic (page 8). More history causes overfitting, the opposite of the particle based GNS finding (page 9). The model trained on flags runs on a 20,000 node windsock, ten times larger than training (page 6). The Airfoil mesh spans edge lengths from 2×10⁻⁴ m to 3.5 m; a 128×128 U-Net undersamples the wake with four times more cells on a sixteen times smaller region (page 13). Both the paper and PDEBench say hardware fair speed up comparisons are hard.</p>
+
+    <h3>PDEBench (Takamoto et al., NeurIPS 2022, arXiv 2210.07182)</h3>
+    <p>Eleven PDEs, 35 datasets, three baselines: U-Net, FNO, PINN via DeepXDE. Metrics beyond RMSE: normalized RMSE, max error, conserved quantity RMSE, boundary RMSE, and Fourier band RMSE with bands 0 to 4, 5 to 12, and 13 up (Appendix B, page 17). Data is HDF5 on DaRUS under CC BY, 4 to 100 GB per file, DOI 10.18419/darus-2986.</p>
+    <div class="table-wrap"><table><thead><tr><th>Finding</th><th>Numbers</th><th>Where</th></tr></thead><tbody>
+      <tr><td>FNO is best on most metrics</td><td>diffusion sorption RMSE: U-Net 5.8×10⁻², FNO 5.9×10⁻⁴, PINN 9.9×10⁻²</td><td>Table 5, page 28</td></tr>
+      <tr><td>FNO fails near shocks</td><td>high band Fourier error rises two orders of magnitude as Burgers viscosity drops; at ν=0.001 FNO 9.6×10⁻³, U-Net 1.3×10⁻¹, PINN 2.2×10⁻¹</td><td>Figure 3 page 8, Table 7 page 30</td></tr>
+      <tr><td>U-Net beats FNO on Darcy at every force term</td><td>at β=1.0 U-Net 6.4×10⁻³ versus FNO 1.2×10⁻²</td><td>Table 8, page 31</td></tr>
+      <tr><td>PINN cannot be applied to Darcy; not run on 2D and 3D compressible flow</td><td>capability gap, not a score</td><td>footnote 6, page 8</td></tr>
+      <tr><td>Turbulence erases FNO's lead</td><td>2D M=0.1 turbulence: U-Net 3.3×10⁻¹, FNO 2.8×10⁻¹</td><td>Tables 11 to 13</td></tr>
+      <tr><td>No temporal extrapolation</td><td>FNO trained on half the steps: error grows monotonically past the window</td><td>Figure 5c, page 9</td></tr>
+      <tr><td>Speed and the CFL condition</td><td>2D CFD at 512²: solver 582.61 s, inference 0.14 s; ML cost is flat in viscosity, solver cost grows as Δx²/η</td><td>page 10, Appendix G</td></tr>
+      <tr><td>Ground truth has its own error</td><td>a 128×128 solver's own error 1.8×10⁻¹ exceeds FNO's 8.1×10⁻³ against the 512×512 reference</td><td>Appendix H, page 23</td></tr>
+    </tbody></table></div>
+    <div class="callout"><p><strong>The one sentence a course should quote.</strong> "The standard error measure in ML, the RMSE on test data, is not a good proxy for evaluating ML models, in particular in turbulent and non-smooth regimes" (PDEBench page 3). Also: "present ML models cannot properly capture the dynamic behavior of the PDEs, and it is a challenging task to provide reliable predictions beyond the time experienced during training" (page 9).</p></div>
+
+    <h3>The hybrids and the alias question</h3>
+    <ul>
+      <li><strong>PINO</strong> (arXiv 2111.03794): data loss on a coarse grid plus PDE loss on a fine grid, derivatives taken exactly in Fourier space. Kolmogorov flow: PINN 18.7% error in 4577 s, PINO 0.9% in 536 s. Darcy with 11×11 data and 61×61 constraint: 1.56% versus 9.46% data only. Burgers with no data at all: 1.50%.</li>
+      <li><strong>Physics informed DeepONet</strong> (arXiv 2103.10974): trains a DeepONet family from initial and boundary data alone. Loss weight λ swept by hand over six values for Burgers; the authors pose "what are appropriate weights" as open.</li>
+      <li><strong>Representation equivalent neural operators</strong> (arXiv 2305.19913): a formal alias free criterion. FNO is not alias free in practice because pointwise nonlinearities create frequencies outside the band. CNO is built alias free by design. DeepONet is alias free only with uniform sensors.</li>
+      <li><strong>Operator learning survey</strong> (Kovachki, Lanthaler, Stuart, arXiv 2402.15715): two paradigms, encoder decoder nets and neural operator layers; universality settled, quantitative complexity open outside linear and holomorphic operators; no optimization theory.</li>
+    </ul>
+  </section>
+
+  <section id="lineage"><h2>The lineage after FNO: 26 verified papers</h2>
+    <p class="lead">Every arXiv identifier in this table was fetched. The table groups by what problem each paper solves, which is how a course should present it.</p>
+    <div class="table-wrap"><table><thead><tr><th>Problem</th><th>Paper (year, arXiv)</th><th>Key idea</th><th>Headline number</th></tr></thead><tbody>
+      <tr><td rowspan="4">Compute the O(J²) kernel cheaply</td><td>GNO (2020, 2003.03485)</td><td>Nyström and truncation on a graph</td><td>architectural</td></tr>
+      <tr><td>Multipole GNO (2020, 2006.09535)</td><td>fast multipole hierarchy, linear time</td><td>architectural</td></tr>
+      <tr><td>Wavelet NO (2022, 2205.02191)</td><td>wavelet kernel for localization</td><td>none in abstract</td></tr>
+      <tr><td>Laplace NO (2023, 2303.10528)</td><td>Laplace transform, pole residue form for transients</td><td>one Laplace layer beats four Fourier layers on six test problems</td></tr>
+      <tr><td rowspan="3">Make FNO deep or cheap</td><td>U-NO (2022, 2204.11127)</td><td>U-Net hierarchy of operator layers</td><td>26% Darcy, 44% Navier Stokes improvement</td></tr>
+      <tr><td>Incremental FNO (2022, 2211.15188)</td><td>grow modes and resolution during training</td><td>10% lower error, 20% fewer modes, 30% faster</td></tr>
+      <tr><td>MG-TFNO (2023, 2310.00120)</td><td>tensor factorized weights plus multi grid decomposition</td><td>under half the error at 150x compression</td></tr>
+      <tr><td rowspan="3">Fix FNO's known flaws</td><td>Localized kernels (ICML 2024, 2402.16845)</td><td>scaled CNN stencils as differential operators</td><td>34 to 72% lower error</td></tr>
+      <tr><td>CNO (2023, 2302.01178)</td><td>band limited CNN that is a true operator</td><td>alias free by construction</td></tr>
+      <tr><td>Spherical FNO (2023, 2306.03838)</td><td>spherical harmonic transform</td><td>stable one year rollouts, 1460 steps</td></tr>
+      <tr><td rowspan="3">Irregular geometry</td><td>GINO (2023, 2309.00583)</td><td>SDF and point cloud, GNO in and out, FNO core</td><td>26,000x speed up on car aerodynamics; one quarter the error</td></tr>
+      <tr><td>Transolver (ICML 2024, 2402.02366)</td><td>physics attention over learned slices, linear cost</td><td>22% gain on six benchmarks</td></tr>
+      <tr><td>Transolver++ (2025, 2502.02414)</td><td>million point meshes on one GPU</td><td>13% gain, over 20% on industrial cases</td></tr>
+      <tr><td rowspan="3">Attention as an operator</td><td>Galerkin Transformer (NeurIPS 2021, 2105.14995)</td><td>linear attention as Petrov Galerkin projection</td><td>architectural</td></tr>
+      <tr><td>OFormer (2022, 2205.13671)</td><td>cross attention decoder, arbitrary query points</td><td>competitive</td></tr>
+      <tr><td>GNOT (2023, 2302.14376)</td><td>heterogeneous attention, geometric gating</td><td>architectural</td></tr>
+      <tr><td rowspan="2">Pretraining</td><td>CoDA-NO (2024, 2403.12553)</td><td>tokenize along the channel axis</td><td>over 36% gain with limited data</td></tr>
+      <tr><td>DPOT (2024, 2403.03542)</td><td>Fourier attention, denoising autoregressive pretraining, 0.5B parameters, 100k trajectories</td><td>up to 52% error reduction</td></tr>
+      <tr><td rowspan="7">Applications from the group</td><td>FourCastNet (2022, 2202.11214)</td><td>adaptive FNO layers, 0.25 degree global weather</td><td>week forecast under 2 s</td></tr>
+      <tr><td>FourCastNet 3 (2025, 2507.12144)</td><td>geometric probabilistic ensembles</td><td>60 day forecast under 4 minutes on one GPU, 8 to 60x faster</td></tr>
+      <tr><td>Plasma FNO (2023, 2302.06542; Nuclear Fusion 2024, 2311.05967)</td><td>MHD surrogate on JOREK and MAST camera data</td><td>six orders of magnitude faster at about 10⁻⁵ NMSE</td></tr>
+      <tr><td>Nested FNO for CO2 (2022, 2210.17051)</td><td>nested refinement levels</td><td>near 700,000x speed up</td></tr>
+      <tr><td>Catheter design (2023, 2304.14554)</td><td>FNO surrogate in a geometry search</td><td>1 to 2 orders less bacterial contamination</td></tr>
+      <tr><td>Seismic inversion (2021, 2108.05421)</td><td>differentiate through the operator for full waveform inversion</td><td>near one order faster</td></tr>
+      <tr><td>Survey (Nature Reviews Physics 2024, 2309.15325)</td><td>discretization convergence, 4 to 5 orders speed up</td><td>framing document</td></tr>
+    </tbody></table></div>
+    <p class="fine">Not found: any Anandkumar group paper on semiconductor or chip physics; any closed loop tokamak control paper (the plasma papers forecast evolution, a prerequisite for control). The catheter paper's journal venue and several GitHub URLs came from search, not direct fetch; see the ledger.</p>
+  </section>
+
+  <section id="foundation"><h2>Physics foundation models: the transfer evidence</h2>
+    <p class="lead">This section tests the video's central claim with numbers from the primary papers.</p>
+    <div class="table-wrap"><table><thead><tr><th>Model (arXiv)</th><th>Pretraining set</th><th>Transfer evidence</th><th>Admitted negatives</th></tr></thead><tbody>
+      <tr><td>MPP, Polymathic (2310.02994)</td><td>PDEBench 2D fluids plus PDEArena; Axial ViT, fixed grids</td><td>beats task specific baseline on compressible flow: 0.0172 versus 0.0261 at Mach 0.1</td><td>shallow water worse at every scale (0.00240 versus 0.00047); "multi-task training does hurt performance on individual tasks"</td></tr>
+      <tr><td>Poseidon, ETH (2405.19101)</td><td>4 Euler and 2 Navier Stokes operators, 77,840 trajectories</td><td>20 samples reach FNO's 1024 sample error on the median of 15 tasks; efficiency gains up to 890x; order of magnitude fewer samples on 13 of 15</td><td>CNO wins marginally on one time independent task; elliptic PDEs weaker; "a very small set of PDEs"</td></tr>
+      <tr><td>DPOT, with Anandkumar (2403.03542)</td><td>12 datasets, over 100k trajectories, up to 0.5B parameters</td><td>2D turbulence 16.7% to 13.5%; 3D Navier Stokes 41% to 22.6%; Kolmogorov long rollout 82.2% to 33.5%</td><td>MPP-L beats DPOT-L on CFDBench zero shot</td></tr>
+      <tr><td>Subramanian et al., NeurIPS 2023 (2306.00258)</td><td>Poisson, advection diffusion, Helmholtz; FNO throughout</td><td>Poisson at 1e-2 error: about 64 examples with pretraining versus about 8000 from scratch; gains grow with model size over a 44,000x parameter range</td><td>poor zero and few shot under large parameter shift; Helmholtz "larger performance drops" out of distribution; advantage plateaus near pretraining set size</td></tr>
+      <tr><td>UPT, NeurIPS 2024 (2402.12365)</td><td>ShapeNet car, 10k OpenFOAM pipe flows, SPH vortex</td><td>generalizes across input and output point counts; 400x latent rollout speed up versus pisoFoam</td><td>rollout error accumulates; no large Lagrangian datasets</td></tr>
+      <tr><td>ICON, PNAS 2023 (2304.07993)</td><td>19 problem types, in context demos</td><td>under 6% error with one demo, about 2% with five</td><td>no baseline comparison; cannot generalize beyond a single trained family</td></tr>
+      <tr><td>Across physics domains, AAAI 2026 workshop (2511.21861)</td><td>12 datasets from The Well: hydrodynamic, radiative, elastic, astrophysical</td><td>state of the art on 6 of 12 domains, 46% mean VRMSE reduction</td><td>not state of the art on the other 6</td></tr>
+      <tr><td>Aurora, Microsoft (2405.13063)</td><td>over a million hours of weather data from eight sources at several resolutions</td><td>pretraining beats scratch by 25% (0.1 degree weather) to 54% (air quality); beats IFS HRES on 92% of targets</td><td>loses at shortest lead times; deterministic; needs external data assimilation</td></tr>
+    </tbody></table></div>
+    <div class="ok"><strong>Verdict for the course.</strong> Teach the narrow claim as established: pretraining on a family of related PDEs cuts downstream data needs by one to two orders of magnitude in the low data regime, across four independent groups. Teach the broad claim as open: no public model spans disparate physics with uniform gains, multi task interference is documented, and the advantage fades with distribution shift and with abundant downstream data. Weather is the one domain where multi source, multi resolution foundation models already beat the best classical system on operational data: GraphCast beats ECMWF HRES on 90% of 1380 targets, GenCast beats ENS on 97.2% of 1320 targets.</div>
+    <h3>Rollout stability and physics as signal</h3>
+    <ul>
+      <li><strong>Pushforward trick</strong> (Brandstetter, Worrall, Welling, ICLR 2022, arXiv 2202.03376): unroll two steps, backpropagate only the second. FNO with pushforward and temporal bundling: error 0.51 versus 29.98 unrolled, about 58x. Plain Gaussian noise "performs worse than no stabilization" in that paper, while MeshGraphNets relies on tuned noise. Both are worth one lab.</li>
+      <li><strong>Self improvement</strong> (Majumdar et al., NeurIPS 2023 workshop, arXiv 2311.13885): residual only pseudo labeling on FNO reaches 1.07x and 1.02x the supervised error on Burgers and Darcy.</li>
+      <li><strong>Reward driven inference time scaling</strong> for PDE foundation models (arXiv 2509.02846) and <strong>physics informed fine tuning</strong> of PDE foundation models (ICLR 2026 workshop, arXiv 2603.15431): both state that existing models "struggle with auto-regressive rollout performance, especially in out-of-distribution cases". Numbers not extracted; abstracts only.</li>
+      <li><strong>Datasets for the next experiments:</strong> The Well (NeurIPS 2024, arXiv 2412.00568; 16 domains, 15 TB), PDEArena (arXiv 2209.15616), PDEBench, and APEBench.</li>
+    </ul>
+  </section>
+
+  <section id="software"><h2>Software and data</h2>
+    <p class="lead">All seven code bases were shallow cloned and read on 5 September 2026. Last commit dates come from the clones. Star counts come from the GitHub pages on that date.</p>
+    <div class="table-wrap"><table><thead><tr><th>Code base</th><th>Status on 5 Sep 2026</th><th>What it holds</th><th>Course use</th></tr></thead><tbody>
+      <tr><td><a href="https://github.com/neuraloperator/neuraloperator">neuraloperator</a></td><td>Last commit 2026-08-06; 3.9k stars; MIT; PyTorch ecosystem member</td><td>Models: FNO, TFNO, SFNO (needs torch_harmonics), LocalNO, UNO, UQNO, FNOGNO, GINO, CODANO, RNO, OTNO. Losses: Lp, H1, Hdiv, Burgers and Poisson equation losses, SoftAdapt and Relobralo weighting. Trainer plus an incremental FNO trainer. Bundled data: Darcy 16 and 32, mini Burgers, mini car CFD. Loader for The Well.</td><td>Day one. <code>examples/models/plot_FNO_darcy.py</code> is the Module 2 lab; <code>plot_incremental_FNO_darcy.py</code> serves Module 11; <code>plot_OTNO_car_cfd.py</code> is the bridge to geometry in Module 6. The README links a 2025 practical guide, arXiv 2512.01421.</td></tr>
+      <tr><td><a href="https://github.com/pdebench/PDEBench">PDEBench</a></td><td>Last commit 2026-03-30; 1.2k stars; MIT; verified on Python 3.12, PyTorch 2.11, CUDA 13 for the core paths</td><td>Data generation for all eleven PDEs, three baselines (FNO, U-Net, PINN via DeepXDE), forward and inverse trainers, metrics script. Download sizes: diffusion sorption 4 GB, Darcy 6.2 GB, shallow water 6.2 GB, 2D reaction diffusion 13 GB, advection 47 GB, Burgers 93 GB, 2D CFD 551 GB, incompressible NS 2.3 TB.</td><td>Module 8 metrics and Module 10 data. Use the small sets. A second FNO implementation to read against neuraloperator's. A documented Hydra path bug in <code>model/fno/utils.py</code> has a workaround in the README.</td></tr>
+      <tr><td><a href="https://github.com/FEniCS/dolfinx">FEniCSx / DOLFINx</a></td><td>Last commit 2026-09-03; 1.2k stars; LGPL-3.0</td><td>Finite element platform. Windows: Docker or WSL2 with apt; native conda is beta and lacks PETSc. Dokken's tutorial covers Poisson, heat, elasticity, Navier Stokes, Helmholtz.</td><td>Ground truth solver for a custom dataset in Module 10. The export step from solver output to training pairs is not in the tutorial; it is an exercise to design.</td></tr>
+      <tr><td><a href="https://github.com/google/jax-cfd">JAX-CFD</a></td><td>Last commit 2026-07-08 (type hints only); 963 stars; Apache-2.0; README first line: "no longer maintained", points to JAX-Fluids, PhiFlow, Exponax</td><td>Finite volume and pseudospectral 2D solvers, periodic only, six notebooks.</td><td>Reference only, as the study kit says. Exponax is also the backend of APEBench, so it is the natural successor for a course.</td></tr>
+      <tr><td><a href="https://github.com/google-deepmind/deepmind-research/tree/master/meshgraphnets">MeshGraphNets, DeepMind release</a></td><td>Monorepo last commit 2023-05-26 on an unrelated project; folder date unverified; Apache-2.0</td><td>TensorFlow 1 code (<code>tensorflow.compat.v1</code>, Sonnet under 2). Pipelines for cylinder flow and flag only; ten datasets downloadable. Community PyTorch ports found by search: echowve (267 stars, updated December 2025), wwMark, medav; not vetted.</td><td>Read the architecture and loss here; run the PyTorch path in PhysicsNeMo for Module 6.</td></tr>
+      <tr><td><a href="https://github.com/NVIDIA/physicsnemo">NVIDIA PhysicsNeMo</a></td><td>Last commit 2026-09-03; 3.2k stars; Apache-2.0; v2.0 refactor targeted March 2026, import paths moving</td><td>Model zoo: FNO, DPOT, MeshGraphNet, Transolver, GeoTransolver, DoMINO, FIGConvNet, AFNO, GraphCast, Pangu, FengWu, DLWP, diffusion models. PINNs now in <code>physicsnemo.sym</code>. 62 example folders including <code>cfd/darcy_fno</code>, <code>cfd/ldc_pinns</code>, <code>cfd/mhd_pino</code>, <code>structural_mechanics/deforming_plate</code>, <code>weather/graphcast</code>. SFNO not in the model table.</td><td>Scale up path for Modules 6, 9, 12. Pin a version before building material on it. Its docs have no course branded material.</td></tr>
+      <tr><td><a href="https://github.com/maziarraissi/PINNs">PINNs, original</a></td><td>Last commit 2026-02-11; 6.1k stars; MIT; README: "no longer under active maintenance", points to pinns-torch, pinns-jax, pinns-tf2</td><td>TensorFlow 1 graph mode (<code>tf.Session</code>, <code>tf.placeholder</code>). Navier Stokes, Schrödinger, KdV, Allen Cahn, Burgers.</td><td>Historical reading for Module 4. Run PINNs in DeepXDE or PhysicsNeMo instead.</td></tr>
+    </tbody></table></div>
+    <h3>Also checked, README only</h3>
+    <div class="table-wrap"><table><thead><tr><th>Repo</th><th>Facts</th></tr></thead><tbody>
+      <tr><td>DeepXDE</td><td>PINN and DeepONet library; TensorFlow, PyTorch, JAX, Paddle backends; LGPL-2.1; 4.4k stars; active.</td></tr>
+      <tr><td>The Well (Polymathic)</td><td>16 datasets, 15 TB, 6.9 GB to 5.1 TB each; BSD-3; 4.4k stars; loader inside neuraloperator.</td></tr>
+      <tr><td>Multiple Physics Pretraining</td><td>AViT sizes Ti to L; 2D fluids; MIT; 218 stars; weights on Google Drive.</td></tr>
+      <tr><td>Poseidon (camlab-ethz)</td><td>Tiny, Base, Large; model class ScOT; 20 plus datasets on Hugging Face; 196 stars.</td></tr>
+      <tr><td>PDEArena</td><td>Navier Stokes, shallow water, 3D Maxwell; Clifford and FNO layers; MIT; 311 stars.</td></tr>
+      <tr><td>APEBench (tum-pbs)</td><td>46 plus PDEs, JAX, built on Exponax, PDEquinox, Trainax; MIT; NeurIPS 2024.</td></tr>
+    </tbody></table></div>
+    <p class="fine">Verified against the study kit's software table: JAX-CFD and the original PINNs repository both carry explicit unmaintained notices in their READMEs. PhysicsNeMo Sym is being archived into the main package. The PhysicsNeMo MeshGraphNet example the kit implies was confirmed as <code>structural_mechanics/deforming_plate</code> and <code>healthcare/bloodflow_1d_mgn</code>.</p>
+  </section>
+
+  <section id="courses"><h2>Existing courses, and the seven gaps</h2>
+    <div class="table-wrap"><table><thead><tr><th>Resource</th><th>Covers</th><th>Lacks</th></tr></thead><tbody>
+      <tr><td><a href="https://camlab-ethz.github.io/ai4s-course/">ETH Zurich, AI in the Sciences and Engineering</a> (Mishra, Moseley; notebooks at camlab-ethz/AI_Science_Engineering; YouTube recordings)</td><td>PINN forward and inverse, FNO, CNO, GNN, vision transformers for PDEs, autodiff, JAX, diffusion; 2024 additions on time dependent CNO and transfer learning</td><td>DeepONet by name; foundation models beyond a mention; rollout metrics; aliasing; industrial verticals</td></tr>
+      <tr><td><a href="https://deepxde.readthedocs.io/en/latest/">DeepXDE docs</a> (Lu, CRUNCH group)</td><td>structured PINN and DeepONet demos, forward and inverse, four backends</td><td>FNO, GNN, foundation models, lectures</td></tr>
+      <tr><td><a href="https://neuraloperator.github.io/dev/index.html">neuraloperator docs</a> and <a href="https://zongyi-li.github.io/blog/2020/fourier-pde/">Zongyi Li's FNO blog</a></td><td>FNO and TFNO quickstart, Trainer, Darcy example, theory guide</td><td>a syllabus, exercises, DeepONet, PINN, GNN</td></tr>
+      <tr><td><a href="https://www.physicsbaseddeeplearning.org/intro.html">Physics based Deep Learning book</a> (Thuerey et al., v0.3)</td><td>surrogates and operators, physical losses, differentiable physics, diffusion and flow matching, reinforcement learning; runnable</td><td>FNO and DeepONet as named sections (unconfirmed); foundation model chapter; assignments</td></tr>
+      <tr><td><a href="https://book.sciml.ai/">MIT 18.337J / 6.338J</a> (Rackauckas)</td><td>autodiff, neural ODEs, PINNs, inverse problems, HPC; Julia</td><td>operator learning as a paradigm</td></tr>
+      <tr><td>NVIDIA DLI, Physics informed ML with PhysicsNeMo</td><td>two hour paid lab, industrial framing</td><td>depth, theory, non NVIDIA tooling</td></tr>
+      <tr><td><a href="https://www.cs.ox.ac.uk/teaching/courses/2025-2026/pinn/">Oxford PINN course</a> (Kay, 16 lectures)</td><td>assessed PINN course</td><td>any operator learning</td></tr>
+      <tr><td><a href="https://pinns.se/">KTH PhD summer school on PINNs</a> (June 2025)</td><td>PINNs, DeepONets, DeepXDE and PINA, HPC</td><td>FNO, CNO; public materials unconfirmed</td></tr>
+      <tr><td><a href="https://icml.cc/virtual/2024/tutorial/35235">ICML 2024 tutorial</a> (Azizzadenesheli)</td><td>theory foundations, slides</td><td>video not available on the page</td></tr>
+      <tr><td>Ben Moseley's PINN blog; Brown CRUNCH seminars; Trefethen, Spectral Methods in MATLAB</td><td>one hour PINN intro; DeepONet history talks; spectral prerequisite</td><td>operator content; a syllabus; any neural network bridge</td></tr>
+    </tbody></table></div>
+    <div class="callout"><p><strong>The seven confirmed gaps.</strong> No surveyed resource teaches (1) multi physics foundation models, (2) resolution invariance verified and broken in practice, (3) aliasing in spectral layers, (4) evaluation and rollout metrics for autoregressive operators, (5) an industrial vertical such as semiconductor simulation, (6) physics based self improvement loops, (7) FNO versus DeepONet versus CNO versus GNN on shared benchmarks. Caltech CS159 could not be confirmed as a current neural operator course.</p></div>
+  </section>
+
+  <section id="skeleton"><h2>Candidate course skeleton</h2>
+    <p class="lead">Thirteen modules. Each names its primary sources, the lab that would go with it, and what it hands to the theory plan or the project kit. Nothing here is built. The labs are proposals.</p>
+
+    <div class="module"><h3>0. Orientation: three objectives, one vocabulary</h3><div class="why">Sets the distinction the study kit already draws: surrogate, PINN, cross domain foundation model.</div><p>Sources: seed episode 00:55 to 04:52; earlier episode 00:11:58 to 00:19:07; JMLR Section 1.1. Prerequisite check: Trefethen chapters on Fourier differentiation; the diagnostic from the theory plan. Hand off: theory plan Modules 1 to 3 for function spaces and Green's functions.</p></div>
+    <div class="module"><h3>1. Functions in, functions out: discretization invariance</h3><div class="why">The idea the video calls "resolution equals context length", stated exactly.</div><p>Sources: JMLR Definitions 1 to 4 and Table 1 (pages 5 to 9), Theorem 8 (page 54); ReNO (2305.19913) for the alias free criterion. Lab: take one trained FNO from neuraloperator and evaluate it at three grids. Then train a plain CNN with a fixed filter size in grid points and evaluate it at the same three grids: its physical support shrinks as the grid refines, so it fails requirement three (JMLR Section 4.1, pages 15 to 16). Gap covered: 2 and 3.</p></div>
+    <div class="module"><h3>2. The Fourier layer from the convolution theorem</h3><div class="why">One layer, derived, then trained.</div><p>Sources: FNO Definitions 1 to 3, Figure 2, Appendix A.2; earlier episode 00:19:19 to 00:25:53. Lab: reproduce FNO Table 3 on Burgers at two resolutions with neuraloperator, record k_max, width, error, and the spectrum of the output. This is the project kit's step 01.</p></div>
+    <div class="module"><h3>3. Four answers to one cost problem</h3><div class="why">GNO, LNO, MGNO, FNO as Nyström, low rank, multipole, and FFT.</div><p>Sources: JMLR Section 4, Tables 6 to 8; Multipole GNO; Laplace and Wavelet NO as "swap the transform". Lab: refinability curve on Darcy at 10³ to 10⁶ parameters for FNO and one kernel network method. Gap covered: 7.</p></div>
+    <div class="module"><h3>4. DeepONet, PINN, and the hybrids</h3><div class="why">Encoder approximator decoder versus operator layers; constraint versus amortization.</div><p>Sources: DeepONet Equation 2 and Section 4; Lanthaler error decomposition (Theorem 3.3); PINN Parts I and II; Krishnapriyan failure modes; PINO Table 4; physics informed DeepONet. Lab: DeepXDE DeepONet on the antiderivative, then a PINN on convection at β equals 1, 10, 30, then the curriculum fix. Gap covered: 7.</p></div>
+    <div class="module"><h3>5. What the theorems say and do not say</h3><div class="why">Universal approximation is existence, not efficiency.</div><p>Sources: JMLR Theorems 11 to 14 with Assumptions 9 and 10; Kovachki, Lanthaler, Mishra FNO bounds (2107.07562, poly logarithmic growth for Darcy and Navier Stokes, super exponential worst case); operator learning survey (2402.15715). Hand off: theory plan Modules 4 to 10 own the proofs. This module states results and the four sources of error.</p></div>
+    <div class="module"><h3>6. Meshes, geometry, spheres, and attention</h3><div class="why">The host's question at 08:44: how does transfer work across geometries?</div><p>Sources: MeshGraphNets Sections 3 and 5; GINO; Transolver and Transolver++; CNO; Spherical FNO; JMLR Proposition 6. Lab: PhysicsNeMo's MeshGraphNet on its <code>structural_mechanics/deforming_plate</code> example, which mirrors the paper's dataset; read DeepMind's TensorFlow 1 release for the loss and noise schedule; ablate world edges. The community PyTorch ports were found by search only and are not vetted. Earlier episode 01:11:36 on shared latent geometry.</p></div>
+    <div class="module"><h3>7. Time: one step, many steps, or the whole trajectory</h3><div class="why">The video's "full rollout" position, tested.</div><p>Sources: FNO-2D versus FNO-3D (FNO page 8); MeshGraphNets noise injection (pages 14 to 15); pushforward trick (2202.03376); PDEBench Section 4.3 and Figure 5c; DPOT long rollout numbers. Lab: train one step, unroll 50 steps, then add noise injection and pushforward; plot error versus horizon. Gap covered: 4.</p></div>
+    <div class="module"><h3>8. Evaluation that can fail a model</h3><div class="why">RMSE is not a report card.</div><p>Sources: PDEBench metrics (Appendix B), failure modes (Figure 3), ground truth error (Appendix H), fair speed up caveats in both PDEBench and MeshGraphNets; JMLR Table 9 noise robustness. Lab: compute cRMSE, bRMSE and band fRMSE for the Module 2 and 7 models; split by initial condition family. This is the project kit's evaluation section.</p></div>
+    <div class="module"><h3>9. Scale: memory, modes, sharding, and the trillion context arithmetic</h3><div class="why">Where the company's numbers come from and what public work reaches.</div><p>Sources: seed episode 04:52 to 07:40 and 12:21 to 15:00; MG-TFNO (150x compression); Incremental FNO; U-NO; Transolver++ million point meshes; FNO cost O(n log n). Teach the nuance: the quadratic cost argument rules out vanilla attention, not attention itself; MPP, Poseidon, DPOT, and Aurora are attention based with patching or Fourier attention. Lab: measure memory and time of one FNO forward pass versus grid size and mode count; extrapolate to 1000³. Reading: FourCastNet 3's 60 day forecast under 4 minutes on one GPU.</p></div>
+    <div class="module"><h3>10. Physics foundation models and the transfer question</h3><div class="why">The course's central research module.</div><p>Sources: <a href="#foundation">section 6</a> in full: MPP, Poseidon, DPOT, UPT, Subramanian et al., ICON, The Well, Aurora, GraphCast, GenCast. Lab: the project kit's experiment matrix A to D on Burgers and advection diffusion, with seeds and data fractions 1 to 100 percent. Gap covered: 1.</p></div>
+    <div class="module"><h3>11. Physics as data engine and as reward</h3><div class="why">Simulator curricula and dense feedback, with the optimization caveat.</div><p>Sources: seed episode 15:00 to 18:30; Krishnapriyan curriculum; Incremental FNO; PINO; self improving PINO (2311.13885); reward driven inference time scaling (2509.02846); physics informed fine tuning (2603.15431). Lab: add a normalized residual penalty to the Module 10 model and sweep its weight; report out of distribution error. Gap covered: 6.</p></div>
+    <div class="module"><h3>12. Applications and industry</h3><div class="why">What is public, what is claimed.</div><p>Sources: FourCastNet lineage; plasma FNO; nested FNO for CO2; catheter design; seismic inversion; UPT and GINO for automotive; company statements and press for semiconductors and geothermal; earlier episode 01:04:08 to 01:17:15. Reading task: write the evidence ledger for one application, company claim versus paper. Gap covered: 5, as far as the record allows.</p></div>
+    <div class="module"><h3>Capstone</h3><div class="why">The project kit's "Operator Transfer Under Physics Shift", unchanged.</div><p>Deliverable: a transfer map with seeds, splits, invariants, and negative results. The course ends where the kit begins.</p></div>
+
+    <h3>How the three documents fit</h3>
+    <div class="code">theory study plan  ->  Modules 1, 3, 5 cite its modules for proofs; it stays pure math
+this course         ->  Modules 0 to 12 above; architecture, evidence, evaluation, applications
+project kit         ->  Modules 2, 8, 10 use its steps as labs; the capstone is its project</div>
+  </section>
+
+  <section id="questions"><h2>Questions only you can answer</h2>
+    <ol class="qs">
+      <li><strong>Audience.</strong> Is the course for you alone, for a public audience, or for engineers in one industry? The theory plan assumes an MIT PhD. A public course needs Module 0 expanded and Module 5 shortened.</li>
+      <li><strong>Math depth.</strong> Should this course state theorems and defer proofs to the theory plan, as drafted, or absorb the theory plan into it?</li>
+      <li><strong>Domain anchor.</strong> Semiconductors have no public neural operator literature from the group. Weather and fluids have the deepest public record. Fusion and CO2 sit between. Which one should anchor Modules 6, 10 and 12?</li>
+      <li><strong>Format.</strong> HTML lessons like the companion files, notebooks, recorded video, or all three? Labs assume PyTorch and neuraloperator; is Julia or JAX in scope?</li>
+      <li><strong>Length.</strong> Thirteen modules at one week each, or a compressed six week version that drops Modules 3, 6 and 9?</li>
+      <li><strong>Company claims.</strong> Should the course present Accelerated Understanding's statements as a case study with an explicit evidence grade, or leave the company out and keep only the papers?</li>
+      <li><strong>Next step.</strong> Build the lesson pages first, or run the project kit's Burgers baseline first so the labs have real numbers?</li>
+    </ol>
+  </section>
+
+  <section id="ledger"><h2>Verification ledger</h2>
+    <p class="lead">What was read from the primary source, what was reached only by search, and what failed.</p>
+    <div class="grid">
+      <article class="card"><h3>Read in full from the primary source</h3><p>FNO (16 pages), JMLR neural operator (97 pages, proof appendices skimmed), MeshGraphNets (18 pages), PDEBench (50 pages with appendices), the earlier episode transcript (yt-dlp auto captions, 1h23m), the seed transcript. DeepONet, PINN I and II, the operator learning survey, DeepONet error estimates, FNO universal approximation, PINO, physics informed DeepONet, PINN failure modes, and ReNO from arXiv HTML. All 26 lineage papers and the 23 foundation model, weather, and rollout papers from arXiv abstract pages plus HTML where results were quoted. The full page cited notes, one file per agent, are in <code>research_notes/</code>.</p></article>
+      <article class="card"><h3>Reached only by search or blocked</h3><p>DeepONet's Nature Machine Intelligence body (paywalled). Exact numeric exponents in the DeepONet error estimates paper (HTML fetch did not return them). PROSE-FD (PDF failed to parse). Catheter paper's Science Advances venue. GitHub URLs for Laplace NO, Wavelet NO, FourCastNet, SFNO makani, GINO example script. Steve Brunton's FNO video URL. Caltech CS159 as a current course. The pbdl book and DeepXDE licenses. Rappler and Tech Times article bodies (HTTP 403). Any funding or investors for Accelerated Understanding.</p></article>
+    </div>
+    <div class="warn"><strong>Reported, not verified.</strong> Every quantitative statement about Accelerated Understanding's models is a company or founder statement. No third party benchmark exists as of 5 September 2026.</div>
+  </section>
+
+  <p class="fine">Prepared 5 September 2026 by a research team of eight Sonnet agents and one Fable orchestrator. Notes and the earlier episode transcript are in <code>research_notes/</code> next to this file. No code was written and no model was trained.</p>
+</main></body></html>

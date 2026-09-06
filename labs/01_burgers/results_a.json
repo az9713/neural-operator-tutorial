@@ -1,0 +1,20 @@
+{
+  "run": "A_bundled",
+  "data": "data/burgers_{train,test}_16.pt",
+  "visc": 0.01,
+  "n_train": 800,
+  "n_test": 400,
+  "resolution": "17 t x 16 x",
+  "k_max": 8,
+  "width": 32,
+  "n_layers": 4,
+  "epochs": 100,
+  "params": 340833,
+  "seed": 0,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "train_rel_l2": 0.004148698545374806,
+  "test_rel_l2": 0.004426628025625793,
+  "train_seconds": 44.26820468902588,
+  "torch": "2.11.0+cu128"
+}

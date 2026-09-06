@@ -1,0 +1,15 @@
+solver check: rel diff dt vs dt/2 = 1.94e-12; norm ratio 0.615
+[0] train 0.4852  test64 0.1641  test256 0.1773  3s
+[50] train 0.0289  test64 0.0370  test256 0.0462  117s
+[100] train 0.0139  test64 0.0234  test256 0.0303  232s
+[150] train 0.0118  test64 0.0241  test256 0.0303  343s
+[200] train 0.0088  test64 0.0222  test256 0.0282  461s
+[250] train 0.0067  test64 0.0240  test256 0.0289  561s
+[300] train 0.0043  test64 0.0223  test256 0.0271  591s
+[350] train 0.0039  test64 0.0225  test256 0.0267  620s
+[400] train 0.0027  test64 0.0224  test256 0.0265  660s
+[450] train 0.0025  test64 0.0224  test256 0.0264  700s
+[499] train 0.0027  test64 0.0226  test256 0.0264  738s
+rel L2 by test resolution: {64: 0.0226, 128: 0.0267, 256: 0.0264, 1024: 0.0264} train 0.0027
+wrote results_b_m32.json, spectrum_b_m32.npz, model_b_m32.pt, figures
+exit 0

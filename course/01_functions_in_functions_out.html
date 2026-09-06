@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Module 1 · Functions in, functions out: discretization invariance</title>
+<link rel="stylesheet" href="course.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div class="wrap">
+<p class="eyebrow">Module 1 of 13 · one week, two if Lax–Milgram is new</p>
+<h1>Functions in, functions out: discretization invariance</h1>
+<p class="dek">The idea the video calls "resolution equals context length", stated as a three part definition, proved for one operator, and broken by one architecture. The lab evaluates one trained FNO and one trained CNN at four grids and shows which one fails and how.</p>
+<p class="meta">Absorbs theory plan Modules 2 (PDEs as maps between spaces) and 8 (discretization, sampling, aliasing). Primary sources: JMLR 2023 Definitions 1 to 4 and Table 1 (p.5 to 9), Section 4.1 (p.15 to 16), Theorem 8 (p.54); ReNO arXiv 2305.19913 via <code>research_notes/web-papers.md:689-700</code>. Lab: <code>../labs/01_burgers/</code> runs B and C.</p>
+
+<nav class="top">
+<a href="index.html">Course home</a>
+<a href="#why">Why</a>
+<a href="#definition">The definition</a>
+<a href="#pde">A PDE as a map</a>
+<a href="#sampling">Sampling and aliasing</a>
+<a href="#cnn">Why a CNN fails</a>
+<a href="#lab">Lab</a>
+<a href="#sources">Sources</a>
+<a href="#exit">Exit test</a>
+</nav>
+
+<section id="why">
+<h2>Why this module exists</h2>
+<p>Three things get called "resolution invariance". A model that accepts any grid. A model whose output converges to one continuum operator as the grid refines. A model that is accurate at a grid it never trained on. Transformers and graph networks have the first; the JMLR paper says they fail the second (p.2, <code>research_notes/pdf-fno-jmlr.md:300-304</code>). Neural operators have the first two by Theorem 8. The third is not a theorem; it is an experiment, and Lab 01 ran it. The teaching survey found no course that walks through "empirically verifying or breaking resolution invariance", aliasing, or discretization mismatch between train and test (<code>research_notes/teaching.md:213-214</code>). This module is that walk.</p>
+</section>
+
+<section id="definition">
+<h2>The definition, in three parts</h2>
+<p>JMLR Section 1.1, page 2: a fixed parameter model must (1) accept any discretization of the input, (2) be evaluable at any point of the output domain, (3) converge to a continuum operator as the discretization is refined. Table 1, page 5, scores the model classes:</p>
+<div class="table-wrap"><table>
+<tr><th>Property</th><th>NNs</th><th>DeepONets</th><th>Interpolation</th><th>Neural operators</th></tr>
+<tr><td>Discretization invariance</td><td>no</td><td>no</td><td>yes</td><td>yes</td></tr>
+<tr><td>Output is a function</td><td>no</td><td>yes</td><td>yes</td><td>yes</td></tr>
+<tr><td>Query output at any point</td><td>no</td><td>yes</td><td>yes</td><td>yes</td></tr>
+<tr><td>Take input at any point</td><td>no</td><td>no</td><td>yes</td><td>yes</td></tr>
+<tr><td>Universal approximation</td><td>no</td><td>yes</td><td>no</td><td>yes</td></tr>
+</table></div>
+<p>The formal version (Definitions 1 to 4, p.8 to 9) is stated in full in Module 5. In words: fix the parameters \(\theta\); for every compact set \(K\) of inputs, the worst case distance between the model evaluated on an \(L\) point grid and the continuum model \(G(\cdot, \theta)\) goes to zero as \(L \to \infty\). Theorem 8 proves this for every neural operator whose activations are continuous and whose function spaces embed in \(C(\bar D)\). Read the quantifiers: \(\theta\) first, then \(L\); nothing about \(G^\dagger\); nothing about how large \(L\) must be for a given accuracy. Interpolation satisfies the definition and is useless as a learner. The definition is necessary, not sufficient.</p>
+<div class="callout"><p><strong>The sentence to keep.</strong> Reusing weights across resolutions is weaker than a uniform accuracy guarantee. Accuracy at an unseen resolution needs assumptions about the information the training grid did not carry, and about the numerical consistency of every operation in the network at the new grid.</p></div>
+</section>
+
+<section id="pde">
+<h2>A PDE as a map between spaces</h2>
+<p>Before you learn an operator, it has to be a well defined and stable object. The elliptic problem is the model case.</p>
+<div class="math">
+<p><strong>Weak form.</strong> \(-\nabla\cdot(a\nabla u) = f\) on a bounded Lipschitz domain \(D\), \(u = 0\) on \(\partial D\). Multiply by a test function \(v \in H^1_0(D)\), integrate by parts: find \(u \in H^1_0\) with \(B_a(u, v) := \int_D a\nabla u\cdot\nabla v = \langle f, v\rangle\) for all \(v \in H^1_0\), where \(f \in H^{-1}\), the dual of \(H^1_0\) with the norm \(\|v\|_{H^1_0} = \|\nabla v\|_2\) (Poincaré makes this a norm).</p>
+<p><strong>Lax–Milgram.</strong> If \(a \in L^\infty\) with \(a \ge \alpha > 0\), then \(B_a\) is bounded, \(|B_a(u,v)| \le \|a\|_\infty \|\nabla u\|\|\nabla v\|\), and coercive, \(B_a(u,u) \ge \alpha\|\nabla u\|^2\). Lax–Milgram gives a unique \(u_a \in H^1_0\) with \(\|\nabla u_a\|_2 \le \alpha^{-1}\|f\|_{H^{-1}}\): the energy bound.</p>
+<p><strong>Claim (the coefficient to solution map is Lipschitz).</strong> For \(a, b \ge \alpha > 0\) in \(L^\infty\) and fixed \(f \in H^{-1}\),
+\[\|\nabla(u_a - u_b)\|_2 \le \alpha^{-2}\,\|a - b\|_\infty\,\|f\|_{H^{-1}} .\]
+<strong>Proof.</strong> Subtract the two weak equations: \(\int a\nabla u_a\cdot\nabla v - \int b\nabla u_b\cdot\nabla v = 0\) for all \(v\). Write \(a\nabla u_a - b\nabla u_b = a\nabla(u_a - u_b) + (a - b)\nabla u_b\). Test with \(v = u_a - u_b\):
+\[\int a|\nabla(u_a - u_b)|^2 = -\int (a-b)\nabla u_b\cdot\nabla(u_a - u_b).\]
+Coercivity on the left, Hölder and Cauchy–Schwarz on the right: \(\alpha\|\nabla(u_a - u_b)\|^2 \le \|a - b\|_\infty\|\nabla u_b\|\|\nabla(u_a - u_b)\|\). Divide, then use the energy bound \(\|\nabla u_b\| \le \alpha^{-1}\|f\|_{H^{-1}}\). \(\square\)</p>
+<p><strong>Where ellipticity is used.</strong> Twice: coercivity to absorb the left side, and the energy bound on \(u_b\). Let \(\alpha \to 0\) and the constant blows up. The PDE is linear in \(u\); the map \(a \mapsto u_a\) is not linear, and this bound is its continuity. Darcy flow in the FNO paper is exactly this map with \(a\) a two valued field, 12 and 3, and \(f \equiv 1\) (<code>research_notes/pdf-fno-jmlr.md:108-112</code>).</p>
+</div>
+</section>
+
+<section id="sampling">
+<h2>Sampling and aliasing</h2>
+<div class="math">
+<p><strong>Spectral truncation error.</strong> For \(u \in H^s(\mathbb T^d)\), \(s > 0\), with \(\|u\|_{H^s}^2 = \sum_k (1 + |k|^2)^s|\hat u(k)|^2\) and \(P^M u = \sum_{|k| \le M}\hat u(k)e^{2\pi i k\cdot x}\):
+\[\|u - P^M u\|_2^2 = \sum_{|k| > M}|\hat u(k)|^2 \le \sum_{|k|>M}\frac{(1+|k|^2)^s}{(1+M^2)^s}|\hat u(k)|^2 \le (1+M^2)^{-s}\|u\|_{H^s}^2,\]
+so \(\|u - P^M u\|_2 \le C M^{-s}\|u\|_{H^s}\). Smoothness buys decay; the rate is the Sobolev exponent. Lab 01's true solution at \(t = 1\) has \(|\hat u_k|\) falling from \(2.6 \times 10^{-1}\) at \(k = 1\) to \(3 \times 10^{-5}\) at \(k = 32\), which is why 64 points can represent it, and the initial condition falls only like \(k^{-2}\), which is why 64 points cannot quite represent that.</p>
+<p><strong>Aliasing.</strong> On the grid \(x_j = j/N\), \(e^{2\pi i k x_j} = e^{2\pi i k j/N}\) and \(e^{2\pi i (k+N) x_j} = e^{2\pi i k j/N}e^{2\pi i j} = e^{2\pi i k x_j}\). Modes \(k\) and \(k + N\) are the same vector on the grid. Sampling a function with content above \(N/2\) folds that content onto lower modes; the grid cannot tell. In Lab 01, taking every sixteenth of 1024 points folds the initial condition's energy above \(k = 32\), about 0.5 percent of the total, onto \(k \le 32\).</p>
+<p><strong>Nonlinear aliasing.</strong> Module 2 showed a pointwise nonlinearity of a mode at \(k\) produces \(2k\). On an \(N\) point grid, if \(2k > N/2\) that product lands at \(2k - N\), a wrong low mode. Spectral solvers dealias by the 2/3 rule, keeping only \(|k| < N/3\) so that products stay below \(N/2\); Lab 01's solver does this. An FNO does not; its nonlinearity acts on the grid and whatever folds, folds. This is the ReNO criterion: an architecture is alias free only if every operation commutes with the sampling in a band limited sense, and FNO with ReLU is not, CNO is by construction, and DeepONet is only for uniform sensors with a matched frame (<code>research_notes/web-papers.md:689-700</code>).</p>
+<p><strong>The consistency you want.</strong> With \(S_h\) the sampler, \(I_h\) the reconstruction, and \(G_{\theta,h}\) the model on the grid: \(\|I_h G_{\theta,h} S_h a - G_\theta a\|_Y \to 0\) as \(h \to 0\) for fixed \(\theta\). That is Theorem 8. Accuracy against \(G^\dagger\) at a new \(h\) adds the term \(\|G_\theta a - G^\dagger a\|\), which was minimized at the training \(h\) only.</p>
+</div>
+</section>
+
+<section id="cnn">
+<h2>Why a CNN fails requirement three</h2>
+<p>JMLR Section 4.1, page 15 to 16 (<code>research_notes/pdf-fno-jmlr.md:372-379</code>). A convolution whose kernel has a fixed <em>physical</em> radius \(r\) is a legitimate integral operator layer. A standard CNN fixes the kernel in <em>grid points</em>, \(k\) taps. As the grid refines, \(J \to \infty\), the physical support \(k h \to 0\): the layer becomes local in the continuum limit, and a stack of them sees only a shrinking neighbourhood. The only fix is to grow \(k\) with \(J\), and then the parameter count \(k m n\) diverges. So standard CNNs are not consistent in function space. The paper demonstrates it numerically: on Burgers, the fully convolutional baseline's error grows from 0.0958 at 256 points to 0.3238 at 8192, while FNO stays between 0.0139 and 0.0160 (Table 3, <code>:97-105</code>).</p>
+</section>
+
+<section id="lab">
+<h2>Lab: one FNO and one CNN at four grids</h2>
+<p><span class="grade g-lab">LAB</span> Same data, same split, same training grid of 64 points, same 500 epochs and optimizer (<code>../labs/01_burgers/run_b_paper_spec.py</code>, <code>run_c_cnn_baseline.py</code>). The FNO numbers are Module 2's. The CNN is 8 layers of kernel 7 with 64 channels, periodic padding, GELU, a receptive field of 49 points: 77 percent of the domain at 64 points, 4.8 percent at 1024.</p>
+<div id="lab1-results">
+<div class="table-wrap"><table>
+<tr><th>Model</th><th class="num">Params</th><th class="num">Train</th><th class="num">Test 64</th><th class="num">Test 128</th><th class="num">Test 256</th><th class="num">Test 1024</th><th>File</th></tr>
+<tr><td>FNO, \(k_{\max} = 8\) (<code>n_modes=16</code>)</td><td class="num">345,665</td><td class="num">0.0049</td><td class="num">0.0224</td><td class="num">0.0351</td><td class="num">0.0349</td><td class="num">0.0349</td><td><code>results_b_m16.json</code></td></tr>
+<tr><td>FNO, \(k_{\max} = 16\) (<code>n_modes=32</code>)</td><td class="num">607,809</td><td class="num">0.0027</td><td class="num">0.0226</td><td class="num">0.0267</td><td class="num">0.0264</td><td class="num">0.0264</td><td><code>results_b_m32.json</code></td></tr>
+<tr><td>CNN, 49 point receptive field (8 × kernel 7)</td><td class="num">201,729</td><td class="num">0.0087</td><td class="num">0.0224</td><td class="num">0.6794</td><td class="num">1.1433</td><td class="num">1.4579</td><td><code>results_c_rf49.json</code></td></tr>
+<tr><td>CNN, 17 point receptive field (4 × kernel 5)</td><td class="num">62,081</td><td class="num">0.1608</td><td class="num">0.5065</td><td class="num">0.7407</td><td class="num">0.9507</td><td class="num">1.0778</td><td><code>results_c_rf17.json</code></td></tr>
+</table></div>
+<p>Read the third row against the first. At the training grid the CNN and the \(k_{\max} = 8\) FNO tie exactly: 0.0224 and 0.0224, with the CNN using 58 percent of the parameters. A CNN with a 49 point receptive field, 77 percent of a 64 point domain, is a perfectly good learner of this operator at this grid. At 128 points its error is 30 times larger, 0.68; at 1024 it is 1.46, which is worse than predicting zero (relative L2 of the zero prediction is 1.0). The FNO stays at 0.035 and 0.026. The mechanism is the one on this page: at 1024 points the same 49 taps cover 4.8 percent of the domain, and eight layers of that cannot move information across the fronts. The 17 point CNN shows the other half of the argument: too small a physical support fails even at the training grid, 0.51, because Burgers over one time unit at \(\nu = 0.1\) moves information across about a quarter of the domain.</p>
+<p>What the FNO row does not show is also on this page. Its error rises 56 percent at the first unseen grid and then stops rising. Doubling \(k_{\max}\) cuts that rise to 18 percent. Neither rise is predicted by Theorem 8, which promises convergence of the discretized model to its own continuum limit, not accuracy against the truth; the rise is the term \(\|G_\theta a - G^\dagger a\|\) evaluated on inputs whose spectrum the training grid could not carry. Module 2's spectrum figure shows exactly which modes those are, and Module 8 measures them by band.</p>
+</div>
+</section>
+
+<section id="sources">
+<h2>Sources</h2>
+<ul class="src">
+<li><span class="grade g-a">A</span> JMLR 2023, Section 1.1 and Table 1, p.2 to 5; Definitions 1 to 4, p.8 to 9; Section 4.1, p.15 to 16; Theorem 8, p.54: <code>research_notes/pdf-fno-jmlr.md:300-323</code>, <code>:372-379</code>, <code>:465-472</code>.</li>
+<li><span class="grade g-a">A</span> FNO ICLR 2021, Table 3 FCN row: <code>:97-105</code>.</li>
+<li><span class="grade g-a">A</span> ReNO, Bartolucci et al. arXiv 2305.19913, and CNO arXiv 2302.01178: <code>research_notes/web-papers.md:689-700</code>.</li>
+<li><span class="grade g-lab">LAB</span> <code>../labs/01_burgers/results_b_m16.json</code>, <code>results_b_m32.json</code>, <code>results_c_rf17.json</code>, <code>results_c_rf49.json</code>.</li>
+<li>Teaching survey gap list: <code>research_notes/teaching.md:208-218</code>. Theory plan Modules 2 and 8. Reading: Hunter, PDE notes, Chapters 3 and 4; Trefethen on aliasing.</li>
+</ul>
+</section>
+
+<section id="exit">
+<h2>Exit test</h2>
+<ol class="steps">
+<li>Derive the coefficient to solution Lipschitz bound and mark the two places uniform ellipticity is used.</li>
+<li>Prove \(\|u - P^M u\|_2 \le C M^{-s}\|u\|_{H^s}\) and show that modes \(k\) and \(k+N\) coincide on an \(N\) point grid.</li>
+<li>Explain in three sentences why reusing weights across resolutions is weaker than a uniform accuracy guarantee, using one number from the lab.</li>
+<li>State the CNN argument without the word "invariance".</li>
+</ol>
+</section>
+
+<nav class="foot"><a href="00_orientation.html">← Module 0: Orientation</a><a href="02_fourier_layer.html">Module 2: The Fourier layer →</a></nav>
+</div>
+</body>
+</html>

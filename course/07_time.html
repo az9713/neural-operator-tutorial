@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Module 7 · Time: one step, many steps, or the whole trajectory</title>
+<link rel="stylesheet" href="course.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div class="wrap">
+<p class="eyebrow">Module 7 of 13 · one week</p>
+<h1>Time: one step, many steps, or the whole trajectory</h1>
+<p class="dek">A time dependent PDE gives three ways to pose the learning problem. Predict the next state and iterate. Predict the whole trajectory at once. Or predict a fixed horizon. Each has a failure mode with a number attached. This module states the three, the two known stabilizers, and the wall that all of them hit.</p>
+<p class="meta">Primary sources: FNO ICLR 2021 p.8 (FNO-2D versus FNO-3D); MeshGraphNets p.5 and p.14 to 15 (noise injection); Brandstetter, Worrall, Welling arXiv 2202.03376 (pushforward); PDEBench Section 4.3; DPOT arXiv 2403.03542. Lab: Lab 01 run A.</p>
+
+<nav class="top">
+<a href="index.html">Course home</a>
+<a href="#why">Why</a>
+<a href="#three">Three formulations</a>
+<a href="#stabilizers">Two stabilizers</a>
+<a href="#wall">The wall</a>
+<a href="#lab">Lab</a>
+<a href="#sources">Sources</a>
+<a href="#exit">Exit test</a>
+</nav>
+
+<section id="why">
+<h2>Why this module exists</h2>
+<p>The seed episode takes the "full rollout" position: predict the whole space time block at once. The FNO paper agrees for its own experiments and gives the reason. The weather models that work in production do the opposite: FourCastNet is trained to predict six hours ahead and rolled out for months, with "a little bit of multi-step fine-tuning", which Anandkumar herself calls "very surprising" (earlier episode 01:00:03 to 01:00:40, <code>research_notes/company-episode.md:62</code>). Both positions are right for their problem. This module says when.</p>
+</section>
+
+<section id="three">
+<h2>Three formulations</h2>
+<div class="grid">
+<div class="card"><h3>Autoregressive, one step</h3><p>Learn \(F : u(t) \mapsto u(t + \Delta t)\), possibly from \(\ell\) past steps (PDEBench's \(\mathring F_\theta\), <code>pdf-mgn-pdebench.md:158-162</code>). Iterate at test time. FNO-2D on Navier–Stokes: 2D convolution in space, RNN structure in time, maps ten prior steps to the next. 414,517 parameters. Can extrapolate to any \(T\) in \(\Delta t\) steps. Error compounds.</p></div>
+<div class="card"><h3>Whole trajectory</h3><p>Learn \(u_0 \mapsto u(\cdot, t)\) for all \(t \in [0, T]\) as one space time function. FNO-3D on Navier–Stokes: 3D convolution in space time, 6,558,537 parameters, "more expressive and easier to train" (ICLR p.8), fixed to \([0, T]\) but free in the time discretization inside it. No compounding, no extrapolation.</p></div>
+<div class="card"><h3>Fixed horizon</h3><p>Learn \(u_0 \mapsto u(\cdot, T)\) for one \(T\). Lab 01 run B is this: \(u_0 \mapsto u(\cdot, 1)\). It is the cleanest operator learning problem and it answers no question about dynamics between 0 and \(T\).</p></div>
+</div>
+<div class="table-wrap"><table>
+<tr><th>FNO ICLR Table 1, 64×64, N = 1000 unless stated</th><th class="num">Params</th><th class="num">s/epoch</th><th class="num">ν = 1e-3, T = 50</th><th class="num">ν = 1e-4, T = 30</th><th class="num">ν = 1e-4, N = 10,000</th><th class="num">ν = 1e-5, T = 20</th></tr>
+<tr><td>FNO-3D (whole trajectory)</td><td class="num">6,558,537</td><td class="num">38.99</td><td class="num">0.0086</td><td class="num">0.1918</td><td class="num">0.0820</td><td class="num">0.1893</td></tr>
+<tr><td>FNO-2D (autoregressive)</td><td class="num">414,517</td><td class="num">127.80</td><td class="num">0.0128</td><td class="num">0.1559</td><td class="num">0.0834</td><td class="num">0.1556</td></tr>
+<tr><td>U-Net</td><td class="num">24,950,491</td><td class="num">48.67</td><td class="num">0.0245</td><td class="num">0.2051</td><td class="num">0.1190</td><td class="num">0.1982</td></tr>
+<tr><td>TF-Net</td><td class="num">7,451,724</td><td class="num">47.21</td><td class="num">0.0225</td><td class="num">0.2253</td><td class="num">0.1168</td><td class="num">0.2268</td></tr>
+<tr><td>ResNet</td><td class="num">266,641</td><td class="num">78.47</td><td class="num">0.0701</td><td class="num">0.2871</td><td class="num">0.2311</td><td class="num">0.2753</td></tr>
+</table></div>
+<p>Read the table by column (<code>research_notes/pdf-fno-jmlr.md:131-146</code>). With abundant data relative to difficulty, ν = 1e-3 at N = 1000 or ν = 1e-4 at N = 10,000, the whole trajectory model wins: 0.0086 and 0.0820. When data is scarce relative to difficulty, ν = 1e-4 or 1e-5 at N = 1000, every method exceeds 15 percent and the autoregressive FNO-2D is the least bad, 0.1559 and 0.1556. The Reynolds number formula \(\mathrm{Re} = \sqrt{0.1}/(\nu (2\pi)^{3/2})\) (JMLR p.34, <code>:592-595</code>) converts these: ν = 1e-3 is about Re 20, ν = 1e-4 about Re 200. The headline "under 1 percent at Re 20, 8 percent at Re 200" is the 0.0086 and the 0.0820 with N = 10,000.</p>
+</section>
+
+<section id="stabilizers">
+<h2>Two stabilizers for the autoregressive case</h2>
+<p>A one step model is trained on clean inputs and tested on its own outputs. The input distribution shifts, small errors compound, and the rollout drifts or blows up. Two fixes exist with numbers.</p>
+<h3>Noise injection (MeshGraphNets, GNS before it)</h3>
+<p>During training, add zero mean Gaussian noise of a tuned scale to the most recent input state and correct the target so the network learns to remove the perturbation. Scale tuned per dataset on a log grid, two values per decade, around the natural one step error: FlagSimple position 1e-3, FlagDynamic 3e-3, CylinderFlow momentum 2e-2, Airfoil momentum 1e1 and density 1e-2 (<code>research_notes/pdf-mgn-pdebench.md:50</code>). For second order systems (cloth) the correction is ill posed and a mixing parameter \(\gamma = 0.1\) worked best. Trained on one step supervision only, MeshGraphNets rolls out 250 to 600 steps; rollout-50 RMSE on CylinderFlow 6.3e-3 against one step 2.34e-3, rollout-all 40.9e-3 (Table 1, <code>:78-89</code>).</p>
+<h3>The pushforward trick (Brandstetter, Worrall, Welling 2022)</h3>
+<p>Unroll two steps in training, backpropagate only through the second, and treat the first step's output as an adversarial perturbation that gradients may not remove (<code>research_notes/foundation.md:172-183</code>). On Burgers at \(n_x = 100\), the time before error exceeds 10 percent roughly doubles, from about 2 to 3 to about 5 to 6 seconds. Plain unrolled FNO-RNN error 29.98, FNO with pushforward plus temporal bundling 0.51, WENO5 6.23 in the same units: a 58 times reduction. The paper's own negative result: plain Gaussian noise injection "actually performs worse than no stabilization" in its experiments. So the two stabilizers are not interchangeable, and which one works depends on the problem; MeshGraphNets' noise is tuned per dataset, and Brandstetter's noise was not.</p>
+<p>PDEBench adopted pushforward for its U-Net baseline after finding naive autoregressive U-Net training unstable, and reports it gave "the best stability for all problems and the best accuracy over longer prediction horizons" (Section 4.3, <code>pdf-mgn-pdebench.md:261</code>).</p>
+</section>
+
+<section id="wall">
+<h2>The wall: extrapolation in time</h2>
+<p>PDEBench trains FNO on half the time steps of 1D advection and 1D Burgers and evaluates beyond. Error "increases monotonically for \(t\) beyond the training window", and the paper's conclusion is blunt: "present ML models cannot properly capture the dynamic behavior of the PDEs, and it is a challenging task to provide reliable predictions beyond the time experienced during training" (p.9, <code>:263</code>). DPOT, a 0.5 billion parameter pretrained model, still has 33.5 percent full trajectory error on long Kolmogorov turbulence rollouts, down from 82.2 percent without pretraining (<code>foundation.md:55</code>). Better, not solved. MeshGraphNets attributes its own rollout-all growth on cloth to decoherence after about 50 steps, chaotic divergence, and reports rollout-50 as the discriminating number for that reason (<code>pdf-mgn-pdebench.md:129</code>).</p>
+<div class="callout"><p><strong>The rule this leaves you with.</strong> Whole trajectory when you have the data and a fixed horizon. Autoregressive with a stabilizer when you need an open horizon. Test rollout error against horizon separately from one step error; a good one step model can still drift. Split "resolution transfer" from "time extrapolation" in every report; they are different questions, and the project kit says so (<code>../05_physics_foundation_model_study_kit.html</code>, evaluation section).</p></div>
+</section>
+
+<section id="lab">
+<h2>Lab: the space time Burgers of run A, and the rollout you have not run</h2>
+<p><span class="grade g-lab">LAB</span> Lab 01 run A is a whole trajectory model: it maps \(u_0\) on 16 points to \(u(t, x)\) on 17 × 16, and reaches test relative L2 0.0044 (<code>../labs/01_burgers/results_a.json</code>). It has no rollout and no horizon beyond \(t = 1\). Two exercises turn it into the experiment this module needs.</p>
+<ol class="steps">
+<li><strong>One step model on the same data.</strong> Reshape the bundled data into pairs \((u(t_i), u(t_{i+1}))\), 16 pairs per trajectory, 12,800 training pairs. Train a 1D FNO one step model. Roll out 16 steps from \(u_0\) and plot relative L2 against step. Then 50 steps, beyond the data, and watch the curve. Not yet run.</li>
+<li><strong>Add the two stabilizers.</strong> Noise injection: scan noise scale over \(\{10^{-3}, 3 \times 10^{-3}, 10^{-2}, 3 \times 10^{-2}\}\) as MeshGraphNets does. Pushforward: unroll two steps, detach the first. Plot all three curves on one axis. The deliverable is the figure "error versus horizon", not a single number. Not yet run.</li>
+<li><strong>Compare.</strong> Put run A's 0.0044 on the same axis at \(t = 1\). Whole trajectory and rollout are now comparable at one horizon and not beyond it.</li>
+</ol>
+</section>
+
+<section id="sources">
+<h2>Sources</h2>
+<ul class="src">
+<li><span class="grade g-a">A</span> FNO ICLR 2021, FNO-2D versus FNO-3D p.8, Table 1: <code>research_notes/pdf-fno-jmlr.md:84-89</code>, <code>:131-146</code>; Reynolds formula JMLR p.34: <code>:592-595</code>.</li>
+<li><span class="grade g-a">A</span> MeshGraphNets, noise injection p.5 and p.14 to 15, Table 1, error methodology p.17: <code>research_notes/pdf-mgn-pdebench.md:50</code>, <code>:78-89</code>, <code>:129</code>.</li>
+<li><span class="grade g-a">A</span> PDEBench Section 4.3, p.9: <code>:261-263</code>.</li>
+<li><span class="grade g-a">A</span> Brandstetter, Worrall, Welling arXiv 2202.03376, Table 1 and Figure 5(b): <code>research_notes/foundation.md:172-183</code>.</li>
+<li><span class="grade g-b">B</span> DPOT arXiv 2403.03542, long rollout numbers: <code>foundation.md:45-56</code>.</li>
+<li><span class="grade g-c">C</span> Earlier episode 01:00:03 to 01:00:40 on six hour training: <code>research_notes/company-episode.md:62</code>.</li>
+<li><span class="grade g-lab">LAB</span> <code>../labs/01_burgers/results_a.json</code>.</li>
+</ul>
+</section>
+
+<section id="exit">
+<h2>Exit test</h2>
+<ol class="steps">
+<li>Give the parameter counts and the ν = 1e-3 errors of FNO-2D and FNO-3D, and say which one you would use for an open ended forecast and why.</li>
+<li>Describe noise injection and the pushforward trick in two sentences each, and name the paper in which noise injection made things worse.</li>
+<li>State PDEBench's finding on extrapolation past the training window and DPOT's long rollout number before and after pretraining.</li>
+</ol>
+</section>
+
+<nav class="foot"><a href="06_meshes_geometry.html">← Module 6: Meshes, geometry</a><a href="08_evaluation.html">Module 8: Evaluation that can fail a model →</a></nav>
+</div>
+</body>
+</html>

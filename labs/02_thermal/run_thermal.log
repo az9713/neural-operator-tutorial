@@ -1,0 +1,30 @@
+solver check: rel err vs analytic 1.25e-05; peak rise 77.9 K for 1e6 W/m^2 sine load
+[0] train 0.6360  test64 0.4231  test128 0.4314  5s
+[25] train 0.0302  test64 0.0298  test128 0.0936  80s
+[50] train 0.0156  test64 0.0143  test128 0.0774  150s
+[75] train 0.0121  test64 0.0170  test128 0.0821  228s
+[100] train 0.0073  test64 0.0087  test128 0.0781  306s
+[125] train 0.0090  test64 0.0078  test128 0.0790  385s
+[150] train 0.0052  test64 0.0072  test128 0.0804  463s
+[175] train 0.0046  test64 0.0062  test128 0.0812  541s
+[199] train 0.0042  test64 0.0065  test128 0.0814  614s
+{
+ "64": {
+  "rel_l2": 0.006514257751405239,
+  "peak_abs_err_K_mean": 0.20206181704998016,
+  "peak_abs_err_K_max": 1.2721710205078125,
+  "hotspot_dist_mm_mean": 0.035345807671546936,
+  "hotspot_within_0p5mm_frac": 1.0,
+  "peak_true_K_mean": 58.526611328125
+ },
+ "128": {
+  "rel_l2": 0.08144679665565491,
+  "peak_abs_err_K_mean": 1.5521258115768433,
+  "peak_abs_err_K_max": 6.206329345703125,
+  "hotspot_dist_mm_mean": 0.15819326043128967,
+  "hotspot_within_0p5mm_frac": 0.98499995470047,
+  "peak_true_K_mean": 58.571468353271484
+ }
+}
+wrote results_thermal.json, fig_thermal_samples.png, fig_thermal_hotspot.png
+exit 0

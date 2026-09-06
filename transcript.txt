@@ -1,0 +1,1403 @@
+https://www.youtube.com/watch?v=KS_IpnX7n9I&t=2s
+
+Just days after emerging from stealth, Accelerated Understanding co-founders Anima Anandkumar and Benedikt Jenik,  join us to explain their bet: that the universality and scale we’ve seen in language models can also emerge across physics. They’re building a single model designed to learn across very different physical systems—fluid dynamics, semiconductors, energy, and more—and they say their experiments are already showing something important: models trained across multiple areas of physics can outperform equally sized models trained on individual domains alone.
+
+We dig into how they’re doing it, from neural operators and resolution-invariant architectures to simulator-generated curricula, physics-based self-improvement, and some truly enormous computational scales: trillion-context training, five-trillion-context inference, and outputs measured in tens of terabytes. Anima and Benedikt also explain why physical AI may have an advantage over language models when it comes to self-improvement—the laws of physics provide a dense, objective training signal—and where they see the first major commercial opportunities, including semiconductor design, manufacturing, energy, geothermal exploration, and scientific discovery.
+
+Chapters
+
+00:00 — Anima returns & Accelerated Understanding comes out of stealth  
+00:55 — A foundation model for the physical world  
+02:01 — Can knowledge transfer across different kinds of physics?  
+04:52 — Scaling to trillion-context physical models  
+08:06 — Evidence for transfer learning across physics domains  
+08:42 — Neural operators, geometry & resolution invariance  
+12:21 — How do you reach 5 trillion context?  
+15:00 — Where does the training data come from?  
+17:58 — Using the laws of physics for self-improvement  
+18:30 — Learning across multiple physical scales  
+20:11 — Where does this become commercially useful?  
+20:27 — Semiconductor design & manufacturing  
+23:00 — Energy, geothermal & critical minerals  
+24:09 — Universal models vs. narrow physics models  
+24:52 — What’s next for Accelerated Understanding?  
+25:51 — Anima on the TIME100 AI list  
+26:35 — Closing
+
+In this video
+
+
+
+Chapters
+
+Transcript
+Search in video
+Anima returns & Accelerated Understanding comes out of stealth
+0:01
+What's up everybody? I'm R.J. I'm here
+0:04
+with my co-host Brandon for a latent
+0:06
+space lightning AI for science podcast.
+0:09
+A week ago, we released a fantastic
+0:12
+episode with Ana Anan Kumar. It got a
+0:15
+great reception, probably helped by the
+0:17
+fact that she brought her company
+0:19
+Accelerated Understanding Out of Stealth
+0:21
+days before we released. But when we
+0:24
+recorded a month ago, she couldn't talk
+0:25
+about her company. So now we have Anima
+0:28
+back on the pod with her co-founder
+0:30
+Benedict Yanik to tell us about
+0:32
+accelerated understanding and the things
+0:34
+that she had to keep under wraps uh when
+0:36
+we were recording before. By the way,
+0:38
+just a little thing, Anima was just
+0:41
+named Time magazine by Time magazine as
+0:43
+one of the 100 most influential people
+0:45
+of the year and we want to talk about
+0:47
+that too. But first, Benedict, welcome.
+0:50
+Anima, welcome back.
+0:52
+Uh please tell us about accelerated
+A foundation model for the physical world
+0:55
+understanding.
+0:55
+Yeah. Essentially
+0:58
+what we have been thinking about is
+0:59
+we've been looking at uh all the
+1:02
+successful projects that Anima has been
+1:04
+doing all those like the catheter the
+1:06
+weather model all those things she
+1:08
+talked about on that last podcast and
+1:10
+then we figured the thing that has
+1:12
+happened in language like if you look
+1:14
+back in language and that's now ancient
+1:16
+times before the recent AI revolution
+1:19
+people were training models for specific
+1:22
+things like we had a spellchecking model
+1:25
+there was a translation model. There was
+1:26
+an autocomplete model and then OpenAI
+1:29
+came along and was like, let's just put
+1:32
+everything into one model and that
+1:34
+turned out to work phenomenally well and
+1:37
+exceed pretty much everything else those
+1:40
+specialized models. And so now we were
+1:42
+asking ourselves, can we do the same
+1:45
+thing for physical simulation and for
+1:48
+physical understanding?
+1:50
+Yeah, you know that universality and
+1:53
+scale that we've seen play out for
+1:55
+language. What is that counterpart for
+1:57
+the physical world and that's the bet
+1:59
+that accelerated understanding is
+Can knowledge transfer across different kinds of physics?
+2:01
+making?
+2:02
+The first question that comes to my mind
+2:04
+with this so it's a you know basically
+2:06
+you're trying to apply a bunch of
+2:10
+different domain data to a single model
+2:13
+build sort of the god model version
+2:16
+physics version or physical world
+2:18
+version. The question in my mind that
+2:20
+comes up is while language there's lots
+2:23
+of different kinds of language but they
+2:25
+it's all language where um but for
+2:28
+weather simulation and catheterss and
+2:30
+nuclear fusion reactors maybe the
+2:33
+physics itself is very different and
+2:35
+therefore there's not a lot of transfer.
+2:37
+So what evidence or why do you think
+2:40
+that this is a still a transferable
+2:42
+problem? Yeah, I mean first of all, of
+2:45
+course, there many more challenges when
+2:47
+it comes to the physical world, right?
+2:48
+There isn't just a readymade internet of
+2:51
+all these kinds of physical data
+2:53
+available. So, real data is just not
+2:56
+there. And also, if you think about
+2:58
+scientific discovery, it's about doing
+3:02
+something new. So, by definition, it
+3:04
+cannot be there in the training data.
+3:06
+And so, this reliance on just purely
+3:09
+datadriven AI is not going to be enough.
+3:12
+And that's where you know adding the
+3:14
+laws of physics is really critical. So
+3:17
+think of like you know we can use
+3:20
+existing simulators and everything else
+3:22
+to start training our model but then the
+3:26
+cherry on top is going to be that
+3:28
+self-improvement using the laws of
+3:30
+physics itself. So physics will be our
+3:32
+guiding principle throughout and that's
+3:34
+also something that's common across
+3:36
+different areas whether it's like fluid
+3:39
+in a catheter or in a rocket it's the
+3:43
+same principles of fluid dynamics
+3:45
+they're different regimes and that's
+3:47
+parameterized by reol's numbers and
+3:49
+similar such things but there is
+3:52
+something that is shared among them and
+3:54
+that's what we've seen this play out
+3:56
+that across different domains if you
+3:58
+think energy semiconductor aerospace
+4:02
+you know it looks very different but
+4:04
+there are common underlying principles
+4:06
+but even if you then say that there are
+4:09
+different mathematical equations like
+4:11
+PDEs across dist different systems why
+4:14
+are they common you know there's still
+4:15
+commonality like there is variation in
+4:19
+time there could be some kind of energy
+4:21
+conservation you know there is aspects
+4:23
+like object permanence there's causality
+4:26
+so there's implicitly a lot of common
+4:28
+features even across Ross physics that
+4:31
+are gone by different equations. So
+4:33
+that's how you see across different
+4:36
+domains across different mathematical
+4:38
+models there's a lot of shared features
+4:41
+that these neural models can pick up.
+4:44
+I see. And and so what what is some of
+4:47
+the most interesting? So actually where
+4:49
+do we stand with building this model?
+4:51
+How far have you gotten so far?
+Scaling to trillion-context physical models
+4:52
+Yeah, so we have actually been training
+4:56
+for a bit more than a year. We've done
+4:59
+all the usual architectural experiments
+5:01
+you need to do. The interesting thing
+5:03
+here even is you need to reinvent a lot
+5:07
+of the things because the shape of our
+5:09
+data is so different. Like if you look
+5:11
+at for example language, you have tokens
+5:15
+and those tokens grow in one dimension.
+5:17
+You can fit like a million of them in
+5:19
+leading models. for us uh it grows in
+5:23
+more dimensions and that is kind of like
+5:24
+the the special thing here is we don't
+5:28
+want to cut any corners. So we are like
+5:30
+let's make everything as it is in the
+5:33
+real world. So we have space that grows
+5:36
+in three dimensions. It's not compressed
+5:38
+like in video models. It's actually
+5:40
+staying in those three dimensions and
+5:42
+then you also have the roll out over
+5:44
+time. And there again people like to
+5:47
+take the easy path do auto reagive
+5:49
+meaning you predict one step at a time
+5:52
+except then errors build up and you lose
+5:54
+kind of that continuity and the
+5:56
+understanding of what in the input
+5:58
+actually led to the output which is
+6:00
+really important for designing stuff. So
+6:03
+even then for the time dimension we
+6:05
+prefer to just model the full rollout
+6:08
+which is what we're doing. But then
+6:09
+you're in this place where it's suddenly
+6:11
+four dimensions and all of those four
+6:13
+dimensions grow independently and when
+6:16
+you multiply those numbers out, you're
+6:18
+very quickly in the billions or even
+6:20
+trillions in context. And that is
+6:22
+something we've actually achieved with
+6:24
+our models. Like we're able to train up
+6:27
+to a trillion context input. We're able
+6:30
+to train with um like even inputs
+6:34
+outputs both trillion context length. We
+6:36
+are able to do inference at 5 trillion
+6:38
+context. Like those are ridiculous
+6:40
+numbers when you come from language and
+6:42
+we're not even doing most of those like
+6:45
+if you look at video models they do a
+6:47
+bunch of tricks to make it more
+6:48
+efficient. They like average over
+6:50
+pixels. They patch them. We're not doing
+6:52
+those things. We're still able to do
+6:54
+this ridiculous context. But now going
+6:57
+back on what have we done? How are we
+6:59
+making it happen? Fitting this stuff is
+7:03
+non-trivial. training this stuff is
+7:05
+non-trivial. Like you may have heard of
+7:07
+those standard techniques like FSTP
+7:10
+where you shard but then you reassemble
+7:12
+a layer in a GPU to do the training. Uh
+7:16
+except our layers are so big you can't
+7:18
+reassemble it inside a GPU. Our data
+7:21
+samples are so big they don't fit an
+7:23
+accelerator or even a full node. So we
+7:25
+had to reinvent this whole sharding
+7:28
+infrastructure, the whole sharding
+7:30
+strategy to be able to train those
+7:32
+models at scale. And we've done so we've
+7:34
+trained done hundreds of training runs.
+7:36
+We've trained up to trillion parameter
+7:38
+models. So we've really shown this stuff
+7:41
+to take off. The other thing that we've
+7:44
+made sure is that we're actually
+7:46
+benefiting from multifysics like not
+7:48
+just doing everything big that was done
+7:50
+small before but actually putting those
+7:52
+things together. So we've on purpose
+7:54
+picked a number of areas of physics that
+7:57
+we believe are very diverse in their
+8:00
+features, in their challenges and put
+8:03
+them in the same model, done the full 4D
+8:05
+roll out for those and we're able to
+Evidence for transfer learning across physics domains
+8:07
+train them.
+8:07
+And in fact uh I was going to add that
+8:10
+it turns out that having the model of
+8:13
+the same size with multiple areas of
+8:15
+physics does better than giving all of
+8:18
+those parameters to each single physics.
+8:20
+So if you had separate models and made
+8:22
+them big enough as the original one, it
+8:25
+still is worse. And so that's saying
+8:27
+that it's benefiting from shared
+8:29
+learning. It's not just we make the
+8:30
+model bigger and it gets better. That's
+8:32
+true. But adding more areas of physics
+8:36
+helps it to learn better in all of them.
+8:38
+And that's the same kind of emergent
+8:40
+learning we've seen play out in
+8:41
+language. In your episode, we talked a
+Neural operators, geometry & resolution invariance
+8:44
+lot about um neural operators and we
+8:46
+talked about in particular some of the
+8:48
+inductive biases you put into your
+8:50
+models like uh Forier neural operators
+8:53
+where you go in for space where you
+8:54
+operate on a sphere and then you you
+8:56
+have an inductive bias about geometry.
+8:59
+How does transfer learning work when you
+9:01
+have are now trying to do many different
+9:03
+geometries? like are you actually now
+9:05
+limiting yourself to say like we're only
+9:07
+doing you know rectangular geometries or
+9:10
+is there actually some now tricks where
+9:12
+you can actually integrate different
+9:14
+types of um different classes of PTE
+9:17
+like maybe with different time
+9:18
+derivatives or things like that
+9:20
+yeah so we cannot tell you every exact
+9:22
+detail of our architecture since uh
+9:26
+that's proprietary but what I can tell
+9:28
+you is neural operators do form the
+9:31
+basis because that's how we can make
+9:34
+this resolution invariant. So Benedict
+9:37
+talked about a five trillion context
+9:39
+length at inference time that we've
+9:41
+achieved and a trillion context length
+9:43
+during training. But does that mean
+9:45
+every single run we're going to do that?
+9:47
+No. Every single application needs that
+9:49
+much resolution no right. So you know
+9:52
+those are for the hardest physics that
+9:55
+really requires all the details. we can
+9:57
+give it the big context length and those
+10:00
+that do not need that or even during the
+10:02
+process like if you're doing design
+10:04
+exploration all of these tasks in the
+10:07
+beginning you don't need every single
+10:08
+detail you don't need to burn that much
+10:10
+compute and so that flexibility is
+10:13
+crucial and if you see that immediately
+10:15
+distinguishes us from other so-called
+10:18
+world models whether it's video models
+10:20
+vision models they all assume during
+10:23
+training and inference it's a fixed
+10:25
+resolution and that's Okay, for uh you
+10:28
+know for our visual features, right?
+10:31
+Because we don't really necessarily need
+10:34
+to zoom in more especially for gaming
+10:36
+and entertainment. It's okay. The
+10:38
+physics is somewhat a bit tan wavy. But
+10:41
+you know for the engineering design,
+10:43
+scientific discovery, we can't get away
+10:46
+with those tricks. And so neural
+10:48
+operators form the key to ensuring that
+10:51
+uh we can be flexible at giving
+10:54
+different context lengths which is
+10:55
+equivalent to different resolution. On
+10:58
+the other hand uh if you think about
+11:00
+using transformer architectures that
+11:02
+have worked so well for language that
+11:05
+just wouldn't be able to support a 5
+11:08
+trillion context length no matter all
+11:10
+the compute in the world is thrown at
+11:12
+it. So that kind [clears throat] of
+11:14
+quadratic complexity is infeasible and
+11:17
+also unnecessary because the physical
+11:20
+world has more structure than completely
+11:23
+arbitrary alltoall correlation. So we
+11:26
+have to rethink what works better for
+11:29
+the physical world and that's what we've
+11:30
+done very systematically like how in the
+11:33
+frontier labs for language there is a
+11:36
+lot of systematic experiments and lot of
+11:38
+evolution of architecture you see from
+11:41
+the earlier models to mixture of experts
+11:43
+and so on you know we kind of like gone
+11:46
+through and we continue to go through
+11:48
+that same evolution within our uh
+11:50
+accelerated understanding to ensure that
+11:53
+we have the best architecture as well as
+11:56
+the best hardware utilization, you know,
+11:58
+thinking about communication, bandwidth,
+12:01
+all those requirements. So, that code
+12:03
+design is really critical.
+12:04
+Oh, real quick, I just want to say
+12:06
+people who for um people have not
+12:09
+watched the original episode. Uh we
+12:10
+recommend you watch it if you want to
+12:12
+learn about neural operators, I think it
+12:13
+starts around 20 minutes. We'll have a
+12:15
+link directly to jump to that scene
+12:17
+where we start talking about some other
+12:18
+things. Um but yeah, wanted to make sure
+How do you reach 5 trillion context?
+12:21
+we got that plug in real quick. Um,
+12:22
+yeah. So, I guess for for either of you,
+12:25
+and I know a lot of this is probably
+12:28
+proprietary, but can you give us an
+12:29
+intuition for how how do you get to a
+12:32
+trillion or five trillion tokens and how
+12:34
+do you, you know, sort of that's both
+12:36
+like a algorithmic question and also an
+12:38
+infrastructure question.
+12:40
+Yeah. So, um, how you add end up with
+12:44
+those large numbers is fairly simple.
+12:46
+Like if you say I have a thousand
+12:50
+resolution in each spatial dimension and
+12:52
+then I care about resolving the thousand
+12:56
+time steps exactly then I'm at a
+12:58
+trillion so that is a really large
+13:00
+number and then when you think on a
+13:04
+little bit in that math uh how big of
+13:06
+data is that like for example our 5
+13:08
+trillion run that we did the outputs
+13:11
+were uh 22 terabytes and you want that
+13:16
+kind of stuff in accelerator memory.
+13:18
+That's just what it is. Otherwise, it's
+13:20
+going to be slow. So that is kind of
+13:22
+like how you need to think about.
+13:23
+Obviously, we can drive it uh all the
+13:28
+sizes like we have done inference on
+13:30
+huge clusters. We have done inference on
+13:33
+like we can the small models with
+13:35
+smaller context or even medium big
+13:38
+models with smaller context fit on a
+13:40
+MacBook or Mac Studio like you have that
+13:42
+whole span. So like having this there is
+13:46
+like like there is a bunch of scaling
+13:48
+tricks that need to work out but the big
+13:51
+one is you need a working set of your
+13:53
+data that needs to fit somewhere and
+13:55
+that is kind of like what drives all of
+13:57
+this and then again I can talk about
+14:00
+what you actually do but ultimately you
+14:04
+can think of you want to interact
+14:08
+the pieces of data with each other in
+14:10
+some way over the mo like the throughput
+14:14
+through the model and uh that means to a
+14:19
+good degree you will also need to rely
+14:22
+on large clusters with very reliable
+14:25
+very good interconnect. So like a lot of
+14:28
+those challenges that LLMs are walking
+14:31
+more and more into where there's like
+14:34
+both modern tricks and the good old HPC
+14:37
+methods. We had those from the get-go.
+14:40
+Like we had to figure out how do you fit
+14:43
+a sample that does not fit into a node.
+14:46
+We had to figure out how to do an
+14:48
+interaction within a layer where you can
+14:51
+keep the state around in an accelerator.
+14:53
+So all those tricks require quite a bit
+14:56
+of scaling and quite a bit of
+14:57
+infrastructure work that we have been
+14:59
+able to put together.
+Where does the training data come from?
+15:01
+We're just talking about data. That's
+15:03
+actually I think a really interesting
+15:04
+question that we haven't really expanded
+15:06
+upon. Can can you can we double click a
+15:08
+bit on that? Like what does the data
+15:10
+look like? Are you is this primarily
+15:12
+you're doing like large scale
+15:14
+differential equation solving uh as like
+15:17
+a to generate training data? Are you um
+15:20
+getting physical data from a variety of
+15:22
+sources? How do you integrate both
+15:24
+physical data and also you know
+15:26
+simulation computation data? Mhm. And
+15:28
+that is that is actually quite an
+15:30
+interesting point because that used to
+15:33
+be a bottleneck especially for a lot of
+15:36
+those narrow surrogates and you may have
+15:38
+seen it. Company has some really nice
+15:41
+pocket of data. You have a flashy demo
+15:44
+but then the area they actually care
+15:45
+about is out of sample and nothing gets
+15:48
+deployed. So having this kind of
+15:50
+limitation is something that we wanted
+15:52
+to step out of. At the same time, we all
+15:56
+know for simulating physics, the big
+15:59
+theme is sim to real gap that you
+16:01
+somehow need to overcome. So, how do we
+16:04
+do both? Uh, one interesting thing with
+16:07
+PTE is we are actually fairly confident
+16:11
+like the math is known that when you
+16:13
+solve a PD correctly, you're doing the
+16:16
+physics correctly. Like obviously you
+16:18
+still need to make sure that you're
+16:21
+representing the task that you're trying
+16:23
+to solve within that but you can solve
+16:27
+the like sensial gap by making sure your
+16:31
+skill domain is wide enough that you're
+16:33
+guaranteed to be in distribution. Now
+16:35
+for training itself what does that allow
+16:37
+us to do? We can use numerical
+16:40
+simulators to generate as much training
+16:42
+data as we need and even further we can
+16:45
+do what is called curriculum engineering
+16:48
+meaning we can start with uh simple
+16:51
+equations we can start with lower
+16:53
+resolution simpler data that's which is
+16:56
+a stark contrast to how language is
+16:57
+trained like language you download all
+16:59
+of the internet it's a giant mess it's
+17:02
+shuffled all over some of it is correct
+17:04
+some of it isn't and this is not how for
+17:07
+example as humans would have learned
+17:09
+like learning in order is much better.
+17:11
+So we're able to do that. We're able to
+17:13
+build our own curriculum using numerical
+17:16
+simulators. But it doesn't stop there.
+17:19
+Like if you were to stop there, you kind
+17:20
+of end up as everything else in machine
+17:23
+learning does at the average quality of
+17:26
+your training distribution. And we
+17:28
+wanted to exceed that. That's where also
+17:31
+uh self-improvement comes in. So the
+17:33
+interesting piece is you can use those
+17:36
+PDEs both for numerical simulators to
+17:39
+generate data, but if you're clever
+17:41
+about it, you can even use them as a
+17:43
+training signal. You can check how well
+17:46
+is my model actually doing on the PTEs
+17:49
+themselves and use that as an additional
+17:51
+training signal where you're suddenly in
+17:53
+a place where you can push beyond the
+17:56
+quality of the data in your model
+Using the laws of physics for self-improvement
+17:59
+quality. And the difference there is
+18:02
+compared to language where
+18:04
+self-improvement needs something like
+18:06
+human feedback or other reward signals
+18:09
+that are very sparse. They just tell you
+18:12
+yes or no, thumbs up or down. We have
+18:14
+dense feedback because the physics laws
+18:18
+there's so multiple of them and you can
+18:20
+decide again a curriculum of how to
+18:22
+arrange them but also the feedback
+18:24
+you're getting from them is dense and so
+18:26
+that kind of self-improvement can be
+18:28
+even better and that's what we see in
+Learning across multiple physical scales
+18:30
+our experiments. Maybe this is already
+18:33
+implicit in your answer your previous um
+18:35
+statements but one thing I'm curious
+18:37
+about in physics is this idea of
+18:38
+multiscale where like large scales are
+18:41
+you know you need to simultaneously
+18:42
+represent things happening at large
+18:44
+scales and things happening at small
+18:46
+scales and a lot of the times the
+18:48
+difficulty of good physical
+18:50
+representations is this you know is that
+18:53
+you do need multiple scales which gives
+18:56
+you this like large like orders of
+18:58
+magnitude and understanding. um how do
+19:00
+you represent that simultaneously like
+19:04
+how do you how do you deal with that
+19:06
+problem?
+19:06
+Yeah. So if you see uh lot of our
+19:09
+published work with neural operators
+19:11
+that's exactly what we address right. So
+19:14
+in terms of like if there multiple
+19:16
+scales you also need multiple
+19:18
+resolutions. Of course you could do
+19:20
+everything at the highest resolution but
+19:22
+that's extremely extremely expensive. So
+19:25
+you're better off first uh collecting
+19:27
+more data at lower resolution, maybe
+19:29
+even cheaper solvers that coarsen and
+19:32
+ignore the fine scale effects. They're
+19:34
+wrong, but there are good starting
+19:36
+points to kind of get the overall
+19:38
+average effects, the core scale effects,
+19:41
+and then you can fine-tune with more
+19:44
+specialized uh that take into solvers
+19:47
+that take into account those finer scale
+19:50
+features. And neural operators have this
+19:53
+flexibility because they can allow you
+19:56
+to mix across different scales within
+19:58
+the model rather than be prescribed
+20:01
+externally like a lot of other hybrid
+20:04
+machine learning for physics do and that
+20:07
+you know allows us to be a lot more data
+20:10
+efficient and much better at learning.
+Where does this become commercially useful?
+20:12
+We don't have a ton of time. I want to
+20:14
+hear a little bit what are the the
+20:17
+applications here? What are you what are
+20:19
+you chasing first? um you've come out of
+20:21
+stealth. So presumably there's something
+20:24
+that you're doing uh more publicly with
+20:26
+commercialization. Can you talk a bit
+Semiconductor design & manufacturing
+20:28
+about that?
+20:29
+The way we're thinking about it is like
+20:31
+there's two perspectives. There is the
+20:34
+domains of physics and then there's the
+20:36
+areas that can be served by them. So if
+20:39
+you look at areas that are obviously
+20:41
+very interesting right now because
+20:43
+everybody needs improvement there the
+20:45
+big ones to everybody are semi and
+20:48
+energy and those are precisely right in
+20:50
+our wheelhouse. So we can't tell you
+20:53
+fully who we're talking to, who our
+20:55
+customers are, but like within Sammy,
+20:58
+you can think of a lot of problems that
+21:02
+physics become increasingly relevant.
+21:05
+And the interesting thing is if you look
+21:07
+at how a lot of stuff worked there. Um
+21:09
+especially when you look at uh the chip
+21:12
+design itself, it was much more a let's
+21:15
+start in the digital, let's freeze the
+21:18
+digital in, let's send it through some
+21:20
+physics for a one-time check. Like the
+21:23
+PDK dictates I have to have the
+21:25
+following feature otherwise TSNC doesn't
+21:28
+make it for you. And it stops there.
+21:30
+Like it's like do we have enough
+21:32
+headroom to push it through? But we're
+21:34
+not taking advantage today of that
+21:36
+headroom to get extra performance. So
+21:38
+there's this potential to unlock much
+21:41
+more of the skill set when you're also
+21:44
+able to grab into what does the physics
+21:47
+allow me to do to push the envelope a
+21:50
+bit more and can I rearrange everything
+21:52
+a little bit to push the envelope even
+21:54
+further. That's one area. Obviously the
+21:57
+semi-production process itself also has
+22:01
+all these interesting physical
+22:02
+challenges that we're addressing. So
+22:04
+lots and lots of work to do. Um we're
+22:07
+excited. So do I understand correctly
+22:09
+like semiconductor digital uh uh analog
+22:12
+code design
+22:13
+like obviously you need to start
+22:15
+somewhere and that there is like this
+22:18
+whole pipeline that is also now
+22:20
+improving like we are making sure that
+22:23
+like we're bottom up enabling that
+22:26
+physical like eventually that's where
+22:28
+the journey is going obviously um
+22:30
+there's different companies that do
+22:32
+different pieces we're starting from
+22:33
+that direction because we think that
+22:35
+direction is opening up a lot of impact
+22:39
+where previously there was a lot of
+22:41
+simplifications like you did wire length
+22:43
+you did certain optimizations you're
+22:45
+like oh do I have a thermal spike
+22:48
+somewhere do I have an em spike
+22:50
+somewhere that messes with me but not oh
+22:53
+I have all this other stuff where it's
+22:55
+actually fairly cool where there's
+22:57
+fairly little craziness happen can I
+Energy, geothermal & critical minerals
+23:00
+take advantage of that
+23:01
+nice and and energy
+23:03
+presumably we've talked about nuclear
+23:05
+before I presume assume that's that's
+23:07
+one of the areas there is are you also
+23:10
+doing solar and other things like that
+23:12
+there is both the design kind of piece
+23:15
+which is uh I want a physical object
+23:20
+with certain capabilities that's was
+23:22
+something we're really good at there's
+23:23
+other areas where
+23:26
+um the question is I have observations
+23:30
+of the world what does that tell me
+23:32
+about the world like think geodermal
+23:34
+where you want to know where It's warm
+23:36
+down there with the right mix of water
+23:40
+that you can pump through. Like all of
+23:41
+those things were or where are the
+23:44
+critical minerals for for all the
+23:47
+electronic devices we need? Uh like all
+23:50
+of those things kind of end up in our
+23:53
+wheelhouse and you get there with you
+23:55
+need a good amount of physics but
+23:57
+physics at the same time like there's
+23:59
+not that many things that are different
+24:01
+from each other. So you like once you're
+24:03
+at this point where your model reaches a
+24:06
+good level of universality,
+Universal models vs. narrow physics models
+24:09
+suddenly a lot of doors open.
+24:10
+Just to push on that a little bit and
+24:12
+you're seeing some of that transfer
+24:14
+happening in the applications that
+24:15
+you're chasing with with real
+24:17
+commercial.
+24:18
+Exactly. Like we're seeing that physical
+24:20
+uplift happening. We mentioned it
+24:22
+earlier. We've trained models where we
+24:25
+were like, let's just make sure our
+24:28
+simulator is fine, configured fine, and
+24:31
+we can actually train it. And then we
+24:34
+were like, oh, and let's add it to the
+24:35
+universal one. Like, you want to always
+24:37
+test those kind of things. Like there's
+24:38
+this whole bunch of pipeline work that
+24:40
+you want to make sure you're correct.
+24:43
+And what we observed is we had like like
+24:46
+in terms of the performance
+24:48
+characteristics we're seeing in the
+24:49
+narrow one versus what we suddenly saw
+24:51
+in the broad one, it was like broad all
+What’s next for Accelerated Understanding?
+24:53
+the way.
+24:54
+We're running low on time, but maybe is
+24:56
+the last question. What what is next for
+24:58
+accelerated understanding? Uh what do
+25:00
+you want people to know? And uh are you
+25:03
+you hiring, you're opening offices, like
+25:05
+what's going on?
+25:06
+Yeah, certainly all of that. I mean we
+25:08
+are scaling our models and we continue
+25:10
+to scale our company. So yes, you know,
+25:13
+we are getting a lot of inbound interest
+25:15
+since last week. So I'm just getting
+25:18
+through that. So I apologize if I
+25:20
+haven't gotten back to someone yet, but
+25:22
+it's a really exciting time. And you
+25:25
+know, and for us, this is just the
+25:26
+beginning in the journey of the model
+25:28
+scaling, right? If we have to go towards
+25:31
+the biggest challenges we are facing in
+25:34
+scientific discovery and inventions,
+25:37
+those are really hard physics, hard
+25:39
+phenomena. But at the same time we have
+25:41
+to be also true to our commercial side
+25:44
+and ensure along the way we unlock
+25:47
+[clears throat] a lot of value to our
+25:48
+customers. So it's that combination that
+Anima on the TIME100 AI list
+25:51
+it we are very excited about.
+25:53
+Well and actually I want to just hear
+25:55
+for 30 seconds tell me about the time
+25:58
+100 thing like what what happened there?
+26:01
+How did it go down? I' I've never
+26:03
+received one so I just I'm curious. You
+26:06
+know, I was just thrilled and really
+26:08
+surprised to be included in the time 100
+26:11
+AI list. Uh, you know, I was also very
+26:14
+lucky to receive the timeund impact
+26:17
+award last year. So, I was in Dubai for
+26:19
+that and you know, got to meet a lot of
+26:23
+uh luminaries in the field and now uh
+26:26
+you know this year. So, it's uh I think
+26:29
+it's good what they're doing trying to
+26:31
+bring people with different perspectives
+26:34
+on AI together. So yeah, so that's a
+Closing
+26:36
+good thing.
+26:37
+Yeah. Well, congratulations. Welld
+26:40
+deserved and thank you so much for for
+26:42
+jumping back on with us and we're really
+26:45
+excited to see how everything unfolds
+26:48
+with accelerated understanding.
+26:50
+Thanks a lot for having us back.
+26:52
+Thank you.
+26:52
+Take care. Bye.
+26:57
+[music]
+
+12:29
+
+OpenAI vs Nvidia: What the New Jalapeño Chip Chang

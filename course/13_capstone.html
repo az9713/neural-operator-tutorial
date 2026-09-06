@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Capstone · Operator transfer under physics shift</title>
+<link rel="stylesheet" href="course.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div class="wrap">
+<p class="eyebrow">Capstone · three to four weeks</p>
+<h1>Operator transfer under physics shift</h1>
+<p class="dek">The project kit's experiment, unchanged in its logic, with the semiconductor anchor as the hard target. The deliverable is a transfer map with seeds, splits, invariants, and negative results. The course ends where the kit begins.</p>
+<p class="meta">Source: <code>../05_physics_foundation_model_study_kit.html</code> (steps 01 to 05, evaluation matrix). Labs already run: 01 Burgers, 02 thermal. Everything else on this page is specified and not run.</p>
+
+<nav class="top">
+<a href="index.html">Course home</a>
+<a href="#state">Where you start</a>
+<a href="#plan">The plan</a>
+<a href="#controls">Controls</a>
+<a href="#deliverable">Deliverable</a>
+<a href="#after">After</a>
+</nav>
+
+<section id="state">
+<h2>Where you start</h2>
+<p>Step 01 of the kit, the smallest honest baseline, is done. Lab 01 run B: FNO on 1D viscous Burgers at the paper's specification, trained at 64 points, tested at 64, 128, 256, 1024, with a checked solver, a seed, and a results file (Module 2). The kit asked for normalized L2, rollout error, runtime, and seed; the rollout is the one item still open, and Module 7 specifies it. Lab 02 gives you the semiconductor target: a checked steady thermal solver for a 10 mm die with random power maps, and an FNO baseline on it (Module 6).</p>
+</section>
+
+<section id="plan">
+<h2>The plan, in the kit's five steps</h2>
+<ol class="steps">
+<li><strong>Baseline (done).</strong> Lab 01 run B. Add the rollout from Module 7's lab so the "one step versus whole trajectory" question has a number on your own data.</li>
+<li><strong>A compatible two source curriculum.</strong> Burgers at ν = 0.1 (Lab 01) and 1D advection–diffusion \(u_t + c u_x = \nu u_{xx}\) with \(c \in [0.5, 2]\), \(\nu \in [0.02, 0.2]\), solved exactly in Fourier space with the Lab 01 initial condition law. Inputs: the initial field, the coefficients as constant channels, and an equation identifier as a one hot channel. Keep units and normalization explicit and identical across sources; do not mix incompatible variables into one channel tensor. 1000 trajectories per source.</li>
+<li><strong>Transfer to a held out target.</strong> First target, a parameter shift: Burgers at ν = 0.02, which forms steeper fronts (check the spectrum; 1024 points may not be enough, and the solver's own check will tell you). Second target, a physics shift: the thermal die of Lab 02, 2D and elliptic. For the second target the 1D FNO cannot be reused as is; use a 2D FNO with the sources embedded as \(N \times 1\) fields, or state that the architecture change is itself part of the shift and compare against a 2D scratch model. Pretrain on the sources, fine tune on \(f \in \{0.01, 0.05, 0.10, 0.25, 1.0\}\) of the target, compare with an equal capacity scratch FNO. This is arm C against arm A of Module 10's matrix.</li>
+<li><strong>Physics only after the data baseline works.</strong> Arm D: Module 11's residual sweep on the thermal target. Report whether it improves out of distribution error or trades field accuracy.</li>
+<li><strong>Make the negative result useful.</strong> If C does not beat A, vary one dimension at a time: shared grid, equation identifier present or absent, shared trunk versus separate heads, coefficient range, pretraining sample count. Arm B (joint multi task) separates interference from lack of shared structure. Record every cell, including the ones that fail.</li>
+</ol>
+</section>
+
+<section id="controls">
+<h2>Controls, and how each lab already enforces them</h2>
+<div class="table-wrap"><table>
+<tr><th>Control</th><th>Rule</th><th>Where it is already implemented</th></tr>
+<tr><td>Solver fidelity</td><td>every generator has a check that stops the script on failure</td><td>Lab 01: \(\Delta t\) halving to \(10^{-12}\) and norm decrease; Lab 02: analytic sine load to \(1.25 \times 10^{-5}\)</td></tr>
+<tr><td>Seeds</td><td>at least 3 per cell; report mean and range</td><td>both labs fix seed 0 and record it; run A's two runs differ by 0.0004 from CUDA nondeterminism alone, so one seed is not a result</td></tr>
+<tr><td>Splits</td><td>by initial condition family and coefficient regime, never random frames from one trajectory</td><td>both labs split by sample index before any subsampling; the generators expose the coefficient ranges</td></tr>
+<tr><td>Resolution versus time</td><td>test 64 to 128 and 256 separately from rollout</td><td>Lab 01 run B is the resolution test; Module 7's rollout is separate</td></tr>
+<tr><td>Physics diagnostics</td><td>mass (the mean of \(u\) for periodic Burgers), boundary error, banded spectral error, hot spot error</td><td>Module 8 defines them on both labs; the spectrum file <code>spectrum_b_m16.npz</code> already exists</td></tr>
+<tr><td>Equal capacity</td><td>same parameter count, same step budget, same normalization across arms</td><td><code>count_model_params</code> is recorded in every results file</td></tr>
+</table></div>
+</section>
+
+<section id="deliverable">
+<h2>Deliverable</h2>
+<p>One page, called the transfer map. A grid: rows are targets (Burgers ν = 0.02, thermal die), columns are data fractions, cells are "C beat A by x percent" or "no gain" or "C worse", with the seed range. Below it: the one dimension at a time table from step 5 for every cell that failed. Beside it: the error versus fraction plot with four arms and seed bands. Attach the results files. A negative transfer map with these controls is a result worth keeping; a positive one without them is not.</p>
+<div class="warn"><p><strong>What not to submit.</strong> A single final time image. A speed up without the reference solver's hardware and resolution. A super resolution claim without the spectrum. An "AI learns physics" sentence.</p></div>
+</section>
+
+<section id="after">
+<h2>After the capstone</h2>
+<p>The kit's semiconductor path: move from the square die to irregular geometry (a die with a heat spreader, a package with vias), coefficients tied to materials, and inverse design (place the blocks to minimize the peak). The right tools then are a mesh model of Module 6's kind and a finite element solver; FEniCSx on Windows means Docker or WSL2 (<code>research_notes/repos.md:216</code>). The physics after thermal: drift–diffusion, then EUV mask diffraction, which is Maxwell on nanometre features and has two unverified public papers to check first (<code>lineage.md:329</code>).</p>
+</section>
+
+<nav class="foot"><a href="12_applications.html">← Module 12: Applications</a><a href="index.html">Course home →</a></nav>
+</div>
+</body>
+</html>

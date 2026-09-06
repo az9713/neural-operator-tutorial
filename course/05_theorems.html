@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Module 5 · What the theorems say and do not say</title>
+<link rel="stylesheet" href="course.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div class="wrap">
+<p class="eyebrow">Module 5 of 13 · two to three weeks</p>
+<h1>What the theorems say and do not say</h1>
+<p class="dek">Universal approximation is an existence statement over a compact set. It says nothing about parameter count, data, optimization, or inputs outside the set. This module states the neural operator theorems exactly, proves the core construction in a setting you control, derives the learning theory bound, and ends with an error ledger that separates five things people add together without a licence.</p>
+<p class="meta">Absorbs theory plan Modules 4, 9, and 10. Primary sources: JMLR 2023 Sections 9.2 to 9.3 and pages 50 to 52 and 57 to 59 (read from <code>21-1524.pdf</code>); Kovachki, Lanthaler, Mishra arXiv 2107.07562; Lanthaler, Mishra, Karniadakis arXiv 2102.09618; Kovachki, Lanthaler, Stuart arXiv 2402.15715.</p>
+
+<nav class="top">
+<a href="index.html">Course home</a>
+<a href="#why">Why</a>
+<a href="#statements">The theorems, exactly</a>
+<a href="#construction">The construction, proved</a>
+<a href="#rates">Rates and the curse</a>
+<a href="#learning">Learning theory</a>
+<a href="#ledger">The error ledger</a>
+<a href="#sources">Sources</a>
+<a href="#exit">Exit test</a>
+</nav>
+
+<section id="why">
+<h2>Why this module exists</h2>
+<p>The JMLR paper's sentence "Neural Operators are the only known class of models that guarantee both discretization-invariance and universal approximation" (p.3) is true and is quoted as if it settled something. It settles two of four sources of error. The paper says so itself, pages 50 to 51: operator approximation error and discretization error are analyzed; finite sample error and optimization error are not (<code>research_notes/pdf-fno-jmlr.md:705-711</code>). It also says, twice, that its approximation theory reduces neural operators to a <em>linear</em> method and so "does not capture any benefits of nonlinear approximation" (p.52 and p.58, <code>:508-516</code>). This module is the reading of those caveats.</p>
+</section>
+
+<section id="statements">
+<h2>The theorems, exactly</h2>
+<h3>Discretization invariance (JMLR Section 9.2)</h3>
+<div class="math">
+<p><strong>Definition 1 (p.8).</strong> A discrete refinement of \(D \subset \mathbb R^d\) is a nested sequence \(D_1 \subset D_2 \subset \cdots \subset D\) with \(|D_L| = L\) such that for every \(\epsilon > 0\) there is \(L(\epsilon)\) with \(D \subseteq \bigcup_{x \in D_L} \{y : \|y - x\|_2 < \epsilon\}\). <strong>Definition 3.</strong> For \(G : \mathcal A \to \mathcal U\), an \(L\) point discretization \(D_L\), a map \(\hat G : \mathbb R^{Ld} \times \mathbb R^{Lm} \to \mathcal U\), and compact \(K \subset \mathcal A\), the discretized uniform risk is \(R_K(G, \hat G, D_L) = \sup_{a \in K} \|\hat G(D_L, a|_{D_L}) - G(a)\|_{\mathcal U}\). <strong>Definition 4 (p.9).</strong> A parametric class \(G : \mathcal A \times \Theta \to \mathcal U\) is discretization invariant if there are maps \(\hat G_L : \mathbb R^{Ld} \times \mathbb R^{Lm} \times \Theta \to \mathcal U\) such that for every \(\theta\) and every compact \(K\), \(\lim_{L \to \infty} R_K(G(\cdot, \theta), \hat G_L(\cdot, \cdot, \theta), D_L) = 0\).</p>
+<p><strong>Theorem 8 (p.54).</strong> Let \(D \subset \mathbb R^d\), \(D' \subset \mathbb R^{d'}\) be domains, \(\mathcal A\), \(\mathcal U\) real valued Banach function spaces on \(D\), \(D'\) that embed continuously in \(C(\bar D)\), \(C(\bar D')\), and \(\sigma_1, \sigma_2, \sigma_3 \in C(\mathbb R)\). Then for any \(n \in \mathbb N\), the set \(\mathrm{NO}_n(\sigma_1, \sigma_2, \sigma_3; D, D')\), viewed as maps \(\mathcal A \to \mathcal U\), is discretization invariant. Proof in Appendix E by Riemann sums and uniform convergence over compact sets.</p>
+<p><strong>What to notice.</strong> The parameter \(\theta\) is fixed first, then \(L \to \infty\). The statement is convergence to the continuum operator \(G(\cdot, \theta)\), not accuracy against \(G^\dagger\). The embedding into \(C(\bar D)\) is what makes point samples meaningful (Module 0, Fact 1). Lab 01's error rise from 0.022 to 0.035 at unseen grids is not a counterexample; the theorem promises convergence of \(\hat G_L\) to \(G(\cdot,\theta)\), and \(G(\cdot,\theta)\) itself was fitted at \(L = 64\).</p>
+</div>
+<h3>Universal approximation (JMLR Section 9.3)</h3>
+<div class="math">
+<p><strong>Assumption 9 (p.55).</strong> \(D\) is a Lipschitz domain and \(\mathcal A\) is one of \(L^{p_1}(D)\) with \(1 \le p_1 < \infty\); \(W^{m_1, p_1}(D)\) with \(m_1 \in \mathbb N\); \(C(\bar D)\). <strong>Assumption 10.</strong> \(D'\) is a Lipschitz domain and \(\mathcal U\) is one of \(L^{p_2}(D')\) with \(m_2 = 0\); \(W^{m_2, p_2}(D')\) with \(m_2 \in \mathbb N\); \(C^{m_2}(\bar D')\) with \(m_2 \in \mathbb N_0\).</p>
+<p><strong>Activation classes (p.52 to 54).</strong> \(\mathcal A_m\): activations whose width unbounded networks are dense in \(C^m\) on compacta (any non polynomial \(C^m\) function, by Pinkus 1999). \(\mathcal A^L_m\): those that are also linearly bounded; ReLU \(\in \mathcal A^L_0\), ELU \(\in \mathcal A^L_1\), tanh and sigmoid in all. \(\mathrm{BA}\): activations whose networks can approximate the identity on compacta while staying globally bounded; ReLU is in \(\mathcal A^L_0 \cap \mathrm{BA}\).</p>
+<p><strong>Theorem 11 (p.56).</strong> Under Assumptions 9 and 10, let \(G^\dagger : \mathcal A \to \mathcal U\) be continuous, \(\sigma_1 \in \mathcal A^L_0\), \(\sigma_2 \in \mathcal A_0\), \(\sigma_3 \in \mathcal A_{m_2}\). Then for any compact \(K \subset \mathcal A\) and \(0 < \epsilon \le 1\) there exist \(N\) and \(G \in \mathrm{NO}_N(\sigma_1, \sigma_2, \sigma_3; D, D')\) with \(\sup_{a \in K}\|G^\dagger(a) - G(a)\|_{\mathcal U} \le \epsilon\). If moreover \(\mathcal U\) is a Hilbert space, \(\sigma_1 \in \mathrm{BA}\), and \(\|G^\dagger(a)\|_{\mathcal U} \le M\) for all \(a \in \mathcal A\), then \(G\) can be chosen with \(\|G(a)\|_{\mathcal U} \le 4M\) for all \(a \in \mathcal A\).</p>
+<p><strong>Theorem 12.</strong> The same with \(\mathcal A = C^{m_1}(\bar D)\), using \(m_1\)-th order neural operators \(\mathrm{NO}^{m_1}_N\), which take derivatives up to order \(m_1\) as extra input channels; plain kernel integration cannot learn differentiation on this input class (p.54).</p>
+<p><strong>Theorem 13 (p.56 to 57).</strong> Let \(D'\) be Lipschitz, \(m_2 \in \mathbb N_0\), Assumption 9 hold, \(\mu\) a probability measure on \(\mathcal A\), \(G^\dagger : \mathcal A \to H^{m_2}(D')\) \(\mu\)-measurable with \(G^\dagger \in L^2_\mu(\mathcal A; H^{m_2}(D'))\), \(\sigma_1 \in \mathcal A^L_0 \cap \mathrm{BA}\), \(\sigma_2 \in \mathcal A_0\), \(\sigma_3 \in \mathcal A_{m_2}\). Then for \(0 < \epsilon \le 1\) there exist \(N\) and \(G \in \mathrm{NO}_N\) with \(\|G^\dagger - G\|_{L^2_\mu(\mathcal A; H^{m_2}(D'))} \le \epsilon\). <strong>Theorem 14 (p.57)</strong> is the \(C^{m_1}\) version with \(\mathrm{NO}^{m_1}_N\). Proofs follow Lanthaler et al. 2021: restrict to a large compact set by Lusin's theorem and use the decay of \(\mu\) outside it.</p>
+<p><strong>What to notice.</strong> Theorem 11 is worst case over a compact \(K\). Theorem 13 is average case under \(\mu\), with no compactness, at the price of an \(L^2_\mu\) norm: it says nothing about any single input. The \(4M\) clause is the only global statement in the set. Nothing here bounds \(N\).</p>
+</div>
+</section>
+
+<section id="construction">
+<h2>The construction, proved in a setting you control</h2>
+<p>Every theorem above uses one three stage construction (JMLR p.55, Figure 16): encode the input to \(\mathbb R^J\), map nonlinearly to \(\mathbb R^{J'}\), decode as coefficients on representers of \(\mathcal U\). Here is the complete proof in the Hilbert space case, where every step is a Module 0 fact.</p>
+<div class="math">
+<p><strong>Setting.</strong> \(X, Y\) separable Hilbert spaces with orthonormal bases \((e_j)\), \((f_j)\); \(P_m\), \(Q_p\) the orthogonal projections onto the first \(m\), \(p\) basis vectors; \(E_m : X \to \mathbb R^m\), \(E_m u = (\langle u, e_j\rangle)_{j \le m}\); \(D_p : \mathbb R^p \to Y\), \(D_p c = \sum_{j \le p} c_j f_j\); \(G : X \to Y\) continuous; \(K \subset X\) compact.</p>
+<p><strong>Claim.</strong> For every \(\epsilon > 0\) there are \(m, p\) and a continuous \(\psi : \mathbb R^m \to \mathbb R^p\) such that \(\sup_{u \in K}\|G(u) - D_p\,\psi\,E_m u\|_Y < \epsilon\). Then any finite dimensional universal approximator (a ReLU network, by Pinkus) can replace \(\psi\) on the compact set \(E_m(K)\) with another \(\epsilon\) of error.</p>
+<p><strong>Proof.</strong> Three steps, each with its own \(\epsilon/3\).</p>
+<p><em>Step 1, input truncation.</em> By Module 0 Fact 3, \(\sup_{u \in K}\|u - P_m u\| \to 0\). \(G\) is continuous on the compact set \(K\), so it is uniformly continuous there, with modulus \(\omega\). But \(P_m u\) need not lie in \(K\). Fix this by working on the compact set \(\tilde K = K \cup \bigcup_{m} P_m(K)\), which is compact because \(P_m u \to u\) uniformly on \(K\) (a sequence of compact sets converging uniformly to a compact set has compact union, by the finite net argument). \(G\) is uniformly continuous on \(\tilde K\) with modulus \(\omega\). Choose \(m\) so that \(\sup_{u \in K}\|u - P_m u\| \le \eta\) with \(\omega(\eta) < \epsilon/3\). Then \(\sup_{u\in K}\|G(u) - G(P_m u)\|_Y < \epsilon/3\).</p>
+<p><em>Step 2, output truncation.</em> The set \(G(P_m K) = G(\tilde K_m)\) is compact in \(Y\) as the continuous image of a compact set. By Fact 3 applied in \(Y\), choose \(p\) with \(\sup_{v \in G(P_m K)}\|v - Q_p v\|_Y < \epsilon/3\).</p>
+<p><em>Step 3, the finite map.</em> Define \(\psi : \mathbb R^m \to \mathbb R^p\) by \(\psi(c) = (\langle G(\sum_j c_j e_j), f_i\rangle)_{i \le p}\). It is continuous as a composition of continuous maps. By construction \(D_p \psi E_m u = Q_p G(P_m u)\). Combine:
+\[\|G(u) - D_p\psi E_m u\| \le \|G(u) - G(P_m u)\| + \|G(P_m u) - Q_p G(P_m u)\| < \tfrac{2\epsilon}{3}.\]
+Now \(E_m(K)\) is compact in \(\mathbb R^m\), so a ReLU network \(N_\theta\) exists with \(\sup_{c \in E_m K}|\psi(c) - N_\theta(c)| < \epsilon/3\), and \(\|D_p\| = 1\). Total error under \(\epsilon\). \(\square\)</p>
+<p><strong>What the proof leaves uncontrolled.</strong> The size of \(N_\theta\), which depends on \(m\), \(p\), the modulus \(\omega\), and Pinkus's theorem, none of which is quantified. The data: no sample appears anywhere. The optimizer: \(\theta\) is asserted to exist. Behaviour off \(K\): the network is arbitrary there. For general Banach spaces the same argument needs an approximation property in place of a basis, which is why Assumptions 9 and 10 list specific spaces. This proof is also visibly a <em>linear</em> method in the output: \(D_p\) spans a fixed \(p\) dimensional subspace, which is the JMLR caveat about nonlinear approximation.</p>
+</div>
+</section>
+
+<section id="rates">
+<h2>Rates: when structure beats the curse</h2>
+<p>Kovachki, Lanthaler, Mishra (JMLR 2021, arXiv 2107.07562, <code>research_notes/web-papers.md:385-448</code>) give the FNO version of Theorem 11 and, more usefully, rates for two PDEs.</p>
+<div class="table-wrap"><table>
+<tr><th>Statement</th><th>Content</th></tr>
+<tr><td>Theorem 2.5</td><td>For continuous \(G : H^s(\mathbb T^d) \to H^{s'}(\mathbb T^d)\) and compact \(K \subset H^s\), for any \(\epsilon\) there is an FNO with \(\sup_K \|G(a) - N(a)\|_{H^{s'}} \le \epsilon\). Theorem 2.15: the same for the computable pseudo spectral \(\Psi\)-FNO, needing \(s > d/2\).</td></tr>
+<tr><td>Remark 3.1, Eq. 3.1</td><td>Lower bound: for generic continuous Lipschitz operators the worst case width grows like \(\epsilon^{-\epsilon^{-d/s}}\), super exponential in \(1/\epsilon\).</td></tr>
+<tr><td>Theorems 3.3, 3.4 (Darcy)</td><td>For \(a \in H^s(\mathbb T^d)\), \(s > d/2 + k\), the pseudo spectral error is \(\lesssim N^{-(k-1)}\), and a \(\Psi\)-FNO reaches it with width \(O(N^d)\) and depth \(O(\log(N^k/\epsilon))\); network size grows poly logarithmically in \(1/\epsilon\), with \(N \asymp \epsilon^{-1/(k-1)}\).</td></tr>
+<tr><td>Theorem 3.5 (Navier–Stokes)</td><td>One pseudo spectral step has error \(\lesssim \tau N^{-k} + O(\tau^2)\); over \(T/\tau\) steps the network has width \(O(N^d d_v)\) and depth \(O((T/\tau)\log(N^k/\epsilon))\), still sub log linear in \(1/\epsilon\) for \(s > d/2 + k\).</td></tr>
+</table></div>
+<p>The mechanism, in one sentence: an FNO layer can do exact differentiation in Fourier space and its nonlinearity can emulate the pointwise product of a pseudo spectral scheme, so an FNO can <em>imitate a numerical method</em> whose error is already known, layer by layer. The rate is a property of the PDE and the scheme, not of the architecture in general. Lanthaler, Mishra, Karniadakis prove the twin result for DeepONet: generic Lipschitz maps on \(m\) sensors need networks of size about \(\epsilon^{-m/2}\) (Remark 3.4), but the pendulum, an elliptic, a parabolic, and a hyperbolic example each get an algebraic rate \(\epsilon^{-\vartheta}\) with a finite, problem specific \(\vartheta\) (<code>:348-363</code>; the four exponents were not extracted from the HTML and must be read from the PDF).</p>
+<div class="callout"><p><strong>The exam question.</strong> Why do both papers single out specific PDEs instead of proving a blanket efficiency result? Because the escape from the curse is a property of the operator, its smoothness and structure, and the architecture only has to be expressive enough to exploit it. A bound for Darcy does not transfer to Helmholtz, and Module 10 shows Helmholtz is exactly where empirical transfer also fails (<code>research_notes/foundation.md:103-107</code>).</p></div>
+<p>The survey by Kovachki, Lanthaler, Stuart (arXiv 2402.15715) lists what is open in 2024: quantitative complexity outside linear and holomorphic operator classes; no optimization theory at all; the linear versus nonlinear approximation question; random features for operators (<code>research_notes/web-papers.md:268-300</code>). For linear operators the sample complexity is \(N \sim \epsilon^{-(\alpha + p)/(\alpha' + \min\{p - 1/2, s\})}\) (Theorem 5.1); for holomorphic operators the best \(n\) term rate is \(n^{1 - 1/p}\) in sup norm, dimension independent.</p>
+</section>
+
+<section id="learning">
+<h2>Learning theory: what a finite sample can determine</h2>
+<div class="math">
+<p><strong>Risks.</strong> With \(a \sim \mu\), \(R(\theta) = \mathbb E_{a \sim \mu}\|G_\theta(a) - G^\dagger(a)\|_Y^2\) and \(\hat R_n(\theta) = n^{-1}\sum_{i \le n}\|G_\theta(a_i) - G^\dagger(a_i)\|_Y^2\).</p>
+<p><strong>Claim (excess risk of empirical risk minimization).</strong> Let \(\hat\theta\) satisfy \(\hat R_n(\hat\theta) \le \inf_\theta \hat R_n(\theta) + \tau\) (the optimizer reached the empirical minimum up to tolerance \(\tau\)). Then for every \(\theta^*\),</p>
+\[ R(\hat\theta) - R(\theta^*) \le 2\sup_\theta|R(\theta) - \hat R_n(\theta)| + \tau . \]
+<p><strong>Proof.</strong> \(R(\hat\theta) \le \hat R_n(\hat\theta) + \Delta \le \hat R_n(\theta^*) + \tau + \Delta \le R(\theta^*) + 2\Delta + \tau\), with \(\Delta = \sup_\theta|R - \hat R_n|\). \(\square\)</p>
+<p><strong>What controls \(\Delta\).</strong> Finite risk: the loss must be bounded on the model class and the support of \(\mu\), which is where the \(4M\) clause of Theorem 11 earns its place. Complexity: covering numbers of the model class; for DeepONet, Lanthaler et al. Section 5 obtain \(O(n^{-1/2})\) up to logarithms (<code>web-papers.md:364-366</code>). The DeepONet paper's empirical \(x^{-1}\) generalization rate on the pendulum is faster than this bound and is not explained by it.</p>
+<p><strong>Distribution shift.</strong> Take \(\nu \ne \mu\) with \(\nu\) charging a set of \(\mu\) measure zero, for example inputs with a mode the training measure never excites. Two operators that agree \(\mu\)-almost everywhere have the same risk under \(\mu\) and the same empirical risk on any \(\mu\) sample, and may differ arbitrarily under \(\nu\). Nothing in ERM prefers one. This is Module 4's invisible bump at the level of measures, and it is the formal content of "transfer is conditional on distribution shift" in Module 10.</p>
+</div>
+</section>
+
+<section id="ledger">
+<h2>The error ledger</h2>
+<p>Five terms. Do not add them without an inequality that says you may.</p>
+<div class="table-wrap"><table>
+<tr><th>Term</th><th>What it measures</th><th>Controlled by</th><th>Theorem that bounds it</th></tr>
+<tr><td>Observation or encoding</td><td>what \(m\) samples or \(L\) grid points fail to record about the input</td><td>sensor count, grid, input regularity, covariance decay</td><td>Lanthaler Thm 3.8 (lower bound); JMLR Thm 8 (as \(L \to \infty\))</td></tr>
+<tr><td>Representation</td><td>distance from \(G^\dagger\) to the best model in the class</td><td>architecture, \(k_{\max}\), width, depth</td><td>JMLR Thm 11 to 14 (existence); KLM Thm 3.3 to 3.5 (rates, two PDEs)</td></tr>
+<tr><td>Finite data estimation</td><td>\(R(\hat\theta) - R(\theta^*)\) from \(n\) samples</td><td>\(n\), covering numbers, boundedness</td><td>ERM bound above; Lanthaler Section 5</td></tr>
+<tr><td>Optimization</td><td>\(\hat R_n(\hat\theta) - \inf \hat R_n\)</td><td>the training run</td><td>none (JMLR p.51; KLS survey)</td></tr>
+<tr><td>Discretization</td><td>\(\hat G_L(\cdot,\theta)\) versus \(G(\cdot,\theta)\)</td><td>\(L\), quadrature, aliasing</td><td>JMLR Thm 8, qualitative only</td></tr>
+</table></div>
+<div class="math">
+<p><strong>The one inequality you do have.</strong> JMLR page 12: \(\|\hat G_\theta(D_L, a|_{D_L}) - G^\dagger(a)\|_{\mathcal U} \le \|\hat G_\theta(D_L, a|_{D_L}) - G_\theta(a)\| + \|G_\theta(a) - G^\dagger(a)\|\), a triangle inequality that splits discretization from approximation for a fixed \(\theta\) (<code>research_notes/pdf-fno-jmlr.md:348-350</code>). The terms interact through \(\theta\): the \(\theta\) that minimizes the second term at one \(L\) is not the \(\theta\) you get from training at another \(L\). Lab 01 is this interaction: a model fitted at \(L = 64\), evaluated at \(L = 1024\), pays a grid scale oscillation that no term in the table predicts on its own.</p>
+</div>
+</section>
+
+<section id="sources">
+<h2>Sources</h2>
+<ul class="src">
+<li><span class="grade g-a">A</span> JMLR 2023, Definitions 1 to 4, p.8 to 9; Theorem 8, p.54; Assumptions 9 and 10 and Theorems 11 to 14, p.55 to 57: read from <code>21-1524.pdf</code> for this page; summaries at <code>research_notes/pdf-fno-jmlr.md:317-323</code>, <code>:465-516</code>.</li>
+<li><span class="grade g-a">A</span> JMLR 2023, sources of error p.50 to 51, linear approximation caveat p.52 and p.58, Section 10.1.3: <code>:508-516</code>, <code>:705-711</code>, <code>:725-730</code>.</li>
+<li><span class="grade g-a">A</span> Kovachki, Lanthaler, Mishra arXiv 2107.07562, Theorems 2.5, 2.15, 3.3 to 3.5, Remark 3.1: <code>research_notes/web-papers.md:385-448</code>.</li>
+<li><span class="grade g-a">A</span> Lanthaler, Mishra, Karniadakis arXiv 2102.09618, Theorems 3.1, 3.3, 3.6 to 3.8, Remark 3.4, Section 5: <code>:311-381</code>.</li>
+<li><span class="grade g-a">A</span> Kovachki, Lanthaler, Stuart arXiv 2402.15715, Theorems 4.1, 4.5, 5.1, Section 6: <code>:232-307</code>.</li>
+<li>Theory plan Modules 4, 9, 10. Reading: Pinkus 1999 for the finite dimensional density theorem; MIT 18.102 for compactness and uniform continuity.</li>
+</ul>
+</section>
+
+<section id="exit">
+<h2>Exit test: the five page note</h2>
+<p>With the page closed, write a five page note answering three questions. What can a neural operator represent? What can a finite dataset identify? Which guarantees survive discretization? The note must contain explicit assumptions, at least one full derivation (the construction above is the intended one), and at least one counterexample per question. You have reached the intended level when you can defend it aloud. Shorter checks:</p>
+<ol class="steps">
+<li>State Theorem 11 with all hypotheses, then remove compactness of \(K\) and give a counterexample.</li>
+<li>Reconstruct the three step construction and name every quantity it leaves uncontrolled.</li>
+<li>Derive the ERM excess risk bound and explain why \(\mu\) samples leave \(\nu\) predictions free.</li>
+<li>Explain why an FNO rate for Darcy does not give a rate for Helmholtz.</li>
+</ol>
+</section>
+
+<nav class="foot"><a href="04_deeponet_pinn_hybrids.html">← Module 4: DeepONet, PINN, hybrids</a><a href="06_meshes_geometry.html">Module 6: Meshes, geometry, spheres, attention →</a></nav>
+</div>
+</body>
+</html>

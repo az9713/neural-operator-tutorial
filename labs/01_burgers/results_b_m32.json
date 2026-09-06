@@ -1,0 +1,41 @@
+{
+  "run": "B_paper_spec",
+  "pde": "du/dt + d(u^2/2)/dx = nu d2u/dx2, periodic (0, 2 pi), t=1",
+  "nu": 0.1,
+  "u0_law": "N(0, 625(-d2/dx2+25I)^-2) on (0, 2 pi)",
+  "solver": "pseudo-spectral, RK4 + integrating factor",
+  "n_fine": 1024,
+  "dt": 0.0001,
+  "solver_dt_check_rel_diff": 1.93745209638979e-12,
+  "n_train": 1000,
+  "n_test": 200,
+  "train_res": 64,
+  "test_res": [
+    64,
+    128,
+    256,
+    1024
+  ],
+  "n_modes_arg": 32,
+  "k_max_effective": 16,
+  "width": 64,
+  "n_layers": 4,
+  "epochs": 500,
+  "batch": 20,
+  "optimizer": "Adam lr 1e-3, halved every 100 epochs",
+  "loss": "relative L2",
+  "params": 607809,
+  "seed": 0,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "train_rel_l2": 0.002736907685175538,
+  "test_rel_l2": {
+    "64": 0.02258215844631195,
+    "128": 0.026686305180191994,
+    "256": 0.026413245126605034,
+    "1024": 0.02639615722000599
+  },
+  "train_seconds": 737.7012786865234,
+  "torch": "2.11.0+cu128",
+  "paper_reference": "FNO at s=256: 0.0149 (pdf-fno-jmlr.md:104), nu=0.1, 8192-point solve"
+}

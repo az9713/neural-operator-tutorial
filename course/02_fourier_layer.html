@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Module 2 · The Fourier layer from the convolution theorem</title>
+<link rel="stylesheet" href="course.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div class="wrap">
+<p class="eyebrow">Module 2 of 13 · one week</p>
+<h1>The Fourier layer from the convolution theorem</h1>
+<p class="dek">One layer, derived from a translation invariant kernel, then trained on Burgers' equation. The lab reproduces the FNO paper's Table 3 setup at four resolutions and records what the paper does not show: the output spectrum, the effect of \(k_{\max}\), and a grid scale artifact at unseen resolutions.</p>
+<p class="meta">Absorbs theory plan Module 7. Primary sources: FNO ICLR 2021, Section 4, Definition 3, Figure 2, Appendix A.2; JMLR 2023, Section 4.4. Lab: <code>../labs/01_burgers/</code>.</p>
+
+<nav class="top">
+<a href="index.html">Course home</a>
+<a href="#why">Why</a>
+<a href="#ideas">Core ideas</a>
+<a href="#math">Mathematics</a>
+<a href="#lab">Lab 01</a>
+<a href="#sources">Sources</a>
+<a href="#exit">Exit test</a>
+</nav>
+
+<section id="why">
+<h2>Why this module exists</h2>
+<p>Anandkumar's explanation of the Fourier choice (earlier episode, 00:19:19 to 00:25:53) has three parts: differentiation is local but integration, the inverse, is nonlocal, so the layer must reach across the domain; the Fourier transform does this in \(O(n \log n)\) where attention costs \(O(n^2)\); and the nonlinearity between Fourier layers is what makes the model more than a fixed basis expansion (<code>research_notes/company-episode.md:33-37</code>). All three are correct. None of them tells you what the layer computes. This module derives the layer, then trains it.</p>
+</section>
+
+<section id="ideas">
+<h2>Core ideas</h2>
+<h3>The layer</h3>
+<p>Take the general layer of Module 3 and impose two things: the kernel depends only on the difference \(x - y\), and the domain is a periodic box. Then the integral is a convolution and the convolution theorem turns it into a multiplication of Fourier coefficients (ICLR Definition 3, p.5):</p>
+<div class="math">
+\[ (K v)(x) = \mathcal F^{-1}\big(R \cdot \mathcal F v\big)(x), \qquad v_{t+1}(x) = \sigma\Big(W v_t(x) + \mathcal F^{-1}\big(R \cdot \mathcal F v_t\big)(x)\Big). \]
+<p>\(R(k) \in \mathbb C^{d_v \times d_v}\) is a learned matrix for each retained wave number \(k\) with \(|k_j| \le k_{\max,j}\); it is set to zero for all other \(k\). \(R\) is conjugate symmetric so the output is real. The retained set is a box in \(k\), not a ball, because the box is what slices cheaply in an FFT array (ICLR p.5, <code>research_notes/pdf-fno-jmlr.md:45-50</code>). The parameters are \(k_{\max}^d \cdot d_v^2\) complex numbers per layer; with \(k_{\max} = 12\), \(d_v = 32\) in 2D that is \(144 \times 1024\) per layer.</p>
+</div>
+<p>Three facts about the layer are easy to miss.</p>
+<ol class="steps">
+<li><strong>The \(W\) path is not a detail.</strong> The FFT assumes periodicity. Darcy flow has Dirichlet boundaries and the Navier–Stokes time axis is not periodic, and both are learned. The paper's explanation, page 9: the pointwise linear map \(W\) "keeps track of the non-periodic boundary" (<code>research_notes/pdf-fno-jmlr.md:71-77</code>). In the JMLR version, zero padding the input and computing the loss only on the original region is the recommended treatment of non periodic domains (<code>:416-423</code>).</li>
+<li><strong>Truncating \(R\) at \(k_{\max}\) does not band limit the output.</strong> A pointwise nonlinearity creates new frequencies (proved below). The ICLR Appendix A.2 measures this on turbulent Navier–Stokes: truncating the true solution at 20 modes costs about 2 percent error, but an FNO with \(k_{\max} = 12\) parameterized modes reaches at most 1 percent (<code>:178-184</code>). The lab below shows the same regeneration on Burgers, and also its limit.</li>
+<li><strong>How to choose \(k_{\max}\).</strong> The JMLR rule of thumb, page 22: one third to two thirds of the largest mode in the FFT of the input grid (<code>:413-415</code>). The paper uses \(k_{\max} = 16\), \(d_v = 64\) in 1D and \(k_{\max} = 12\), \(d_v = 32\) in 2D (<code>:78-83</code>). The library you will use counts modes differently from the paper; see the lab.</li>
+</ol>
+<h3>Why the parameters transfer across grids</h3>
+<p>\(R\) is indexed by wave number, not by grid point. The basis functions \(e^{2\pi i \langle k, x\rangle}\) are defined at every \(x\). Evaluating the layer on a finer grid means computing the same multipliers on a longer FFT, with the extra bins set to zero. That is why one parameter set can be run at any resolution (ICLR p.6, <code>:62-64</code>). Whether the answer is accurate at a resolution you never trained on is a separate question, and it is the subject of Module 1 and of the lab below.</p>
+</section>
+
+<section id="math">
+<h2>Mathematics: convolution, multipliers, and new frequencies</h2>
+<h3>Convolution theorem on the torus</h3>
+<div class="math">
+<p>Let \(\mathbb T = \mathbb R / \mathbb Z\) and \(\hat f(k) = \int_{\mathbb T} f(x) e^{-2\pi i k x}\,dx\). If \(k(x,y) = \kappa(x - y)\) then</p>
+\[ \widehat{Kv}(k) = \int_{\mathbb T}\!\!\int_{\mathbb T} \kappa(x-y) v(y)\,dy\, e^{-2\pi i k x}\,dx
+ = \int_{\mathbb T} v(y) e^{-2\pi i k y} \int_{\mathbb T} \kappa(z) e^{-2\pi i k z}\,dz\,dy = \hat\kappa(k)\,\hat v(k), \]
+<p>after the substitution \(z = x - y\), which is legal because the torus is translation invariant. So a translation invariant integral operator is diagonal in the Fourier basis, and its whole action is the multiplier sequence \(\hat\kappa(k)\). An FNO layer learns \(\hat\kappa(k)\) directly, as \(R(k)\), for a finite set of \(k\). \(\square\)</p>
+</div>
+<h3>Two multipliers you already know</h3>
+<div class="math">
+<p><strong>Heat.</strong> \(u_t = \kappa u_{xx}\) on \(\mathbb T\). Take Fourier coefficients: \(\hat u_t(k) = -4\pi^2 k^2 \kappa\, \hat u(k)\), so \(\hat u(k,t) = e^{-4\pi^2\kappa k^2 t}\,\hat u(k,0)\). The solution operator at time \(t\) is the multiplier \(e^{-4\pi^2 \kappa t |k|^2}\). It damps mode \(k\) by a factor that is exponential in \(k^2\); inverting it multiplies noise at mode \(k\) by the reciprocal, which is why backward heat is ill posed.</p>
+<p><strong>Inverse Laplacian.</strong> \(-u'' = f\) on \(\mathbb T\): \(4\pi^2 k^2 \hat u(k) = \hat f(k)\), so \(\hat u(k) = \hat f(k) / (4\pi^2 k^2)\) for \(k \ne 0\). At \(k = 0\) the left side is zero, so a solution exists only if \(\hat f(0) = \int f = 0\), and then \(\hat u(0)\) is free. That is the compatibility condition; a learned multiplier at \(k = 0\) has to be told what to do with the mean.</p>
+<p><strong>What a learned multiplier is not.</strong> \(R(k)\) is a matrix per \(k\) acting across channels, with no formula in \(k\). The paper tried making \(R\) a neural network of \(k\) and found it worse, "likely due to the discrete structure of the space \(\mathbb Z^d\)" (ICLR p.6, <code>:54-57</code>).</p>
+</div>
+<h3>A pointwise nonlinearity creates new frequencies</h3>
+<div class="math">
+<p><strong>Claim.</strong> If the spectral branch is truncated at \(k_{\max}\), the layer output is not band limited to \(k_{\max}\).</p>
+<p><strong>Proof by example.</strong> Let \(v(x) = \cos(2\pi k x)\) with \(k \le k_{\max}\), and \(\sigma(z) = z^2\). Then \(\sigma(v) = \tfrac12 + \tfrac12\cos(4\pi k x)\), which has a component at wave number \(2k\). For GELU or ReLU the same happens with an infinite series of harmonics, because these functions are not polynomials of degree one. Composing \(T\) layers moves energy up to \(2^T k_{\max}\) and beyond. \(\square\)</p>
+<p><strong>The other side.</strong> The regenerated content is not free. It is whatever the nonlinearity and \(W\) produce from the low modes, trained to match the data at the training grid. Above the training grid's Nyquist frequency nothing was ever penalized. The lab measures what appears there.</p>
+</div>
+<h3>Translation equivariance and the coordinate channel</h3>
+<p>The spectral branch commutes with translations on the torus, because a multiplier does. The library's default <code>positional_embedding='grid'</code> appends the coordinate \(x\) as an input channel, which breaks that symmetry on purpose: it lets the model learn position dependent behaviour, which Darcy's boundaries need. On a periodic problem it is a ramp with a jump at \(x = 1\). Keep this in mind when reading the lab's spectrum.</p>
+</section>
+
+<section id="lab">
+<h2>Lab 01: Burgers at four resolutions</h2>
+<p><span class="grade g-lab">LAB</span> Scripts, seeds, and results files are in <code>../labs/01_burgers/</code>. Three runs.</p>
+
+<h3>Run A: the bundled data through the library's own path</h3>
+<p><code>run_a_bundled.py</code>, results in <code>results_a.json</code>. The <code>neuraloperator</code> repository ships <code>burgers_train_16.pt</code> and <code>burgers_test_16.pt</code>: 800 train and 400 test samples, viscosity 0.01, the initial condition on 16 periodic points as input, the trajectory on 17 time steps by 16 points as output. The library's <code>Burgers1dTimeDataProcessor</code> repeats the input along time, so the model is a 2D FNO over \((t, x)\). Model: <code>n_modes=(8, 8)</code>, 32 hidden channels, 4 layers, 340,833 parameters. Trained with the library <code>Trainer</code>, AdamW, H1 loss, 100 epochs, 44 s on the GPU.</p>
+<div class="table-wrap"><table>
+<tr><th>Quantity</th><th class="num">Value</th><th>Where</th></tr>
+<tr><td>Test relative L2, 400 samples, un-normalized</td><td class="num">0.0044</td><td><code>results_a.json</code></td></tr>
+<tr><td>Train relative L2</td><td class="num">0.0041</td><td><code>results_a.json</code></td></tr>
+<tr><td>Same script, earlier run (CUDA nondeterminism)</td><td class="num">0.0040</td><td>terminal log</td></tr>
+</table></div>
+<p>The pip package does not contain the two data files; they were downloaded from the repository into <code>../data/</code>. The library's <code>preprocess(..., batched=False)</code> path fails for this dataset (it unpacks four dimensions from a three dimensional sample), so the figure script uses a batch. Note the pattern for later modules: A run that goes through the library's <code>Trainer</code> is easy and opaque. Run B is written out by hand so that every step is visible.</p>
+<figure><img src="../labs/01_burgers/fig_a_samples.png" alt="Three test samples of the bundled Burgers data: input repeated in time, truth, and FNO prediction as t by x images"><figcaption>Run A. Left: input \(u_0\) repeated along \(t\). Middle: the true \(u(t,x)\). Right: the FNO. Test relative L2 0.0044.</figcaption></figure>
+
+<h3>Run B: the paper's specification, with a solver you can check</h3>
+<p><code>run_b_paper_spec.py</code>. The task is the FNO paper's Burgers experiment: \(u_t + (u^2/2)_x = \nu u_{xx}\), periodic, \(\nu = 0.1\), \(u_0 \sim N(0, 625(-\partial_{xx} + 25 I)^{-2})\), learn \(u_0 \mapsto u(\cdot, 1)\), 1000 train, 200 test (<code>research_notes/pdf-fno-jmlr.md:93-96</code>).</p>
+<div class="warn"><p><strong>The domain matters, and the two versions of the paper disagree.</strong> The ICLR text says \(x \in (0,1)\). The JMLR text, page 32, equation 41, says \(x \in (0, 2\pi)\). On \((0,1)\) with \(\nu = 0.1\), mode \(k = 1\) decays by \(e^{-0.1 (2\pi)^2} = 0.019\) in one time unit, so \(u(\cdot, 1)\) is nearly constant and Table 3's errors could not arise. On \((0, 2\pi)\), \(k = 1\) decays by \(e^{-0.1} = 0.905\) and fronts form. The lab uses \((0, 2\pi)\). The correction is recorded at the end of <code>research_notes/pdf-fno-jmlr.md</code>.</p></div>
+<p><strong>The solver.</strong> Pseudo spectral on 1024 points, diffusion exact through an integrating factor, advection by RK4 with 2/3 dealiasing, \(\Delta t = 10^{-4}\). Two checks run before any training and stop the script if they fail: the solution changes by \(1.9 \times 10^{-12}\) in relative L2 when \(\Delta t\) is halved, and the L2 norm decreases from \(t = 0\) to \(t = 1\) for every sample (norm ratio 0.615). A separate check showed the 1024 point solution agrees with a 2048 point solution to \(9 \times 10^{-12}\), and the solution's mean \(|\hat u_k|\) at \(k = 32\) is \(5 \times 10^{-6}\), so 1024 points resolve it. The first version of this solver used single precision wave numbers by accident and failed the \(\Delta t\) check at \(2 \times 10^{-5}\); the check is there for that reason.</p>
+<p><strong>The initial condition.</strong> Karhunen–Loève expansion on \((0, 2\pi)\): coefficient standard deviation \(25/(k^2 + 25)\) on the orthonormal functions \(\cos(kx)/\sqrt\pi\), \(\sin(kx)/\sqrt\pi\), and \(1/\sqrt{2\pi}\) at \(k = 0\). Sample standard deviation of \(u_0\) is 1.02, largest values about 3.4. Data generation took 120 s for 1200 samples.</p>
+<p><strong>Training.</strong> Subsample the 1024 point fields to 64 points by taking every sixteenth point. FNO in 1D, 64 hidden channels, 4 layers, relative L2 loss, Adam at \(10^{-3}\) halved every 100 epochs, 500 epochs, batch 20. Evaluate the same weights at 64, 128, 256, and 1024 points with no retraining. Run time 297 s alone on the GPU for the first run; 420 s for the second run, which shared the GPU with the thermal lab and whose files are the ones on disk (<code>results_b_m16.json</code>, <code>train_seconds</code>).</p>
+<div class="warn"><p><strong>The library counts modes differently from the paper.</strong> In <code>neuraloperator 2.0.0</code>, <code>SpectralConv</code> keeps <code>n_modes // 2 + 1</code> bins on the real FFT axis (<code>neuralop/layers/spectral_convolution.py:399</code>). So <code>n_modes=(16,)</code> keeps \(k = 0, \dots, 8\), and the paper's \(k_{\max} = 16\) needs <code>n_modes=(32,)</code>. The lab ran both. Output files carry the suffix <code>_m16</code> or <code>_m32</code>.</p></div>
+
+<div class="table-wrap"><table>
+<tr><th>Run</th><th>Effective \(k_{\max}\)</th><th class="num">Params</th><th class="num">Train</th><th class="num">Test 64</th><th class="num">Test 128</th><th class="num">Test 256</th><th class="num">Test 1024</th><th>File</th></tr>
+<tr><td>B, <code>n_modes=16</code></td><td>8</td><td class="num">345,665</td><td class="num">0.0049</td><td class="num">0.0224</td><td class="num">0.0350</td><td class="num">0.0348</td><td class="num">0.0348</td><td><code>results_b_m16.json</code></td></tr>
+<tr><td>B, <code>n_modes=32</code></td><td>16</td><td class="num">607,809</td><td class="num">0.0027</td><td class="num">0.0226</td><td class="num">0.0267</td><td class="num">0.0264</td><td class="num">0.0264</td><td><code>results_b_m32.json</code></td></tr>
+<tr><td>ICLR Table 3, FNO, trained and tested at s = 256</td><td>16</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">0.0149</td><td class="num">0.0160 (s=1024)</td><td><code>pdf-fno-jmlr.md:105</code></td></tr>
+<tr><td>JMLR Table 3, FNO, same</td><td>16</td><td class="num">—</td><td class="num">0.0012</td><td class="num">—</td><td class="num">—</td><td class="num">0.0018</td><td class="num">0.0018</td><td><code>pdf-fno-jmlr.md:579-583</code></td></tr>
+</table></div>
+<p>Read the comparison with care. The paper trains and tests at the same resolution, one model per column, on data solved at 8192 points. The lab trains once at 64 points and tests everywhere. Three things in the lab table deserve a sentence each.</p>
+<ol class="steps">
+<li><strong>Train 0.0049, test 0.0224.</strong> A gap of four to five times with 1000 training samples. The JMLR run reports train 0.0012, test 0.0018, almost no gap. One difference is the training grid: at 64 points the subsampled input is aliased. The input's coefficient standard deviation is \(25/(k^2+25)\), so the energy above the 64 point Nyquist mode \(k = 32\) is \(\sum_{k > 32} 625/(k^2+25)^2 \approx 625/(3 \cdot 32^3) \approx 6 \times 10^{-3}\), about 0.5 percent of the total, and every bit of it folds onto lower modes when you take every sixteenth point. The exercise below tests whether this is the cause.</li>
+<li><strong>0.0224 at 64, then 0.0350 at 128, 256, and 1024.</strong> Error rises by 56 percent at the first unseen resolution and is then flat. The finer grids contain input modes above \(k = 32\) that the training grid never carried. The spectral branch ignores them, since \(k_{\max}\) is 8, but the lifting and \(W\) paths see the raw point values. This is the "unresolved information" caveat of Module 1 measured, not asserted.</li>
+<li><strong>Doubling \(k_{\max}\) from 8 to 16 changes nothing at the training grid and halves the penalty at unseen grids.</strong> Test error at 64 points is 0.0224 against 0.0226. At 128 to 1024 points it is 0.0350 against 0.0264, a rise of 56 percent against 18 percent over the training grid number. Training error drops from 0.0049 to 0.0027 with 1.76 times the parameters, so the wider spectral branch fits the training set better and generalizes the same. The paper's rule of thumb, one third to two thirds of the grid's maximum mode, puts \(k_{\max}\) between 11 and 21 for a 64 point grid; 8 is below it and 16 inside it. The 738 s run time of the <code>_m32</code> run is not comparable to the 297 s of <code>_m16</code>: it shared the GPU with another job. A second <code>_m16</code> run, made to save the weights, reproduced the first to within 0.0002 at every resolution (0.0224, 0.0351, 0.0349, 0.0349) and put \(1.44 \times 10^{-2}\) at the Nyquist bin against \(1.42 \times 10^{-2}\); its results, spectrum, and weights files replaced the first ones on disk, and the spectrum table below reads from the second run.</li>
+<li><strong>The 1024 point prediction looks right.</strong> The figure below shows three test samples at 1024 points; the fronts are in the right place with the right steepness. A 3.5 percent relative L2 error is a small visible defect near the steepest front, where the truth's curvature is largest.</li>
+</ol>
+<figure><img src="../labs/01_burgers/fig_b_samples_m16.png" alt="Three test samples at 1024 points: rough input, smooth true solution at t=1 with steep fronts, FNO prediction overlaid"><figcaption>Run B, <code>n_modes=16</code>. Grey: \(u_0\). Black: \(u(\cdot,1)\). Orange dashed: the FNO evaluated at 1024 points after training at 64.</figcaption></figure>
+
+<h3>The output spectrum</h3>
+<figure><img src="../labs/01_burgers/fig_b_spectrum_m32.png" alt="Four panels of output spectra for the n_modes=32 run"><figcaption>Run B, <code>n_modes=32</code> (effective \(k_{\max} = 16\)). Same layout as the figure below. Data: <code>spectrum_b_m32.npz</code>. At 1024 points the prediction is \(1.32 \times 10^{-5}\) at \(k = 64\) against a truth of \(2.85 \times 10^{-8}\), and \(5.64 \times 10^{-3}\) at the Nyquist bin: the same floor and the same kind of grid scale oscillation as the \(k_{\max} = 8\) run, at 40 percent of the amplitude.</figcaption></figure>
+<figure><img src="../labs/01_burgers/fig_b_spectrum_m16.png" alt="Four panels, one per test resolution, showing mean Fourier magnitude of input, truth, and FNO prediction against wave number"><figcaption>Mean \(|\hat u_k|\) over the 200 test samples at each test resolution. Grey: input. Black: truth. Orange dashed: FNO. Dotted: \(k_{\max}\) of the spectral branch. Data: <code>spectrum_b_m16.npz</code>.</figcaption></figure>
+<div class="table-wrap"><table>
+<tr><th>Wave number \(k\)</th><th class="num">Truth</th><th class="num">FNO at 64</th><th class="num">FNO at 1024</th><th>Reading</th></tr>
+<tr><td>1</td><td class="num">2.61e-1</td><td class="num">2.61e-1</td><td class="num">2.60e-1</td><td>exact</td></tr>
+<tr><td>8 (last parameterized mode)</td><td class="num">1.38e-2</td><td class="num">1.38e-2</td><td class="num">1.36e-2</td><td>exact</td></tr>
+<tr><td>16</td><td class="num">1.24e-3</td><td class="num">1.25e-3</td><td class="num">1.21e-3</td><td>regenerated by the nonlinearity, still exact</td></tr>
+<tr><td>24</td><td class="num">1.54e-4</td><td class="num">1.94e-4</td><td class="num">1.82e-4</td><td>26 percent high; the floor begins</td></tr>
+<tr><td>32</td><td class="num">2.96e-5</td><td class="num">8.49e-5</td><td class="num">6.31e-5</td><td>three times too much energy</td></tr>
+<tr><td>64 (at 1024 points)</td><td class="num">2.85e-8</td><td class="num">—</td><td class="num">1.26e-5</td><td>440 times too much; a flat floor near \(10^{-5}\)</td></tr>
+<tr><td>Nyquist bin, \(k = N/2\), at 128, 256, 1024</td><td class="num">\(\le 4 \times 10^{-8}\)</td><td class="num">—</td><td class="num">1.44e-2</td><td>a grid scale oscillation, identical at every unseen grid</td></tr>
+</table></div>
+<p>Three readings. First, the nonlinearity does regenerate modes above \(k_{\max}\): the prediction tracks the truth to \(k \approx 20\) with only 9 parameterized bins, which is the Appendix A.2 claim reproduced on a different equation. Second, the regeneration has a floor: from \(k \approx 24\) on, the prediction carries a flat spectrum near \(10^{-4}\) to \(10^{-5}\) while the truth keeps falling, and at 1024 points that floor is 440 times the true content at \(k = 64\). Third, at every resolution the model never trained on, the output has a component of magnitude \(1.44 \times 10^{-2}\) at the Nyquist bin \(k = N/2\), and \(4.42 \times 10^{-3}\) at \(N/2 - 1\), the same numbers at 128, 256, and 1024. A coefficient at the Nyquist bin that does not change with \(N\) is an odd–even oscillation of fixed amplitude across the grid. At the training grid it is absent (\(8.5 \times 10^{-5}\) at \(k = 32\)), because the loss saw it. At unseen grids nothing penalized it. It contributes about \(0.014 / 0.6 \approx 2\) percent relative L2 by itself, which is most of the jump from 0.022 to 0.035.</p>
+<div class="callout"><p><strong>What the spectrum teaches.</strong> "Zero shot super resolution" in this run means: the low modes are exact, the nonlinearity extends accuracy to about \(2.5 k_{\max}\), and above that the model outputs a floor plus a grid scale oscillation that a picture does not show and an L2 number does not separate. Module 8's banded metric exists to catch this. Module 1's exercise finds where the oscillation comes from.</p></div>
+
+<h3>Run C: the counterexample</h3>
+<p><code>run_c_cnn_baseline.py</code>. A plain periodic CNN on the same data, kernel fixed in grid points. Module 1 reports it; the point is that its physical receptive field shrinks as the grid refines. The first attempt, 4 layers of kernel 5 (17 points), could not fit even the training grid: test 0.51 at 64 points, 1.08 at 1024 (<code>results_c_rf17.json</code>). The wider version (8 layers of kernel 7, 49 points) is queued; its numbers go in Module 1.</p>
+
+<h3>Exercises that extend the lab</h3>
+<ol class="steps">
+<li><strong>Anti aliased training.</strong> Replace "take every sixteenth point" by "truncate the 1024 point Fourier series at \(k = 32\), then sample". Retrain. Prediction: the train–test gap shrinks and the 64 point test error drops toward the 128 point error, because the aliased energy of about 0.5 percent is gone. Not yet run.</li>
+<li><strong>The \(W\) path.</strong> Set <code>fno_skip=None</code> and <code>positional_embedding=None</code> and retrain. Prediction: the Nyquist artifact changes or disappears, since the coordinate ramp with its jump at the boundary is the one non periodic input. Not yet run; the trained weights of the queued <code>_m32</code> and <code>_m16</code> reruns are saved as <code>model_b_m32.pt</code>, <code>model_b_m16.pt</code> so the artifact can be probed without retraining.</li>
+<li><strong>Width and depth.</strong> Repeat with 32 and 128 channels, 2 and 6 layers. Record the \(k\) at which the prediction leaves the truth. Prediction from the frequency doubling argument: it grows with depth, not with width.</li>
+</ol>
+</section>
+
+<section id="sources">
+<h2>Sources</h2>
+<ul class="src">
+<li><span class="grade g-a">A</span> FNO ICLR 2021, Section 4, Definition 3, complexity, discretization argument, R parameterizations, p.5 to 6: <code>research_notes/pdf-fno-jmlr.md:45-64</code>.</li>
+<li><span class="grade g-a">A</span> FNO ICLR 2021, Figure 2 and the \(W\) term, p.4 and p.9: <code>:66-77</code>; Appendix A.2 spectral analysis, p.13 to 14: <code>:174-184</code>.</li>
+<li><span class="grade g-a">A</span> FNO Burgers setup and Table 3, p.7 and p.14 to 15: <code>:93-106</code>; JMLR Table 3 and GeLU note, p.39: <code>:566-584</code>; domain correction: end of the same file.</li>
+<li><span class="grade g-a">A</span> JMLR 2023, Section 4.4, mode rule of thumb p.22, zero padding p.23 to 24: <code>:404-423</code>.</li>
+<li><span class="grade g-lab">LAB</span> <code>../labs/01_burgers/results_a.json</code>, <code>results_b_m16.json</code>, <code>spectrum_b_m16.npz</code>, <code>results_c_rf17.json</code>; seed 0 throughout.</li>
+<li><span class="grade g-c">C</span> Earlier episode 00:19:19 to 00:25:53: <code>research_notes/company-episode.md:33-37</code>.</li>
+<li>Theory plan Module 7. Reading: Trefethen, <em>Spectral Methods in MATLAB</em>, programs on Fourier differentiation.</li>
+</ul>
+</section>
+
+<section id="exit">
+<h2>Exit test</h2>
+<ol class="steps">
+<li>Derive the heat multiplier and the zero mean inverse Laplacian multiplier on the torus, and state the compatibility condition at \(k = 0\).</li>
+<li>Show that a pointwise nonlinearity can generate a frequency outside the retained band, and explain why this does not make the output accurate there.</li>
+<li>From the lab: explain why a Fourier coefficient at the Nyquist bin that is the same at 128, 256, and 1024 points must be a grid scale oscillation, and estimate its contribution to relative L2.</li>
+<li>State the difference between \(k_{\max}\) in the paper and <code>n_modes</code> in the library, with the file and line that defines it.</li>
+</ol>
+</section>
+
+<nav class="foot"><a href="01_functions_in_functions_out.html">← Module 1: Functions in, functions out</a><a href="03_four_answers.html">Module 3: Four answers →</a></nav>
+</div>
+</body>
+</html>

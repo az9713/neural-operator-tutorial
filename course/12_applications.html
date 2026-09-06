@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Module 12 · Applications and industry</title>
+<link rel="stylesheet" href="course.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div class="wrap">
+<p class="eyebrow">Module 12 of 13 · one week</p>
+<h1>Applications and industry: what is public, what is claimed</h1>
+<p class="dek">Six applications with papers, one industry with none, and one company whose claims are graded line by line. The module's product is an evidence ledger, and the method is the one every page of this course uses: primary page, abstract, or press.</p>
+<p class="meta">Primary sources: <code>research_notes/lineage.md</code> (arXiv identifiers verified by fetching each abstract page), <code>research_notes/company-episode.md</code> (both episodes and press), <code>research_notes/foundation.md</code> Section 11 (weather).</p>
+
+<nav class="top">
+<a href="index.html">Course home</a>
+<a href="#why">Why</a>
+<a href="#public">Six public applications</a>
+<a href="#semis">Semiconductors</a>
+<a href="#company">The company, graded</a>
+<a href="#lab">Lab: the ledger</a>
+<a href="#sources">Sources</a>
+<a href="#exit">Exit test</a>
+</nav>
+
+<section id="why">
+<h2>Why this module exists</h2>
+<p>Decision 6 of this course keeps Accelerated Understanding as a case study with an explicit evidence grade on every claim. Decision 3 anchors the course in semiconductors, where the public neural operator literature from the Anandkumar group is empty (<code>research_notes/lineage.md:328-329</code>). Both decisions need the same skill: reading a speed up or accuracy claim and asking what was measured, against what, on which hardware, by whom.</p>
+</section>
+
+<section id="public">
+<h2>Six public applications</h2>
+<div class="table-wrap"><table>
+<tr><th>Application</th><th>Paper</th><th>Method</th><th>Headline number</th><th>Caveat</th><th>Grade</th></tr>
+<tr><td>Global weather</td><td>FourCastNet, arXiv 2202.11214; FourCastNet 3, arXiv 2507.12144</td><td>Adaptive FNO layers; then spherical harmonics (SFNO, 2306.03838); then a geometric probabilistic ensemble</td><td>Week long forecast at 0.25° in under 2 s. FourCastNet 3: 60 day forecast at 0.25°, 6 hourly, under 4 minutes on one GPU, 8 to 60× faster than diffusion methods it rivals</td><td>Trained on ERA5 reanalysis, which itself comes from physics based assimilation. Deterministic v1; probabilistic only in v3. Initial conditions still come from classical assimilation (Aurora has the same dependence)</td><td><span class="grade g-b">B</span> <code>lineage.md:250-271</code></td></tr>
+<tr><td>Tokamak plasma</td><td>Gopakumar et al., arXiv 2302.06542; Nuclear Fusion 64, 056025 (2024), arXiv 2311.05967</td><td>FNO on JOREK MHD simulations and MAST camera data</td><td>Six orders of magnitude faster than the MHD solver at about \(10^{-5}\) normalized MSE; forecasts filament formation at half the shot duration</td><td>Forecasting, not control. No closed loop control paper found; the podcast's "control" framing is a plan (earlier episode 01:05:30)</td><td><span class="grade g-b">B</span> <code>lineage.md:284-304</code></td></tr>
+<tr><td>CO2 storage</td><td>Wen et al., Energy &amp; Environmental Science 16, 1732 (2023), arXiv 2210.17051</td><td>Nested FNOs at several refinement levels</td><td>Nearly 700,000× speed up in flow prediction</td><td>Speed up against "existing numerical methods" as stated in the abstract; the reference solver and hardware are in the paper body, not read here</td><td><span class="grade g-b">B</span> <code>lineage.md:306-315</code></td></tr>
+<tr><td>Catheter design</td><td>Zhou et al., arXiv 2304.14554</td><td>FNO surrogate inside a geometry search, then E. coli experiments and 3D printed prototypes</td><td>1 to 2 orders of magnitude less bacterial contamination upstream than a smooth catheter</td><td>The journal venue ("Science Advances") is unverified from the arXiv page. The catheter example appears in the company episode, not the earlier one (<code>company-episode.md:97-98</code>, <code>:156</code>)</td><td><span class="grade g-b">B</span> <code>lineage.md:273-282</code></td></tr>
+<tr><td>Seismic inversion</td><td>Yang et al., The Seismic Record 1, 126 (2021), arXiv 2108.05421</td><td>Neural operator trained across random velocity models; autodiff through it for full waveform inversion</td><td>Nearly an order of magnitude faster than conventional full waveform inversion</td><td>An inverse problem, the use pattern the others lack. Grid free evaluation above training resolution is claimed in the abstract</td><td><span class="grade g-b">B</span> <code>lineage.md:317-326</code></td></tr>
+<tr><td>Automotive aerodynamics</td><td>GINO, arXiv 2309.00583; UPT, arXiv 2402.12365; Transolver++, arXiv 2502.02414</td><td>Signed distance function plus GNO in, FNO in a latent grid, GNO out; or attention over learned slices</td><td>GINO: 26,000× speed up over optimized GPU CFD for drag at Reynolds up to 5 million, one quarter the error of other deep learning methods on unseen geometry. Transolver++: over 20 percent gain on million point car and aircraft meshes</td><td>Speed up is for drag coefficient computation, one scalar per geometry, not the full field. UPT reports GINO at 900 s per epoch against its own 4 s (<code>foundation.md:66</code>)</td><td><span class="grade g-b">B</span> <code>lineage.md:60-69</code>, <code>:137-146</code></td></tr>
+</table></div>
+<p>The Bayesian inverse problem in the FNO paper itself is the model for how to read a speed up: 0.005 s per FNO evaluation against 2.2 s for the pseudo spectral solver on a 256² grid, both on GPU, 30,000 evaluations, 2.5 minutes against over 18 hours, and the paper counts the 12 hours of data generation and training against the FNO and still finds it faster for repeated use (<code>research_notes/pdf-fno-jmlr.md:159-172</code>). The two benchmark papers add the standard of honesty: MeshGraphNets, "we find it hard to provide a 'true' hardware-agnostic performance comparison"; PDEBench, "Whether or not this constitutes a fair comparison is surely debatable" (<code>research_notes/pdf-mgn-pdebench.md:331</code>).</p>
+</section>
+
+<section id="semis">
+<h2>Semiconductors: the anchor with no public literature</h2>
+<p>A search for Anandkumar group neural operator work on semiconductor or chip physics returned nothing. Two papers from other groups apply physics informed operators to EUV lithography mask simulation: "Physics-Informed Neural Operator for Warm-Starting Background-Decomposed and Preconditioned PSFD: Enabling Scalable 3-D EUV Mask Simulation" and "Physics-informed neural networks and neural operators for a study of EUV electromagnetic wave diffraction from a lithography mask". Their arXiv identifiers were not verified and must be before either is cited (<code>research_notes/lineage.md:328-329</code>). The company names chip design as its first market: physics modelling of chip performance under heat and materials constraints (<code>company-episode.md:126-128</code>; seed episode 20:27 to 22:58). Anandkumar names inverse lithography mask design and quantum dot gate design as inverse design examples in the earlier episode (01:16:00 to 01:17:15, <code>:81</code>).</p>
+<div class="callout"><p><strong>What this course does about it.</strong> It generates its own semiconductor data. Lab 02 (Module 6) solves steady heat conduction in a 10 mm silicon die with random rectangular power blocks, the simplest physics behind "faster chips that don't melt", with a finite difference solver checked against an analytic solution. Every parameter is a modelling choice made in this folder and marked as such. It is a first physics, not the field: EUV mask diffraction is a Maxwell problem on nanometre features, drift–diffusion is a coupled nonlinear system, and neither has public neural operator data either.</p></div>
+</section>
+
+<section id="company">
+<h2>Accelerated Understanding, claim by claim</h2>
+<p>Launched 25 August 2026 by Anima Anandkumar and Benedikt Jenik after declining a reported 35 percent stake, a salary package rising to 2 million dollars, and over 2 billion dollars of committed financing at Project Prometheus (<code>company-episode.md:117-139</code>). Funding and investors undisclosed. The seed episode is 26 minutes 56 seconds, published 4 September 2026.</p>
+<div class="table-wrap"><table>
+<tr><th>Claim</th><th>Source</th><th>Public evidence that bears on it</th><th>Grade</th></tr>
+<tr><td>Models operate in 3D plus time without flattening</td><td>company site</td><td>FNO-3D in the 2021 paper convolves in space time; standard practice, not a differentiator</td><td><span class="grade g-c">C</span></td></tr>
+<tr><td>Up to 1 trillion parameters at training; 5 trillion tokens or context at inference; "5 trillion data points in a single prompt" in testing</td><td>company site; KuCoin, vktr.com, Anandkumar's post</td><td>No benchmark, no independent verification by any outlet; Tech Times headline "No Benchmark Proof Yet". Module 9 does the arithmetic on what 1000³ grids imply</td><td><span class="grade g-c">C</span></td></tr>
+<tr><td>Resolution invariance: any detail level across training and inference</td><td>company site; both episodes</td><td>True for neural operators as a representation (JMLR Theorem 8); accuracy at unseen resolution is conditional, and Lab 01 measured a 56 percent error rise at the first unseen grid</td><td><span class="grade g-b">B</span> for the property, <span class="grade g-c">C</span> for the accuracy</td></tr>
+<tr><td>Cross physics uplift: one model beats equal size specialists</td><td>company site; seed episode</td><td>Narrow version supported by Poseidon, Subramanian, DPOT with numbers; broad version has counterexamples (MPP shallow water, Helmholtz OOD); no company data</td><td><span class="grade g-b">B</span> narrow, <span class="grade g-c">C</span> broad</td></tr>
+<tr><td>Self improvement loop with physics laws as dense directional feedback</td><td>company site; seed episode 15:00 to 18:30</td><td>Majumdar et al. 2023: physics loss only self training reaches 1.07× and 1.02× the error of supervised training on Burgers and Darcy, two small PDEs. Krishnapriyan: the residual makes optimization harder as the physics gets harder. Module 11</td><td><span class="grade g-b">B</span> for the mechanism at small scale, <span class="grade g-c">C</span> at the claimed scale</td></tr>
+<tr><td>Not a transformer; built on neural operators</td><td>KuCoin, vktr.com</td><td>Consistent with the founders' published work; unverifiable for the product</td><td><span class="grade g-c">C</span></td></tr>
+<tr><td>First markets: chip design, energy including geothermal, robotics, weather</td><td>analyticsinsight.net, vktr.com</td><td>Weather has the strongest public record (Module 10); chips have none</td><td><span class="grade g-c">C</span></td></tr>
+</table></div>
+<p>Two open items in the notes: the Rappler founder profile and the Tech Times body returned HTTP 403 and were not read; whether the MIT affiliated Benedikt Jenik (self driving perception research) is the co-founder is a plausible, unverified name match (<code>company-episode.md:144</code>, <code>:176-183</code>).</p>
+</section>
+
+<section id="lab">
+<h2>Lab: write the evidence ledger for one application</h2>
+<p><span class="grade g-lab">LAB</span> Reading task, one page. Pick one row of the applications table. Read the primary paper's experiment section, not the abstract. For every number in the row, record: what was measured, the reference it was measured against, the hardware on both sides, whether offline cost is counted, and whether the number is a field error or a scalar. Then find the company or press statement that cites the same work and grade the distance between the two. Deliverable: a table like the one above with an added column "what I would need to see to raise the grade".</p>
+</section>
+
+<section id="sources">
+<h2>Sources</h2>
+<ul class="src">
+<li><span class="grade g-b">B</span> All application papers: <code>research_notes/lineage.md</code>, arXiv identifiers verified by abstract page fetch; repo URLs found by search are marked there as reported, not verified (<code>:331-336</code>).</li>
+<li><span class="grade g-a">A</span> FNO Bayesian inverse problem timing: <code>research_notes/pdf-fno-jmlr.md:159-172</code>. Benchmark fairness caveats: <code>research_notes/pdf-mgn-pdebench.md:331</code>.</li>
+<li><span class="grade g-c">C</span> Company site, launch press, seed episode, earlier episode: <code>research_notes/company-episode.md:102-183</code>; seed transcript <code>../transcript.txt</code>.</li>
+<li><span class="grade g-b">B</span> Self improvement: Majumdar et al. arXiv 2311.13885, <code>research_notes/foundation.md:156-159</code>.</li>
+</ul>
+</section>
+
+<section id="exit">
+<h2>Exit test</h2>
+<ol class="steps">
+<li>For the FNO Bayesian inverse problem, reconstruct the total time comparison including offline cost, from the numbers on this page.</li>
+<li>Explain why "26,000× faster for drag" and "700,000× faster for flow prediction" are not comparable statements.</li>
+<li>Take the company's five technical claims and write, for each, the single public experiment that would move it from grade C to grade B.</li>
+</ol>
+</section>
+
+<nav class="foot"><a href="11_physics_as_signal.html">← Module 11: Physics as signal</a><a href="13_capstone.html">Capstone →</a></nav>
+</div>
+</body>
+</html>

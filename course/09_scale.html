@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Module 9 · Scale: memory, modes, sharding, and the trillion context arithmetic</title>
+<link rel="stylesheet" href="course.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div class="wrap">
+<p class="eyebrow">Module 9 of 13 · one week</p>
+<h1>Scale: memory, modes, sharding, and the trillion context arithmetic</h1>
+<p class="dek">Where the company's numbers come from, what the public work reaches, and what one 4 GB GPU measures. The quadratic cost argument rules out vanilla attention at industrial grids; it does not rule out attention, and the foundation models that exist are attention based with patching or Fourier attention.</p>
+<p class="meta">Primary sources: earlier episode 01:09:14 to 01:11:47; company site and press; FNO cost \(O(n\log n)\) (ICLR p.6); MG-TFNO arXiv 2310.00120; Incremental FNO 2211.15188; U-NO 2204.11127; Transolver++ 2502.02414; FourCastNet 3 2507.12144. Lab: <code>../labs/03_scale/</code>.</p>
+
+<nav class="top">
+<a href="index.html">Course home</a>
+<a href="#why">Why</a>
+<a href="#arithmetic">The arithmetic</a>
+<a href="#public">What public work reaches</a>
+<a href="#lab">Lab 03</a>
+<a href="#sources">Sources</a>
+<a href="#exit">Exit test</a>
+</nav>
+
+<section id="why">
+<h2>Why this module exists</h2>
+<p>The seed episode's title is "Trillion Token Context. No, Really". The company site claims up to 1 trillion parameters at training and 5 trillion tokens or context at inference; press repeats "5 trillion data points in a single prompt" with no benchmark (<code>research_notes/company-episode.md:107-124</code>). Anandkumar's own derivation in the earlier episode is short: physical data is 3D plus time, industrial scale starts near 1,000 grid points per dimension, so the context is "hundreds of billions to even a trillion", and "forget ever having a transformer for anything of this scale" (01:09:14 to 01:09:54, <code>:42</code>). This module does that arithmetic with units, then measures the constants.</p>
+</section>
+
+<section id="arithmetic">
+<h2>The arithmetic</h2>
+<div class="math">
+<p><strong>Points.</strong> A \(1000^3\) grid is \(10^9\) points per time step. With \(c\) channels and \(T\) steps it is \(10^9 cT\) numbers; \(c = 10\), \(T = 100\) gives \(10^{12}\), the trillion. In float32 that is 4 TB per sample before any activations.</p>
+<p><strong>Attention.</strong> Dense self attention over \(n\) tokens costs \(O(n^2 d)\) time and \(O(n^2)\) memory for the score matrix. With \(n = 10^9\) the score matrix alone has \(10^{18}\) entries, \(4 \times 10^{18}\) bytes in float32, about four million 1 TB drives. This is the sentence "all of the world's compute will not be enough", and it is correct for <em>dense</em> attention over <em>points</em>.</p>
+<p><strong>What it does not rule out.</strong> Attention over \(p\) patches or slices with \(p \ll n\): MPP and Aurora use patch tokens, DPOT uses Fourier attention, Transolver attends over learned slices, with cost linear in \(n\) and quadratic in \(p\). The proposition that attention is a neural operator layer (Module 6) says the kernel is dense; the fix is Module 3's four answers applied to that kernel. So the quadratic argument rules out one design, not the family.</p>
+<p><strong>FNO.</strong> One Fourier layer on \(n\) points costs \(O(n \log n)\) for the FFTs and \(O(k_{\max}^d d_v^2)\) for the multipliers (ICLR p.6, <code>research_notes/pdf-fno-jmlr.md:58-61</code>). Time is near linear; memory is linear in \(n\) for activations. The parameter count in 3D is \(k_{\max}^3 d_v^2\) complex numbers per layer: with \(k_{\max} = 16\), \(d_v = 32\), four layers, that is \(4 \times 4096 \times 1024 \times 8\) bytes, 128 MiB, against 8 MiB for the same in 2D. Modes, not points, drive the parameter memory, and a 3D FNO at useful \(k_{\max}\) is heavy before it sees any data.</p>
+</div>
+</section>
+
+<section id="public">
+<h2>What public work reaches</h2>
+<div class="table-wrap"><table>
+<tr><th>Work</th><th>Mechanism</th><th>Reported number</th><th>Grade</th></tr>
+<tr><td>MG-TFNO (Kossaifi, Kovachki, Azizzadenesheli, Anandkumar, arXiv 2310.00120)</td><td>Tucker factorized FNO weights plus multi grid domain decomposition across devices</td><td>"Less than half the error with over 150× compression" on turbulent Navier–Stokes. Library: <code>TFNO</code>, <code>factorization='tucker'</code>, about 90 percent fewer parameters per the docs</td><td><span class="grade g-b">B</span> <code>lineage.md:93-102</code>; <code>teaching.md:82</code></td></tr>
+<tr><td>Incremental FNO (2211.15188)</td><td>grow modes and data resolution during training</td><td>10 percent lower test error, 20 percent fewer modes, 30 percent faster training</td><td><span class="grade g-b">B</span> <code>lineage.md:104-113</code></td></tr>
+<tr><td>U-NO (2204.11127)</td><td>U-Net hierarchy of operator layers, downsample then upsample</td><td>26 percent better on Darcy, 44 percent on turbulent Navier–Stokes, 37 percent on 3D spatiotemporal Navier–Stokes</td><td><span class="grade g-b">B</span> <code>lineage.md:71-80</code></td></tr>
+<tr><td>Transolver++ (2502.02414)</td><td>optimized parallelism and a local adaptive mechanism over slices</td><td>million point car and aircraft meshes on one GPU, scaling to more GPUs with linear complexity</td><td><span class="grade g-b">B</span> <code>lineage.md:137-146</code></td></tr>
+<tr><td>FourCastNet 3 (2507.12144)</td><td>spherical harmonic transforms, geometric ensemble</td><td>60 day global forecast at 0.25°, 6 hourly, under 4 minutes on one GPU; 8 to 60× faster than diffusion methods</td><td><span class="grade g-b">B</span> <code>lineage.md:262-271</code></td></tr>
+<tr><td>FourCastNet 1 (2202.11214), as described on the podcast</td><td>adaptive Fourier layers on a 0.25° grid, about 700 by a few thousand points, about 50,000 training samples, six hour step</td><td>week long forecast in under 2 seconds</td><td><span class="grade g-b">B</span> paper; <span class="grade g-c">C</span> the 50,000 and grid figures are from the episode, 00:28:25 and 01:01:18</td></tr>
+<tr><td>PDEBench runtime study (Appendix G)</td><td>ML inference against classical solvers at 64 to 1024 in 2D, 32 to 256 in 3D</td><td>inference nearly three orders of magnitude faster at matched resolution, and independent of viscosity, while the explicit solver's step obeys \(\Delta t \propto \Delta x^2/\eta\)</td><td><span class="grade g-a">A</span> <code>pdf-mgn-pdebench.md:284</code></td></tr>
+<tr><td>PhysicsNeMo</td><td>domain parallelism, <code>ShardTensor</code>, CPU offloading in <code>neuraloperator</code></td><td>documented mechanisms, no single headline number read</td><td><span class="grade g-b">B</span> <code>repos.md:343</code>, <code>:94</code></td></tr>
+</table></div>
+<p>The gap between the table and the claim: the largest public neural operator results are a 0.25° globe (about \(1.4 \times 10^6\) points per level), million point meshes, and 3D compressible flow at \(128^3\) with 100 samples (PDEBench). None is \(10^9\) points per step with \(10^{12}\) context. The mechanisms that would get there are in the table: factorized weights, hierarchy, sharding, and cheap attention. Whether they compose at that scale is the company's unpublished claim.</p>
+</section>
+
+<section id="lab">
+<h2>Lab 03: one forward pass, measured</h2>
+<p><span class="grade g-lab">LAB</span> <code>../labs/03_scale/run_scale.py</code>: a 2D FNO with 32 channels and 4 layers, batch 1, forward pass only, grids \(64^2\) to \(1024^2\), <code>n_modes</code> 16 and 64, peak GPU memory and median time over five passes. Then a linear memory and \(n\log n\) time extrapolation to \(1000^3\).</p>
+<div id="scale-results">
+<div class="table-wrap"><table>
+<tr><th><code>n_modes</code></th><th class="num">Params</th><th class="num">Grid</th><th class="num">Points</th><th class="num">Peak memory (MiB)</th><th class="num">Time (ms)</th><th class="num">Bytes per point</th></tr>
+<tr><td>16</td><td class="num">602,977</td><td class="num">64²</td><td class="num">4,096</td><td class="num">16.8</td><td class="num">3.2</td><td class="num">—</td></tr>
+<tr><td>16</td><td class="num">602,977</td><td class="num">128²</td><td class="num">16,384</td><td class="num">29.3</td><td class="num">3.3</td><td class="num">—</td></tr>
+<tr><td>16</td><td class="num">602,977</td><td class="num">256²</td><td class="num">65,536</td><td class="num">77.7</td><td class="num">9.7</td><td class="num">1,240</td></tr>
+<tr><td>16</td><td class="num">602,977</td><td class="num">512²</td><td class="num">262,144</td><td class="num">272.2</td><td class="num">36.2</td><td class="num">1,090</td></tr>
+<tr><td>16</td><td class="num">602,977</td><td class="num">1024²</td><td class="num">1,048,576</td><td class="num">1,049.7</td><td class="num">142.7</td><td class="num">1,050</td></tr>
+<tr><td>64</td><td class="num">8,663,905</td><td class="num">128²</td><td class="num">16,384</td><td class="num">102.2</td><td class="num">4.3</td><td class="num">—</td></tr>
+<tr><td>64</td><td class="num">8,663,905</td><td class="num">256²</td><td class="num">65,536</td><td class="num">139.2</td><td class="num">11.0</td><td class="num">—</td></tr>
+<tr><td>64</td><td class="num">8,663,905</td><td class="num">512²</td><td class="num">262,144</td><td class="num">333.7</td><td class="num">37.5</td><td class="num">—</td></tr>
+<tr><td>64</td><td class="num">8,663,905</td><td class="num">1024²</td><td class="num">1,048,576</td><td class="num">1,111.2</td><td class="num">144.0</td><td class="num">—</td></tr>
+</table></div>
+<p>RTX 3050 Laptop GPU, batch 1, forward only, no gradients, float32, median of five passes (<code>../labs/03_scale/results_scale.json</code>; the file on disk was regenerated by the notebook check and its timings differ from this table by about 1 percent, run to run). Five readings. Memory is linear in points above 256²: about 1,050 bytes per grid point, which is 32 channels × 4 bytes × about 8 live activation copies. Time is near linear: 1024² costs 44 times 64² for 256 times the points, because small grids are launch bound at about 3 ms. Modes are cheap in activations and expensive in weights: going from 16 to 64 modes multiplies the parameters by 14.4 (0.6M to 8.7M) and adds 62 MiB of fixed memory, but at 1024² it adds only 1.3 ms and 6 percent memory. The 4 GB card holds the forward pass at 1024² with room to spare, and would not hold the training pass (activations for backward roughly triple the memory) at that grid; the thermal lab's first run proved this the hard way at 128² with a 200 sample batch.</p>
+<p><strong>The extrapolation.</strong> Linear memory from the 1024² row gives \(1050 \times 10^9\) bytes, about 978 GiB, for a batch 1 forward pass on \(1000^3\) points at 32 channels, before the 3D weights (128 MiB at \(k_{\max} = 16\)) and before any gradient. Time by \(n \log n\) from the same row: about 203 s per forward pass on this GPU. These are lower estimates: they assume the 2D kernel efficiency holds in 3D and ignore the memory of the FFT workspace at that size. So one time step of a trillion point field, at a channel width one third of the FNO paper's, needs on the order of a terabyte of activation memory: about thirteen 80 GB accelerators (978 GiB / 80 GB) for a single forward pass, and several times that to train. This is the arithmetic behind "sharding" in the module title, and MG-TFNO's domain decomposition across devices is the published mechanism for it.</p>
+</div>
+</section>
+
+<section id="sources">
+<h2>Sources</h2>
+<ul class="src">
+<li><span class="grade g-c">C</span> Earlier episode 01:09:14 to 01:11:47; company site and press: <code>research_notes/company-episode.md:42-43</code>, <code>:107-124</code>.</li>
+<li><span class="grade g-a">A</span> FNO complexity, ICLR p.6: <code>research_notes/pdf-fno-jmlr.md:58-61</code>. PDEBench Appendix G: <code>research_notes/pdf-mgn-pdebench.md:284</code>.</li>
+<li><span class="grade g-b">B</span> MG-TFNO, iFNO, U-NO, Transolver++, FourCastNet, FourCastNet 3: <code>research_notes/lineage.md</code>, per paper sections.</li>
+<li><span class="grade g-lab">LAB</span> <code>../labs/03_scale/results_scale.json</code>.</li>
+</ul>
+</section>
+
+<section id="exit">
+<h2>Exit test</h2>
+<ol class="steps">
+<li>Compute the score matrix size of dense attention over a \(1000^3\) grid in bytes, and the parameter memory of a 3D FNO with \(k_{\max} = 16\), \(d_v = 32\), four layers.</li>
+<li>Name three published mechanisms that reduce FNO memory or cost, with their reported numbers.</li>
+<li>From the lab, state the measured memory per grid point and say whether the extrapolation to \(1000^3\) is a lower or an upper estimate, and why.</li>
+</ol>
+</section>
+
+<nav class="foot"><a href="08_evaluation.html">← Module 8: Evaluation</a><a href="10_foundation_models.html">Module 10: Foundation models →</a></nav>
+</div>
+</body>
+</html>

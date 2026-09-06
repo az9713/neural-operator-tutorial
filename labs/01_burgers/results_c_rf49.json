@@ -1,0 +1,18 @@
+{
+  "run": "C_cnn_baseline",
+  "model": "8 x Conv1d(k=7, 64 ch, circular) + GELU, 1x1 out",
+  "receptive_field_points": 49,
+  "params": 201729,
+  "epochs": 500,
+  "seed": 0,
+  "train_res": 64,
+  "test_rel_l2": {
+    "64": 0.02242857590317726,
+    "128": 0.679377019405365,
+    "256": 1.1433128118515015,
+    "1024": 1.4578509330749512
+  },
+  "train_rel_l2": 0.008703866973519325,
+  "train_seconds": 183.94678831100464,
+  "data": "burgers_nu0.1.pt (same as run B)"
+}
