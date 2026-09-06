@@ -829,3 +829,32 @@ teaching material:
 - JMLR p.32 also states the solver: pseudo-spectral split step, heat part exact in Fourier space,
   nonlinear part forward Euler with a very small step, 2^13 = 8192 points, other resolutions
   subsampled, N = 1000 training examples.
+
+### Correction added 2026-09-06 (course rewrite session, read from the two PDFs)
+- **The Burgers FNO row is NOT identical between the two papers.** The "verified identical" bullet
+  above is wrong for that one row. Read from the PDFs:
+  - ICLR 2021 (2010.08895v3.pdf, Table 3, Appendix A.4, printed p.15), FNO at
+    s = 256 / 512 / 1024 / 2048 / 4096 / 8192: 0.0149, 0.0158, 0.0160, 0.0146, 0.0142, 0.0139.
+  - JMLR 2023 (21-1524.pdf, Table 3, printed p.39), same six columns:
+    0.0018, 0.0018, 0.0018, 0.0019, 0.0020, 0.0019.
+  - Every other row of the two tables does match exactly (NN, GCN, FCN, PCANN, GNO, LNO, MGNO), and
+    the Darcy tables match in full including FNO (0.0108 / 0.0109 / 0.0109 / 0.0098).
+  - The JMLR text on the same page gives the surrounding detail: "The Fourier neural operator has
+    standard deviation 0.0010 and mean training error 0.0012. If one replaces the ReLU activation by
+    GeLU, the test error of the FNO is further reduced from 0.0018 to 0.0007." So the JMLR run is a
+    retrained, better-tuned FNO, not a reprint of the ICLR run. The factor between the two published
+    FNO errors is about 8.
+  - Consequence for line :105 above: "FNO: 0.0149 -> 0.0139" is the ICLR row, not the JMLR row, and
+    the JMLR label on that block is wrong for it. Consequence for the labs: the
+    `paper_reference` field in `labs/01_burgers/results_b_m16.json` and `results_b_m32.json` cites
+    0.0149 as the comparison point, which is the ICLR figure; the JMLR figure for the same task is
+    0.0018. Lab 01 run B measures 0.0224 at 64 points, so it is 1.5x the ICLR figure and 12x the
+    JMLR figure. Both comparisons must be stated, and neither alone.
+- **Aliased energy fraction corrected.** Course pages said "about 0.5 percent of the initial
+  condition's energy sits above k = 32". The correct figure is 0.15 percent. With
+  E|u_hat(k)|^2 = 625/(k^2+25)^2 the total over k in Z is 625 * integral dk/(k^2+25)^2 = 625 * pi/250
+  = 5 pi / 2 = 7.854 (Poisson summation; the correction is of order e^{-10 pi} = 2e-14). The tail
+  over |k| > 32 sums to 1.180e-2. The ratio is 1.50e-3. Measured from the saved test-set spectrum
+  `labs/01_burgers/spectrum_b_m16.npz`, array `input_1024`, the tail fraction is 1.43e-3, agreeing
+  with the analytic value to 5 percent. The earlier 0.5 percent figure came from dividing the
+  correct tail by a wrong total.
