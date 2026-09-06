@@ -1,0 +1,55 @@
+MIT License
+
+Copyright (c) 2026 az9713
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+-------------------------------------------------------------------------------
+Third-party material, not covered by the license above
+
+The license above covers the original work in this repository: the course pages
+in course/, the lab code and results in labs/, the notebooks in notebooks/, the
+research notes in research_notes/, and the two report pages in the root.
+
+It does not cover the following, which belong to their authors:
+
+  transcript.txt
+      Transcript of the Latent Space episode "Trillion Token Context. No,
+      Really - Anima Anandkumar & Benedikt Jenik, Accelerated Understanding"
+      (https://www.youtube.com/watch?v=KS_IpnX7n9I). Included for study and
+      citation. Copyright of the podcast and its guests.
+
+  research_notes/earlier_episode_transcript.txt
+      Transcript of an earlier episode of the same podcast (video 79mIutht1f4).
+      Same status.
+
+  Quoted material inside the course pages and the research notes
+      Sentences quoted from papers, podcasts, press, and company statements
+      remain the property of their authors. Each quotation names its source.
+
+  Papers cited by the course
+      The four source PDFs are not distributed here. Get them from arXiv, JMLR,
+      or the publisher. See the README.
+
+  data/burgers_train_16.pt, data/burgers_test_16.pt
+      Downloaded from the neuraloperator project on GitHub. See that project
+      for its own license terms.
+
+The software dependencies (PyTorch, neuraloperator, and the rest) carry their
+own licenses, which are not affected by this file.

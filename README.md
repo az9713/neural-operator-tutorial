@@ -196,5 +196,9 @@ data/            the Burgers tensors from the neuraloperator GitHub repository
 
 ## License
 
-The course pages, notes, and lab code here are original work. The papers, transcripts, and any
-quoted material belong to their authors.
+[MIT](LICENSE), for the original work here: the course pages, the lab code and results, the
+notebooks, and the research notes.
+
+Not covered, and listed at the bottom of [`LICENSE`](LICENSE): the two podcast transcripts,
+material quoted inside the pages and notes, the cited papers (not distributed here), and
+`data/*.pt` from the neuraloperator project. Those belong to their authors.
