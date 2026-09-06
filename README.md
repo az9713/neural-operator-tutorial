@@ -22,6 +22,66 @@ transfer experiment that can fail. Module 12 grades every company claim. The epi
 is in [`transcript.txt`](transcript.txt); an earlier episode with the same guest is in
 [`research_notes/earlier_episode_transcript.txt`](research_notes/earlier_episode_transcript.txt).
 
+## How the course is designed
+
+The episode above is a sales pitch with real science inside it. The design problem was to keep
+the science and test the pitch. Ten decisions follow from that, and they shape every page.
+
+**1. Three objectives, never mixed.** The podcasts use one word, "neural operator", for three
+different goals. A *surrogate* reproduces a known simulator faster; its test is error against
+the simulator on held out inputs, plus speed. A *PINN* fits one solution by penalizing the
+equation residual; its test is the residual and the error on that one instance. A *foundation
+model* reuses one representation across several physical systems; its test is whether
+pretraining on systems A and B lowers the data needed for system C, measured against an equal
+size model trained on C alone. Success at one does not prove success at another. Module 0 fixes
+this vocabulary before anything else. Module 10 runs the third test.
+
+**2. Every number carries a grade.** Each claim on each module page is marked **A** (read in the
+primary paper, page cited), **B** (abstract or secondary source only, arXiv identifier
+verified), **C** (company statement, press, or podcast, not independently checked), or **LAB**
+(produced in this repository, with the script and the results file named). A company claim stays
+a C. It is not promoted by repetition.
+
+**3. Tests that can fail.** A course that only shows successes teaches nothing about limits.
+Lab 01 run C trains a CNN as a counterexample and it fails as predicted: relative L2 goes 0.0224
+→ 0.68 → 1.14 → 1.46 across four grids. Module 8 is titled "evaluation that can fail a model".
+Module 10 states a transfer experiment whose outcome is not decided in advance. And the labs
+found a result that cuts against the marketing: an FNO at an unseen grid carries a Nyquist
+oscillation, so "resolution invariant" describes the architecture, not the error.
+
+**4. Derive, do not assert.** The Fourier layer is built up from the convolution theorem and the
+Green's function in Module 2, not presented as a diagram to accept. Module 5 states what the
+theorems do *not* give: universal approximation is an existence result, not an efficiency
+result, and of the four sources of error the JMLR paper lists on pages 50 to 51, only two are
+proved.
+
+**5. One page shape, six parts, same order.** Every module runs: why the module exists → the
+core ideas in prose → the mathematics with derivations → the lab with real numbers → the sources
+with line citations → an exit test. The exit test is taken with the page closed. If you cannot
+pass it, it names the section to reread.
+
+**6. One physical domain, threaded through.** Rather than a new toy problem per module, the
+course anchors on one: steady heat conduction in a 10 mm silicon die with random power blocks,
+solved locally by finite differences and checked against an analytic solution. That die returns
+in Modules 6, 10, 12, 13, and the capstone. A single running example makes transfer measurable.
+
+**7. Labs first, prose second.** The three labs ran before the module pages were written, so the
+numbers drove the text rather than the text asking for numbers to match. Where a lab has not run
+yet, the page says "not yet run" instead of filling the gap with a plausible figure.
+
+**8. Reproducible on modest hardware.** Everything here ran on an RTX 3050 Laptop GPU with 4 GB.
+The scripts, the logs, the seeds, and the `results*.json` files are committed; the notebooks are
+generated from the same scripts, so the two cannot drift apart. The one file too large for
+GitHub is regenerable by one command.
+
+**9. Two tools only.** PyTorch and `neuraloperator`. No Julia, no JAX, no second framework to
+learn alongside the subject.
+
+**10. One student, self-paced.** This is not a lecture series for an audience. It is 16 to 17
+weeks at about eight hours a week, and the 90 minute diagnostic at the end of Module 0 sets how
+fast you move through Modules 1 to 5. Module 5 takes two or three weeks because it carries the
+proofs.
+
 ## Live pages
 
 GitHub strips scripts and iframes from a README, so a page cannot render inside this file. Each
