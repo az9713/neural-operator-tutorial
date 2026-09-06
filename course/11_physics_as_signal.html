@@ -13,8 +13,8 @@
 <div class="wrap">
 <p class="eyebrow">Module 11 of 13 · one week</p>
 <h1>Physics as data engine and as reward</h1>
-<p class="dek">A simulator can make training data on demand, in a curriculum. An equation can score an output with no labels at all. The seed episode calls the second one "dense feedback". This module gives the published forms of both, the numbers they reach, and the optimization caveat that limits them.</p>
-<p class="meta">Primary sources: Krishnapriyan et al. arXiv 2109.01050 (curriculum); Incremental FNO arXiv 2211.15188; PINO arXiv 2111.03794; Majumdar et al. arXiv 2311.13885 (self improvement); PIRF arXiv 2509.20570; reward driven inference time scaling arXiv 2509.02846; physics informed fine tuning arXiv 2603.15431. Through <code>research_notes/web-papers.md</code>, <code>lineage.md</code>, <code>foundation.md</code>.</p>
+<p class="dek">A simulator can make training data on demand, in a curriculum you control. An equation can score an output with no labels at all. The seed episode calls the second of these "dense feedback", and it is a real mechanism with published numbers. It is also an optimization problem whose conditioning gets worse exactly where you would want to use it, and this module derives how much worse.</p>
+<p class="meta">Primary sources: Krishnapriyan et al. arXiv 2109.01050 (curriculum and conditioning); Incremental FNO arXiv 2211.15188; PINO arXiv 2111.03794; Majumdar et al. arXiv 2311.13885 (self-improvement); PIRF arXiv 2509.20570; reward-driven inference-time scaling arXiv 2509.02846; physics-informed fine-tuning arXiv 2603.15431. Through <code>research_notes/web-papers.md</code>, <code>lineage.md</code>, <code>foundation.md</code>.</p>
 
 <nav class="top">
 <a href="index.html">Course home</a>
@@ -29,65 +29,91 @@
 
 <section id="why">
 <h2>Why this module exists</h2>
-<p>The seed episode (15:00 to 18:30) says the model improves itself because physics laws give dense feedback. The company site says the same: known laws validate outputs and provide "directional feedback", reducing reliance on labels (<code>research_notes/company-episode.md:112</code>). The mechanism is public and small: a PDE residual is a loss you can evaluate on any output. What is not public is whether it scales. This module reads the papers that tried.</p>
+<p>Between 15:00 and 18:30 the seed episode says the model improves itself because physics laws give dense feedback, and the company site says the same in different words: known laws validate outputs and provide "directional feedback", reducing the need for labels (<code>research_notes/company-episode.md:112</code>).</p>
+<p>The mechanism behind that is public and small. A PDE residual is a number you can compute from any candidate output, with no reference solution, so it is a loss you can evaluate anywhere. That much is not in dispute. What is in dispute is whether it scales, and the answer turns out to depend on a property of the residual loss that has nothing to do with neural networks: how badly conditioned it is. This module gives the published forms of both uses, the numbers they reach, and then works out the conditioning for this course's own thermal problem so the caveat is concrete rather than borrowed.</p>
 </section>
 
 <section id="engine">
 <h2>Physics as data engine: curricula</h2>
-<h3>Curriculum over difficulty (Krishnapriyan et al.)</h3>
-<p>Train at an easy coefficient, warm start the next harder one. Convection at \(\beta = 30\): 8.97e-1 relative error from a standard PINN, 2.02e-2 after the curriculum, 44× (<code>web-papers.md:620-626</code>). The simulator here is trivial, the exact solution \(\sin(x - \beta t)\); the curriculum is over the <em>equation</em>, not the data. The same idea is what Anandkumar describes as composing learned sub phenomena, heat then stretching then coupled (earlier episode 01:14:20 to 01:15:48).</p>
-<h3>Curriculum over resolution and modes (Incremental FNO)</h3>
-<p>George, Zhao, Kossaifi, Li, Anandkumar (arXiv 2211.15188): grow the number of Fourier modes and the training data resolution during training. 10 percent lower test error with 20 percent fewer modes and 30 percent faster training than a fixed FNO (<code>lineage.md:104-113</code>). In <code>neuraloperator</code> this is <code>IncrementalFNOTrainer</code> in <code>neuralop/training/incremental.py</code>, with the example <code>examples/training/plot_incremental_FNO_darcy.py</code> (<code>repos.md:63</code>, <code>:99</code>). Module 2's frequency doubling argument says why growing modes late is cheap: the low modes carry most of the error early.</p>
-<h3>Generating the data yourself</h3>
-<p>Both labs in this course are data engines. Lab 01 generates 1200 Burgers trajectories in 120 s; Lab 02 generates 1200 thermal dies in 14 s. Each has a self check that stops the script if the solver is wrong. That check is the whole difference between a data engine and a noise engine, and PDEBench's Appendix H is the warning: a 128×128 "ground truth" solver had discretization error 1.8e-1 against a 512×512 reference, larger than the FNO's 8.1e-3 error against the same reference (<code>pdf-mgn-pdebench.md:286</code>). If your data engine is coarser than your model, you are grading the model against the wrong answer.</p>
+
+<h3>A curriculum over difficulty</h3>
+<p>Krishnapriyan et al.'s fix from Module 4 is the simplest form. Train at an easy coefficient, then warm-start the next harder one from those weights. On convection at \(\beta=30\), a standard PINN gives 8.97e-1 relative error and the curriculum gives 2.02e-2, a factor of 44 (<code>web-papers.md:620-626</code>).</p>
+<p>Notice what the "data engine" is here: the simulator is trivial, since the exact solution \(\sin(x-\beta t)\) is known in closed form, and the curriculum runs over the <em>equation</em> rather than over the data. That is the same structure Anandkumar describes as composing learned sub-phenomena, heat first, then stretching, then the coupled problem (earlier episode 01:14:20 to 01:15:48). The idea does not need a solver at all; it needs a family of problems ordered by difficulty and a way to move along it.</p>
+
+<h3>A curriculum over resolution and modes</h3>
+<p>George, Zhao, Kossaifi, Li and Anandkumar (arXiv 2211.15188) run the curriculum along a different axis: grow the number of Fourier modes and the training resolution during training rather than fixing them. They report 10 percent lower test error with 20 percent fewer modes and 30 percent faster training than a fixed FNO (<code>lineage.md:104-113</code>). In <code>neuraloperator</code> this is <code>IncrementalFNOTrainer</code> in <code>neuralop/training/incremental.py</code>, with an example at <code>examples/training/plot_incremental_FNO_darcy.py</code> (<code>repos.md:63</code>, <code>:99</code>).</p>
+<p>Module 2's frequency-doubling argument explains why growing modes late is cheap rather than lazy. Early in training the model's error lives in the low modes, where the signal's energy is; the high modes carry a small fraction of the total and the nonlinearity can regenerate part of them anyway. Spending parameters on modes the model cannot yet use is spending them on the wrong thing. Lab 03's measurement in Module 9 says the same from the cost side: going from 16 to 64 modes multiplies the parameters by 14.4 while adding 6 percent to activation memory, so modes are almost pure storage cost, and deferring that cost is worth real time.</p>
+
+<h3>Generating the data yourself, and the check that makes it worth doing</h3>
+<p>Both labs in this course are data engines. Lab 01 generates 1200 Burgers trajectories in 120 seconds; Lab 02 generates 1200 thermal dies in 14 seconds. Each one runs a self-check that halts the script if the solver is wrong, and that check is the entire difference between a data engine and a noise engine.</p>
+<p>PDEBench's Appendix H is the standing warning, and Module 8 gives it in full: a 128×128 "ground truth" solver carried discretization error of 1.8e-1 against a 512×512 reference, which is larger than the FNO's 8.1e-3 error against the same reference (<code>pdf-mgn-pdebench.md:286</code>). If the data engine is coarser than the model it feeds, the model is being graded against the wrong answer, and every downstream number is about the solver rather than the model.</p>
 </section>
 
 <section id="reward">
 <h2>Physics as reward: residual losses without labels</h2>
-<h3>PINO: residual on a finer grid than the data</h3>
-<p>\(\mathcal J = \mathcal J_{\text{data}} + \lambda \mathcal J_{\text{pde}}\), with the residual computed by exact Fourier differentiation of the operator output on a grid the data does not have (<code>web-papers.md:466-479</code>). Burgers: 1.22 percent with data, 1.50 percent with no data at all, against DeepONet's 6.97 percent. Darcy: 11×11 data plus 61×61 residual reaches 1.56 percent at 4× resolution against 9.46 percent data only. Kolmogorov flow, where the PINN reaches 18.7 percent in 4577 s, PINO reaches 0.9 percent in 536 s.</p>
-<h3>Self training on the residual alone (Majumdar et al. 2023)</h3>
-<p>Iterative pseudo labelling of a PINO with the physics loss as the only signal. The result is stated as a ratio: 1.07× the error of fully supervised training on Burgers, 1.02× on Darcy (<code>foundation.md:156-159</code>). Two small PDEs; nothing at foundation model scale. This is the published form of "self improvement".</p>
-<h3>Residuals as rewards in 2025 to 2026</h3>
-<p>PIRF (arXiv 2509.20570) uses local finite difference residuals as a reward to fine tune diffusion models for PDE generation, updating only high resolution layers because the reward is local. arXiv 2509.02846 uses a reward model to guide inference time compute for stochastic PDE predictors, motivated by the admission that pretrained models "struggle with auto-regressive rollout performance, especially in out-of-distribution cases". arXiv 2603.15431 fine tunes PDE foundation models with residual and boundary losses and reports that a hybrid data plus physics strategy generalizes best under minimal data. All three: exact numbers not extracted, abstract level only (<code>foundation.md:161-167</code>). Grade B.</p>
+
+<h3>PINO: a residual on a finer grid than the data</h3>
+<p>The loss is \(\mathcal J = \mathcal J_{\text{data}} + \lambda\mathcal J_{\text{pde}}\), with the residual computed by exact Fourier differentiation of the operator's output on a grid where no data exists (<code>web-papers.md:466-479</code>). Module 4 has the full numbers; the two that matter here are that PINO on Burgers reaches 1.22 percent with data and 1.50 percent with <em>no</em> paired data at all, against DeepONet's 6.97 percent, and that on Darcy an 11×11 supervision grid plus a 61×61 residual reaches 1.56 percent at four times the training resolution against 9.46 percent for the same data without the residual. The residual is doing real work, and it is doing it precisely where labels are missing.</p>
+
+<h3>Self-training on the residual alone</h3>
+<p>Majumdar et al. (2023) close the loop: iterative pseudo-labelling of a PINO with the physics loss as the only signal. Their result is reported as a ratio to fully supervised training, and it is close: 1.07 times the supervised error on Burgers, 1.02 times on Darcy (<code>foundation.md:156-159</code>). That is the published form of "self-improvement", and it works. It is also two small PDEs, with nothing at foundation-model scale, which is the gap Module 12 grades.</p>
+
+<h3>Residuals as rewards, 2025 to 2026</h3>
+<p>The recent work reframes the residual as a reward signal rather than a loss term. PIRF (arXiv 2509.20570) uses local finite-difference residuals to fine-tune diffusion models for PDE generation, updating only the high-resolution layers because the reward is local. arXiv 2509.02846 uses a reward model to guide inference-time compute for stochastic PDE predictors, motivated explicitly by the admission that pretrained models "struggle with auto-regressive rollout performance, especially in out-of-distribution cases". And arXiv 2603.15431 fine-tunes PDE foundation models with residual and boundary losses, reporting that a hybrid data-plus-physics strategy generalizes best under minimal data. Exact numbers were not extracted from any of the three; these are abstract-level readings, graded B (<code>foundation.md:161-167</code>).</p>
 </section>
 
 <section id="caveat">
 <h2>The caveat: a reward is a loss, and this loss is ill conditioned</h2>
-<div class="callout"><p>Every residual term inherits the Krishnapriyan result. The condition number of the residual loss grows like \((\beta N)^2\) for convection and \((\nu N^2)^2\) for diffusion (<code>web-papers.md:613-616</code>). "Dense feedback" is dense in space and time, but it is not well conditioned, and it gets worse as the physics gets harder and the grid gets finer, which is exactly the regime a foundation model targets. PINO's answer is to put an operator in front so the residual only fine tunes; Wang et al.'s answer is a hand tuned weight swept over \(\{1, 5, 10, 20, 50, 100\}\) (<code>:565-573</code>). Neither is a theory of the weight. The JMLR paper's proposed direction is the same idea under another name, "physics-informed operator learning" (<code>pdf-fno-jmlr.md:719-724</code>), and the library ships the pieces: <code>BurgersEqnLoss</code>, <code>PoissonEqnLoss</code>, <code>WeightedSumLoss</code>, <code>SoftAdapt</code>, <code>Relobralo</code> in <code>neuralop/losses/</code> (<code>repos.md:57-58</code>). The last two are adaptive weighting schemes, which tells you the weight is a known problem.</p></div>
-<p>A second caveat from Module 4: automatic differentiation of a model output is not evidence of physical fidelity. A residual can be small on a wrong field if the field is smooth enough; PDEBench's cRMSE and bRMSE exist because RMSE and residuals both miss conservation and boundary errors (Module 8).</p>
+<p>Every residual term inherits the Krishnapriyan result, and the reason is worth deriving rather than quoting, because the derivation says exactly how the problem scales with the grid.</p>
+<div class="math">
+<p><strong>The setting.</strong> Take Lab 02's operator: \(-kt\nabla^2T = q\) on a square with \(T=0\) on the edge. Discretize with the five-point stencil on an \(N\times N\) grid of spacing \(h\) and call the resulting matrix \(L\). A pure residual loss is \(\mathcal J(T) = \|LT-q\|_2^2\), whose Hessian in \(T\) is \(2L^\top L\). The conditioning of that Hessian is what a gradient method has to fight.</p>
+<p><strong>The eigenvalues of \(L\).</strong> Start in one dimension, where the Dirichlet second-difference matrix has eigenvalues
+\[\lambda_j = \frac{4}{h^2}\sin^2\!\Big(\frac{j\pi}{2(N+1)}\Big), \qquad j = 1,\dots,N .\]
+At \(j=1\) the sine argument is small, so \(\sin^2x\approx x^2\) gives \(\lambda_{\min}\approx\pi^2\) with \(h=1/(N+1)\). At \(j=N\) the argument approaches \(\pi/2\), so \(\lambda_{\max}\to4/h^2 = 4(N+1)^2\). The two-dimensional five-point stencil is the sum of two such operators acting on different indices, so its eigenvalues are \(\lambda_i+\lambda_j\) and both the smallest and the largest simply double. The ratio is therefore unchanged:
+\[\mathrm{cond}(L) = \frac{\lambda_{\max}}{\lambda_{\min}} \approx \frac{4(N+1)^2}{\pi^2} \approx 0.405\,N^2 ,\]
+in one dimension and in two.
+<strong>The conditioning of the loss.</strong> Squaring the operator squares the condition number: \(\mathrm{cond}(L^\top L) \approx 0.164\,N^4\).</p>
+<p><strong>The numbers for this course's grids.</strong> At \(N=64\) that is \(\mathrm{cond}(L)\approx 1.7\times10^3\) and \(\mathrm{cond}(L^\top L)\approx 2.8\times10^6\). At \(N=128\) it is \(6.6\times10^3\) and \(4.4\times10^7\). Every doubling of the grid multiplies the loss's condition number by 16.</p>
+</div>
+<p>Read that against the promise. "Dense feedback" is dense in space and in time, and it is genuinely label-free. It is also a quadratic form whose condition number grows like the fourth power of the resolution, which means the finer the grid and the harder the physics, the worse the optimization problem, and a foundation model targets exactly the fine-grid, hard-physics regime. Krishnapriyan et al. report the same scaling from the other direction, \((\beta N)^2\) for convection and \((\nu N^2)^2\) for diffusion (<code>web-papers.md:613-616</code>), and the \(N^4\) above is the second of those with \(\nu\) absorbed.</p>
+<div class="callout"><p><strong>What the field does about it, and what it does not.</strong> PINO's answer is to put an operator in front, so the residual only fine-tunes an already-good solution and never has to find one from scratch. Wang, Wang and Perdikaris' answer is a hand-tuned weight, swept over \(\{1,5,10,20,50,100\}\) and set to 20 (<code>:565-573</code>). Neither is a theory of the weight, and the JMLR paper lists "physics-informed operator learning" as a direction rather than a result (<code>pdf-fno-jmlr.md:719-724</code>). The library ships the pieces, <code>BurgersEqnLoss</code>, <code>PoissonEqnLoss</code> and <code>WeightedSumLoss</code>, and it also ships <code>SoftAdapt</code> and <code>Relobralo</code> in <code>neuralop/losses/</code> (<code>repos.md:57-58</code>). Those last two are adaptive weighting schemes, and the fact that a library needs two of them is itself evidence about how settled the question is.</p></div>
+<p>One more caveat, carried over from Module 4 and sharpened by Module 8. Automatic differentiation of a model's output is not evidence of physical fidelity. A residual can be small on a wrong field if the field is smooth enough, because smoothing suppresses exactly the derivatives the residual measures. PDEBench's cRMSE and bRMSE exist because bulk error and residuals both miss conservation and boundary violations, and Lab 02's own boundary error of 0.651 K against a true boundary mean of 0.377 K is what that looks like in practice.</p>
 </section>
 
 <section id="lab">
 <h2>Lab: sweep the residual weight on the thermal die</h2>
-<p><span class="grade g-lab">LAB</span> <strong>Not yet run.</strong> Lab 02's operator is \(q \mapsto T\) with \(-k t \nabla^2 T = q\) and \(T = 0\) on the edge. The residual is cheap: a 5 point Laplacian of the model output, times \(k t\), minus \(q\), normalized by \(\|q\|\). The boundary term is \(\|T\|\) on the edge cells.</p>
+<p><span class="grade g-lab">LAB</span> <strong>Not yet run.</strong> Lab 02's operator is \(q\mapsto T\) with \(-kt\nabla^2T=q\) and \(T=0\) on the edge, and its residual is cheap to compute: a five-point Laplacian of the model output, times \(kt\), minus \(q\), normalized by \(\|q\|\). The boundary term is \(\|T\|\) on the edge cells. Both terms use the same normalization as the data term, so \(\lambda=1\) means genuinely equal weight rather than an arbitrary scale.</p>
 <ol class="steps">
-<li>Start from <code>../labs/02_thermal/run_thermal.py</code>. Add \(\lambda_r \|\text{residual}\|_2 / \|q\|_2 + \lambda_b \|T_{\text{edge}}\|_2\) to the relative L2 data loss. Both terms use the same normalization as the data term so \(\lambda = 1\) means equal weight.</li>
-<li>Sweep \(\lambda_r \in \{0, 0.01, 0.1, 1, 10\}\) at data fractions 0.05 and 1.0 of the 1000 training dies. Three seeds.</li>
-<li>Report field error, peak temperature error in kelvin, and hot spot distance in millimetres (the Module 8 metrics), on the in distribution test set and on an out of distribution set: dies with 6 to 8 blocks, or with flux up to 4 MW/m², generated by the same script with changed ranges.</li>
-<li>The question to answer: at which \(\lambda_r\) and which fraction does the residual lower out of distribution error, and where does it only trade field accuracy for residual accuracy. Plot both against \(\lambda_r\).</li>
+<li>Start from <code>../labs/02_thermal/run_thermal.py</code> and add \(\lambda_r\|\text{residual}\|_2/\|q\|_2 + \lambda_b\|T_{\text{edge}}\|_2\) to the existing relative \(L^2\) data loss.</li>
+<li>Sweep \(\lambda_r\in\{0,0.01,0.1,1,10\}\) at data fractions 0.05 and 1.0 of the 1000 training dies, with three seeds per cell.</li>
+<li>Report the Module 8 metrics: field error, peak temperature error in kelvin, hot-spot distance in millimetres, and the boundary error, on the in-distribution test set and on an out-of-distribution set generated by the same script with changed ranges, either 6 to 8 blocks or flux up to 4 MW/m².</li>
+<li>The question is not whether the residual helps but where. Plot out-of-distribution error and field error against \(\lambda_r\) on the same axis, and identify the range where the residual buys generalization against the range where it only trades field accuracy for residual accuracy.</li>
 </ol>
-<p>Prediction from PINO's Darcy result: a gain at small fractions, none at full data. Prediction from Krishnapriyan: instability at \(\lambda_r = 10\) unless the learning rate drops.</p>
+<p>Two predictions to record before running, because a prediction written afterwards is not a prediction. From PINO's Darcy result, expect a gain at the small data fraction and none at full data. From the conditioning derivation above, expect instability at \(\lambda_r = 10\) unless the learning rate drops, and expect it to be worse if you repeat the sweep at 128² than at 64², by roughly the factor of 16 the \(N^4\) scaling predicts.</p>
 </section>
 
 <section id="sources">
 <h2>Sources</h2>
 <ul class="src">
-<li><span class="grade g-a">A</span> Krishnapriyan et al. arXiv 2109.01050, curriculum and conditioning: <code>research_notes/web-papers.md:585-653</code>.</li>
-<li><span class="grade g-b">B</span> Incremental FNO arXiv 2211.15188: <code>research_notes/lineage.md:104-113</code>; library support <code>research_notes/repos.md:63</code>, <code>:99</code>.</li>
-<li><span class="grade g-a">A</span> PINO arXiv 2111.03794: <code>web-papers.md:452-519</code>. Physics informed DeepONet weight sweep: <code>:565-573</code>.</li>
+<li><span class="grade g-a">A</span> Krishnapriyan et al. arXiv 2109.01050, curriculum results and the conditioning scalings: <code>research_notes/web-papers.md:585-653</code>, <code>:613-626</code>.</li>
+<li><span class="grade g-b">B</span> Incremental FNO arXiv 2211.15188: <code>research_notes/lineage.md:104-113</code>; library support at <code>research_notes/repos.md:63</code>, <code>:99</code>.</li>
+<li><span class="grade g-a">A</span> PINO arXiv 2111.03794: <code>web-papers.md:452-519</code>. Physics-informed DeepONet weight sweep: <code>:565-573</code>.</li>
 <li><span class="grade g-b">B</span> Majumdar et al. arXiv 2311.13885; PIRF 2509.20570; 2509.02846; 2603.15431: <code>research_notes/foundation.md:154-167</code>.</li>
-<li><span class="grade g-a">A</span> PDEBench Appendix H: <code>research_notes/pdf-mgn-pdebench.md:286</code>.</li>
-<li><span class="grade g-c">C</span> Seed episode 15:00 to 18:30; company site: <code>research_notes/company-episode.md:107-112</code>.</li>
+<li><span class="grade g-a">A</span> PDEBench Appendix H: <code>research_notes/pdf-mgn-pdebench.md:286</code>. JMLR physics-informed direction: <code>pdf-fno-jmlr.md:719-724</code>.</li>
+<li><span class="grade g-c">C</span> Seed episode 15:00 to 18:30 and the company site: <code>research_notes/company-episode.md:107-112</code>.</li>
+<li>The eigenvalues of the Dirichlet second-difference matrix are standard; the \(N^4\) conclusion is derived on this page and is consistent with the \((\nu N^2)^2\) scaling reported by Krishnapriyan et al.</li>
 </ul>
 </section>
 
 <section id="exit">
 <h2>Exit test</h2>
+<p>You can now name the two distinct ways physics substitutes for data, quote the best published numbers for each, and derive the reason the second one gets harder rather than easier as the problem gets more interesting.</p>
 <ol class="steps">
-<li>Write the PINO loss and the Majumdar self training loop, and give the two ratios Majumdar reports.</li>
-<li>Explain in two sentences why a dense residual signal can still be a bad optimization signal, with the condition number scaling.</li>
-<li>Name the two adaptive weighting classes in <code>neuraloperator</code> and say what problem their existence proves.</li>
+<li>Write the PINO loss and the Majumdar self-training loop, and give the two ratios Majumdar reports.</li>
+<li>Derive \(\mathrm{cond}(L^\top L)\approx0.164N^4\) from the eigenvalues of the second-difference matrix, and give the numbers at \(N=64\) and \(N=128\).</li>
+<li>Explain in two sentences why a dense residual signal can still be a bad optimization signal, using the scaling from question 2.</li>
+<li>Name the two adaptive weighting classes in <code>neuraloperator</code>, and say what their existence tells you about the state of the theory.</li>
+<li>Give one example of a field on which the residual is small and the answer is still wrong, and name the metric from Module 8 that would catch it.</li>
 </ol>
 </section>
 
