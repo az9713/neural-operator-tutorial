@@ -91,11 +91,11 @@ a network connection.
 | # | Page | One sentence | Lab |
 |---|------|--------------|-----|
 | — | [**Course home**](https://az9713.github.io/neural-operator-tutorial/course/index.html) | The map: how to use the course, the labs, the evidence grades, the schedule. | — |
-| 0 | [Orientation](https://az9713.github.io/neural-operator-tutorial/course/00_orientation.html) | What an operator is, what a discretization is, and the 90 minute diagnostic. | none |
+| 0 | [Orientation](https://az9713.github.io/neural-operator-tutorial/course/00_orientation.html) | What an operator is, what a discretization destroys, and three facts from functional analysis proved, not cited. | a 90 minute diagnostic |
 | 1 | [Functions in, functions out](https://az9713.github.io/neural-operator-tutorial/course/01_functions_in_functions_out.html) | Discretization invariance as a three part definition, with the CNN counterexample. | one trained FNO at four grids |
 | 2 | [The Fourier layer](https://az9713.github.io/neural-operator-tutorial/course/02_fourier_layer.html) | One layer, derived from the Green's function, then trained on Burgers. | Lab 01, Burgers at four resolutions |
 | 3 | [Four answers to one cost problem](https://az9713.github.io/neural-operator-tutorial/course/03_four_answers.html) | GNO, LNO, MGNO, FNO as Nyström, low rank, multipole, FFT. | refinability reading |
-| 4 | [DeepONet, PINN, hybrids](https://az9713.github.io/neural-operator-tutorial/course/04_deeponet_pinn_hybrids.html) | Encoder, approximator, decoder versus operator layers; constraint versus amortization. | PINN failure at high β (reading) |
+| 4 | [DeepONet, PINN, hybrids](https://az9713.github.io/neural-operator-tutorial/course/04_deeponet_pinn_hybrids.html) | A hard information limit on fixed sensors, and why PINNs fail in the optimizer and not the network. | the PINN wall, specified |
 | 5 | [What the theorems say](https://az9713.github.io/neural-operator-tutorial/course/05_theorems.html) | Universal approximation is existence, not efficiency; four sources of error. | none, proofs |
 | 6 | [Meshes, geometry, spheres, attention](https://az9713.github.io/neural-operator-tutorial/course/06_meshes_geometry.html) | MeshGraphNets, GINO, SFNO, Transolver, and the thermal die on a square. | Lab 02, die thermal |
 | 7 | [Time](https://az9713.github.io/neural-operator-tutorial/course/07_time.html) | FNO-2D versus FNO-3D, noise injection, pushforward, and the rollout wall. | Lab 01 run A, space time Burgers |

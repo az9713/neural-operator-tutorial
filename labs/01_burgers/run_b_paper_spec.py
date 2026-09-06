@@ -172,7 +172,9 @@ results = dict(run="B_paper_spec", pde="du/dt + d(u^2/2)/dx = nu d2u/dx2, period
                gpu=torch.cuda.get_device_name(0) if device == "cuda" else None,
                train_rel_l2=train_err, test_rel_l2={str(r): e for r, e in errors.items()},
                train_seconds=train_seconds, torch=torch.__version__,
-               paper_reference="FNO at s=256: 0.0149 (pdf-fno-jmlr.md:104), nu=0.1, 8192-point solve")
+               paper_reference="FNO at s=256: ICLR 2021 0.0149, JMLR 2023 0.0018 "
+                               "(the two published runs differ by ~8x; see the correction block at the end of "
+                               "research_notes/pdf-fno-jmlr.md), nu=0.1, 8192-point solve")
 (OUT / f"results_b{TAG}.json").write_text(json.dumps(results, indent=2))
 
 import matplotlib; matplotlib.use("Agg")

@@ -28,7 +28,7 @@
 <section id="how">
 <h2>How to use this course</h2>
 <p>Each module is one HTML page and, where a lab exists, one notebook in <code>../notebooks/</code>. Every page has the same six parts in the same order: why the module exists, the core ideas in prose, the mathematics with the derivations written out, the lab with real numbers, the sources with line citations, and an exit test. Do the exit test with the page closed. If you cannot pass it, reread the section it names rather than the whole page.</p>
-<p>The pages are written on one rule, which is worth stating because it explains why they are longer than they need to be. A stated fact without its argument is treated as a defect. So every substantive claim carries a precise statement, a definition of every term inside it, a proof in the smallest setting where the mechanism is visible, the rescue or the limit case, and a tie to a line of code, a page of a paper, or a number from a lab in this folder. Module 0's Fact 1 is the worked model of that shape, and everything else is held to it.</p>
+<p>The pages are written on one rule, and the rule explains why they are longer than they need to be. A stated fact without its argument is treated as a defect. So every substantive claim carries a precise statement, a definition of every term inside it, a proof in the smallest setting where the mechanism is visible, the rescue or the limit case, and a tie to a line of code, a page of a paper, or a number from a lab in this folder. Module 0's Fact 1 is the worked model of that shape, and everything else is held to it.</p>
 <p>Three objectives run through the whole course and must never be mixed, because each is refuted by a different experiment. A <strong>surrogate</strong> reproduces a known simulator faster. A <strong>PINN</strong> uses the equation as a loss to fit one solution. A <strong>foundation model</strong> reuses one representation across several physical systems. Success at one proves nothing about the other two. Module 0 fixes the vocabulary, Module 10 tests the third with an experiment designed so that it can fail, and Module 12 grades a company's claims against all three.</p>
 <div class="callout"><p>The theory plan of 4 September 2026 (a private study plan, not in this repository) is absorbed into these pages. Its proofs sit in Modules 0 to 5. The mapping is decision 2 of the project notes, also not in this repository.</p></div>
 </section>
@@ -37,11 +37,11 @@
 <h2>The modules</h2>
 <div class="table-wrap"><table>
 <tr><th>#</th><th>Page</th><th>One sentence</th><th>Lab</th></tr>
-<tr><td>0</td><td><a href="00_orientation.html">Orientation: three objectives, one vocabulary</a></td><td>What an operator is, what a discretization destroys, and three facts from functional analysis proved rather than cited.</td><td>a 90 minute diagnostic</td></tr>
+<tr><td>0</td><td><a href="00_orientation.html">Orientation: three objectives, one vocabulary</a></td><td>What an operator is, what a discretization destroys, and three facts from functional analysis proved, not cited.</td><td>a 90 minute diagnostic</td></tr>
 <tr><td>1</td><td><a href="01_functions_in_functions_out.html">Functions in, functions out</a></td><td>Three different claims share the name "resolution invariance"; one is a theorem and one is an experiment.</td><td>one FNO and one CNN at four grids</td></tr>
 <tr><td>2</td><td><a href="02_fourier_layer.html">The Fourier layer from the convolution theorem</a></td><td>The layer derived from a Green's function, then trained, then its output spectrum read for a defect the error hides.</td><td>Lab 01, Burgers at four resolutions</td></tr>
 <tr><td>3</td><td><a href="03_four_answers.html">Four answers to one cost problem</a></td><td>GNO, LNO, MGNO and FNO as Nyström, low rank, multipole and the FFT, plus why truncation works on elliptic operators.</td><td>refinability reading</td></tr>
-<tr><td>4</td><td><a href="04_deeponet_pinn_hybrids.html">DeepONet, PINN, and the hybrids</a></td><td>A hard information limit on fixed sensors, and why PINNs fail in the optimizer rather than the network.</td><td>the PINN wall, specified</td></tr>
+<tr><td>4</td><td><a href="04_deeponet_pinn_hybrids.html">DeepONet, PINN, and the hybrids</a></td><td>A hard information limit on fixed sensors, and why PINNs fail in the optimizer and not the network.</td><td>the PINN wall, specified</td></tr>
 <tr><td>5</td><td><a href="05_theorems.html">What the theorems say and do not say</a></td><td>Universal approximation is existence, not efficiency; the construction proved, and the counterexample when compactness goes.</td><td>none, proofs</td></tr>
 <tr><td>6</td><td><a href="06_meshes_geometry.html">Meshes, geometry, spheres, attention</a></td><td>MeshGraphNets, GINO, SFNO and Transolver, plus the arithmetic that says why a flat FFT fails on a globe.</td><td>Lab 02, the thermal die</td></tr>
 <tr><td>7</td><td><a href="07_time.html">Time: one step, many steps, or the whole trajectory</a></td><td>How rollout error compounds, how to read the regime off a results table, and the two stabilizers that work.</td><td>Lab 01 run A, plus the rollout to run</td></tr>
@@ -66,24 +66,24 @@
 
 <section id="found">
 <h2>What the labs found</h2>
-<p>The labs were built to make the course checkable, and three of their results are worth knowing before you start, because several later modules depend on them.</p>
+<p>The labs were built to make the course checkable, and three of their results should be known before you start, because several later modules depend on them.</p>
 <ol class="steps">
 <li><strong>Resolution invariance describes the architecture, not the error.</strong> An FNO trained at 64 points and evaluated at 1024 keeps a single Fourier coefficient of magnitude \(1.44\times10^{-2}\) at the Nyquist bin, identical at every unseen grid, which accounts for about 89 percent of the error rise from 0.0224 to 0.0349. The same defect appears in two dimensions as visible stripes and a 27-fold rise in the high-frequency error band. Modules 2, 6 and 8.</li>
 <li><strong>A CNN is not bad at this, until the grid changes.</strong> A convolutional network with a 49-point stencil matches the FNO exactly at the training grid, 0.0224 against 0.0224, on 58 percent of the parameters, and then reaches 1.46 at 1024 points, which is worse than predicting zero. Module 1.</li>
 <li><strong>The library counts Fourier modes differently from the paper.</strong> <code>neuraloperator</code> 2.0.0 keeps <code>n_modes // 2 + 1</code> bins on the real-FFT axis, so <code>n_modes=16</code> gives \(k_{\max}=8\) and reproducing the paper's \(k_{\max}=16\) needs <code>n_modes=32</code>. Anyone who types the paper's number into the library trains a model with half the spectral width. Module 2.</li>
 </ol>
-<p>Two corrections made during the rewrite are logged at the end of <code>../research_notes/pdf-fno-jmlr.md</code> and are worth flagging here, since both had propagated across several pages. The Burgers FNO row is <em>not</em> identical between the two versions of the paper: ICLR 2021 reports 0.0149 to 0.0139 and JMLR 2023 reports 0.0018 flat, a factor of about eight, while every other row of both tables does match. And the aliased energy fraction of Lab 01's training grid is 0.15 percent, not the 0.5 percent three pages previously said.</p>
+<p>Two corrections made during the rewrite are logged at the end of <code>../research_notes/pdf-fno-jmlr.md</code> and are flagged here, since both had propagated across several pages. The Burgers FNO row is <em>not</em> identical between the two versions of the paper: ICLR 2021 reports 0.0149 to 0.0139 and JMLR 2023 reports 0.0018 flat, a factor of about eight, while every other row of both tables does match. And the aliased energy fraction of Lab 01's training grid is 0.15 percent, not the 0.5 percent three pages previously said.</p>
 </section>
 
 <section id="grades">
 <h2>Evidence grades used on every page</h2>
-<p>Every number in this course carries one of four grades, and the grade is part of the claim rather than a footnote to it. A number with no grade is a defect.</p>
+<p>Every number in this course carries one of four grades, and the grade is part of the claim, not a footnote to it. A number with no grade is a defect.</p>
 <p><span class="grade g-a">A</span> read in the primary paper, with the page cited. <span class="grade g-b">B</span> abstract or secondary source only, with the arXiv identifier verified. <span class="grade g-c">C</span> company statement, press or podcast, not independently checked; repetition does not promote a C. <span class="grade g-lab">LAB</span> produced in this repository, with the script, the seed and the results file named.</p>
 </section>
 
 <section id="schedule">
 <h2>Schedule</h2>
-<p>Sixteen to seventeen weeks at eight hours a week. Modules 0 to 4 take one week each, Module 5 takes two or three because it carries the proofs, Modules 6 to 12 take one week each, and the capstone takes three to four. That is the estimate from decision 5 of the project notes, not in this repository, and it is an estimate rather than a promise. The diagnostic at the end of Module 0 exists to tell you which half of the range you are in.</p>
+<p>Sixteen to seventeen weeks at eight hours a week. Modules 0 to 4 take one week each, Module 5 takes two or three because it carries the proofs, Modules 6 to 12 take one week each, and the capstone takes three to four. That is the estimate from decision 5 of the project notes, not in this repository, and it is an estimate, not a promise. The diagnostic at the end of Module 0 exists to tell you which half of the range you are in.</p>
 </section>
 </div>
 </body>
