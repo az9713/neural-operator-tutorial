@@ -13,8 +13,6 @@ This course started from one podcast episode:
 [**Trillion Token Context. No, Really — Anima Anandkumar & Benedikt Jenik, Accelerated
 Understanding**](https://www.youtube.com/watch?v=KS_IpnX7n9I) — Latent Space, 4 September 2026.
 
-[![Watch the episode](https://i.ytimg.com/vi/KS_IpnX7n9I/hqdefault.jpg)](https://www.youtube.com/watch?v=KS_IpnX7n9I)
-
 In the episode the founders claim that one model can learn across fluid dynamics,
 semiconductors, and energy, and that a model trained across several areas of physics beats an
 equally sized model trained on one. They describe trillion context training and five trillion
