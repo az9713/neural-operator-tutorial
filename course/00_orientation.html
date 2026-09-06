@@ -54,7 +54,7 @@
 <div class="math">
 <p>\[\big(0,\ \sin(\pi/4),\ \sin(\pi/2),\ \sin(3\pi/4),\ \sin(\pi)\big) = (0,\ 0.70711,\ 1,\ 0.70711,\ 0).\]</p>
 </div>
-<p>Five numbers, and they are all the model will ever see. What they do not determine. Let \(g(x) = \sin(\pi x) + \sin(4\pi x)\). At every one of the five sample points \(\sin(4\pi x_\ell) = \sin(\pi \ell) = 0\), so \(g\) produces the identical record. The two inputs are indistinguishable to the discretization, yet their solutions are not equal. Solving with \(g\) adds the term \(\sin(4\pi x)/(16\pi^2)\), because differentiating \(\sin(4\pi x)\) twice brings down \(-16\pi^2\). At \(x = 1/8\), a point the record does not sample, that extra term equals</p>
+<p>Five numbers, and they are all the model will ever see. Now for what they do not determine. Let \(g(x) = \sin(\pi x) + \sin(4\pi x)\). At every one of the five sample points \(\sin(4\pi x_\ell) = \sin(\pi \ell) = 0\), so \(g\) produces the identical record. The two inputs are indistinguishable to the discretization, yet their solutions are not equal. Solving with \(g\) adds the term \(\sin(4\pi x)/(16\pi^2)\), because differentiating \(\sin(4\pi x)\) twice brings down \(-16\pi^2\). At \(x = 1/8\), a point the record does not sample, that extra term equals</p>
 <div class="math">
 <p>\[\frac{\sin(\pi/2)}{16\pi^2} = \frac{1}{157.91} = 0.00633,\]</p>
 </div>
@@ -72,7 +72,7 @@
 
 <section id="math">
 <h2>Mathematics: function spaces and what finite observations preserve</h2>
-<p>Three facts from functional analysis carry the rest of the course. Each is proved here in the smallest setting where the mechanism is visible, and each ends with the place in this repository where it decides something. If you already know all three, read only the consequences; if you do not, these are the three to spend it on.</p>
+<p>Three facts from functional analysis carry the rest of the course. Each is proved here in the smallest setting where the mechanism is visible, and each ends with the place in this repository where it decides something. If you already know all three, read only the consequences; if you do not, these are the three to read in full.</p>
 
 <h3>Fact 1. An \(L^2\) element has no point values</h3>
 <p>The precise statement is this: there is no rule that takes an element of \(L^2(0,1)\) and a point \(x_0\) and returns "the value there". Every dataset in this course is a table of point values, so the fact needs its argument, not an assertion. This subsection does four things. It says what the space is and why its elements are equivalence classes and not functions. It proves that evaluation is not defined on a class, and that it is not even continuous on the functions where it is defined. It proves the rescue: enough smoothness gives a class exactly one continuous representative, and in \(d\) dimensions the threshold is \(s &gt; d/2\) derivatives. It ends with the three routes around the problem, and where this course uses each one.</p>
