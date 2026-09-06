@@ -4,7 +4,7 @@ A 13 module course, plus a capstone, on neural operators. Thirteen HTML lessons,
 notebooks, and three labs that ran on one laptop GPU. Every number on every page traces to a
 research note, a page of a primary paper, or a lab result file in this repository.
 
-**Read the course: https://az9713.github.io/neuraloperator/course/index.html**
+**Read the course: https://az9713.github.io/neural-operator-tutorial/course/index.html**
 
 ## Inspiration
 
@@ -32,26 +32,26 @@ a network connection.
 
 | # | Page | One sentence | Lab |
 |---|------|--------------|-----|
-| — | [**Course home**](https://az9713.github.io/neuraloperator/course/index.html) | The map: how to use the course, the labs, the evidence grades, the schedule. | — |
-| 0 | [Orientation](https://az9713.github.io/neuraloperator/course/00_orientation.html) | What an operator is, what a discretization is, and the 90 minute diagnostic. | none |
-| 1 | [Functions in, functions out](https://az9713.github.io/neuraloperator/course/01_functions_in_functions_out.html) | Discretization invariance as a three part definition, with the CNN counterexample. | one trained FNO at four grids |
-| 2 | [The Fourier layer](https://az9713.github.io/neuraloperator/course/02_fourier_layer.html) | One layer, derived from the Green's function, then trained on Burgers. | Lab 01, Burgers at four resolutions |
-| 3 | [Four answers to one cost problem](https://az9713.github.io/neuraloperator/course/03_four_answers.html) | GNO, LNO, MGNO, FNO as Nyström, low rank, multipole, FFT. | refinability reading |
-| 4 | [DeepONet, PINN, hybrids](https://az9713.github.io/neuraloperator/course/04_deeponet_pinn_hybrids.html) | Encoder, approximator, decoder versus operator layers; constraint versus amortization. | PINN failure at high β (reading) |
-| 5 | [What the theorems say](https://az9713.github.io/neuraloperator/course/05_theorems.html) | Universal approximation is existence, not efficiency; four sources of error. | none, proofs |
-| 6 | [Meshes, geometry, spheres, attention](https://az9713.github.io/neuraloperator/course/06_meshes_geometry.html) | MeshGraphNets, GINO, SFNO, Transolver, and the thermal die on a square. | Lab 02, die thermal |
-| 7 | [Time](https://az9713.github.io/neuraloperator/course/07_time.html) | FNO-2D versus FNO-3D, noise injection, pushforward, and the rollout wall. | Lab 01 run A, space time Burgers |
-| 8 | [Evaluation that can fail a model](https://az9713.github.io/neuraloperator/course/08_evaluation.html) | cRMSE, bRMSE, banded fRMSE, hot spot error, and split by family. | metrics on Labs 01 and 02 |
-| 9 | [Scale](https://az9713.github.io/neuraloperator/course/09_scale.html) | Where the trillion context numbers come from and what public work reaches. | Lab 03, memory and time versus grid |
-| 10 | [Physics foundation models](https://az9713.github.io/neuraloperator/course/10_foundation_models.html) | MPP, Poseidon, DPOT, Subramanian et al.; the experiment matrix A to D. | transfer matrix (not yet run) |
-| 11 | [Physics as data engine and as reward](https://az9713.github.io/neuraloperator/course/11_physics_as_signal.html) | Curricula, residual losses, self improvement, and the optimization caveat. | residual sweep (not yet run) |
-| 12 | [Applications and industry](https://az9713.github.io/neuraloperator/course/12_applications.html) | Weather, plasma, CO2, catheters, seismic, semiconductors; company claims graded. | evidence ledger |
-| 13 | [Capstone](https://az9713.github.io/neuraloperator/course/13_capstone.html) | Operator transfer under physics shift, with the thermal die as the semiconductor target. | the full matrix |
+| — | [**Course home**](https://az9713.github.io/neural-operator-tutorial/course/index.html) | The map: how to use the course, the labs, the evidence grades, the schedule. | — |
+| 0 | [Orientation](https://az9713.github.io/neural-operator-tutorial/course/00_orientation.html) | What an operator is, what a discretization is, and the 90 minute diagnostic. | none |
+| 1 | [Functions in, functions out](https://az9713.github.io/neural-operator-tutorial/course/01_functions_in_functions_out.html) | Discretization invariance as a three part definition, with the CNN counterexample. | one trained FNO at four grids |
+| 2 | [The Fourier layer](https://az9713.github.io/neural-operator-tutorial/course/02_fourier_layer.html) | One layer, derived from the Green's function, then trained on Burgers. | Lab 01, Burgers at four resolutions |
+| 3 | [Four answers to one cost problem](https://az9713.github.io/neural-operator-tutorial/course/03_four_answers.html) | GNO, LNO, MGNO, FNO as Nyström, low rank, multipole, FFT. | refinability reading |
+| 4 | [DeepONet, PINN, hybrids](https://az9713.github.io/neural-operator-tutorial/course/04_deeponet_pinn_hybrids.html) | Encoder, approximator, decoder versus operator layers; constraint versus amortization. | PINN failure at high β (reading) |
+| 5 | [What the theorems say](https://az9713.github.io/neural-operator-tutorial/course/05_theorems.html) | Universal approximation is existence, not efficiency; four sources of error. | none, proofs |
+| 6 | [Meshes, geometry, spheres, attention](https://az9713.github.io/neural-operator-tutorial/course/06_meshes_geometry.html) | MeshGraphNets, GINO, SFNO, Transolver, and the thermal die on a square. | Lab 02, die thermal |
+| 7 | [Time](https://az9713.github.io/neural-operator-tutorial/course/07_time.html) | FNO-2D versus FNO-3D, noise injection, pushforward, and the rollout wall. | Lab 01 run A, space time Burgers |
+| 8 | [Evaluation that can fail a model](https://az9713.github.io/neural-operator-tutorial/course/08_evaluation.html) | cRMSE, bRMSE, banded fRMSE, hot spot error, and split by family. | metrics on Labs 01 and 02 |
+| 9 | [Scale](https://az9713.github.io/neural-operator-tutorial/course/09_scale.html) | Where the trillion context numbers come from and what public work reaches. | Lab 03, memory and time versus grid |
+| 10 | [Physics foundation models](https://az9713.github.io/neural-operator-tutorial/course/10_foundation_models.html) | MPP, Poseidon, DPOT, Subramanian et al.; the experiment matrix A to D. | transfer matrix (not yet run) |
+| 11 | [Physics as data engine and as reward](https://az9713.github.io/neural-operator-tutorial/course/11_physics_as_signal.html) | Curricula, residual losses, self improvement, and the optimization caveat. | residual sweep (not yet run) |
+| 12 | [Applications and industry](https://az9713.github.io/neural-operator-tutorial/course/12_applications.html) | Weather, plasma, CO2, catheters, seismic, semiconductors; company claims graded. | evidence ledger |
+| 13 | [Capstone](https://az9713.github.io/neural-operator-tutorial/course/13_capstone.html) | Operator transfer under physics shift, with the thermal die as the semiconductor target. | the full matrix |
 
 Two more pages:
 
-- [**Research report**](https://az9713.github.io/neuraloperator/neural_operator_course_research_report.html) — the findings behind the course, every claim graded, the source ledger.
-- [**Physics foundation model study kit**](https://az9713.github.io/neuraloperator/05_physics_foundation_model_study_kit.html) — the project kit the capstone follows.
+- [**Research report**](https://az9713.github.io/neural-operator-tutorial/neural_operator_course_research_report.html) — the findings behind the course, every claim graded, the source ledger.
+- [**Physics foundation model study kit**](https://az9713.github.io/neural-operator-tutorial/05_physics_foundation_model_study_kit.html) — the project kit the capstone follows.
 
 ## The labs
 
