@@ -1,0 +1,34 @@
+Third-party material in this repository, not covered by LICENSE (MIT)
+=====================================================================
+
+The MIT license in LICENSE covers the original work in this repository: the
+course pages in course/, the lab code and results in labs/, the notebooks in
+notebooks/, the research notes in research_notes/, and the two report pages in
+the root.
+
+It does not cover the following, which belong to their authors:
+
+  transcript.txt
+      Transcript of the Latent Space episode "Trillion Token Context. No,
+      Really - Anima Anandkumar & Benedikt Jenik, Accelerated Understanding"
+      (https://www.youtube.com/watch?v=KS_IpnX7n9I). Included for study and
+      citation. Copyright of the podcast and its guests.
+
+  research_notes/earlier_episode_transcript.txt
+      Transcript of an earlier episode of the same podcast (video 79mIutht1f4).
+      Same status.
+
+  Quoted material inside the course pages and the research notes
+      Sentences quoted from papers, podcasts, press, and company statements
+      remain the property of their authors. Each quotation names its source.
+
+  Papers cited by the course
+      The four source PDFs are not distributed here. Get them from arXiv, JMLR,
+      or the publisher. See the README.
+
+  data/burgers_train_16.pt, data/burgers_test_16.pt
+      Downloaded from the neuraloperator project on GitHub. See that project
+      for its own license terms.
+
+The software dependencies (PyTorch, neuraloperator, and the rest) carry their
+own licenses, which are not affected by this file.
