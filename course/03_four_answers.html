@@ -11,7 +11,7 @@
 </head>
 <body>
 <div class="wrap">
-<p class="eyebrow">Module 3 of 13 · one week</p>
+<p class="eyebrow">Module 3 of 14 · one week</p>
 <h1>Four answers to one cost problem</h1>
 <p class="dek">A kernel integral layer costs \(O(J^2)\) on \(J\) grid points, which is unaffordable at any usable resolution. GNO, LNO, MGNO and FNO are four ways to pay less, and each one is a numerical linear algebra idea that predates deep learning by decades: Nyström sampling, low rank, fast multipole, and the FFT.</p>
 <p class="meta">Absorbs theory plan Modules 3 (Green's functions, smoothing, spectra) and 6 (general neural operator layers). Primary source: JMLR 2023, Section 4 (p.12 to 24), Proposition 6 (p.28), Section 7.4 and Tables 6 to 8 (p.45 to 46), Section 10.1.2 (p.58).</p>
@@ -31,7 +31,7 @@
 <section id="why">
 <h2>Why this module exists</h2>
 <p>Module 2 derived the Fourier layer by making one assumption, that the kernel depends only on \(x-y\) on a periodic box, and it flagged at the time that this was a trade, not a free win. This module is where the trade gets priced. The JMLR paper offers four parameterizations of the same general layer, and FNO is the one with no learned kernel network at all, which is exactly why it is the fastest and why it is the worst of the four at small parameter budgets.</p>
-<p>There is also a practical reason not to learn only FNO. The geometry architectures of Module 6, and GINO and Transolver in particular, are built out of the graph and low-rank ideas, not the Fourier one, because their meshes are not uniform grids and the FFT has nothing to bite on. If the only layer you know is the spectral one, those papers read as unrelated inventions instead of as the obvious next move.</p>
+<p>There is also a practical reason not to learn only FNO. The geometry architectures of Module 6, and GINO and Transolver in particular, are built out of the graph and low-rank ideas, not the Fourier one, because their meshes are not uniform grids and the FFT has no uniform grid to run on. If the only layer you know is the spectral one, those papers read as unrelated inventions instead of as the obvious next move.</p>
 </section>
 
 <section id="green">
@@ -40,7 +40,7 @@
 <div class="math">
 <p>\[u(x) = \int_0^1 g(x,y)f(y)\,dy, \qquad g(x,y) = \min(x,y)\,\big[1 - \max(x,y)\big].\]</p>
 </div>
-<p>What that module did not do is look at the operator's spectrum, and the spectrum is what decides whether any of the four cost-saving tricks below can work at all. Write \(G\) for the map \(f \mapsto u\).</p>
+<p>What that module did not do is look at the operator's spectrum, and the spectrum is what decides whether any of the four cost-saving tricks below can work at all. Write \(G\) for the map \(f \mapsto u\). Module 2 used \(G(x,y)\) for the kernel; this module writes the kernel \(g(x,y)\) so that the operator can have the capital letter.</p>
 <div class="math">
 <p><strong>Claim 1 (the eigenvalues).</strong> \(G\big[\sin(n\pi x)\big] = (n\pi)^{-2}\sin(n\pi x)\) for every \(n \ge 1\).</p>
 <p><strong>Proof.</strong> \(-\partial_{xx}\sin(n\pi x) = (n\pi)^2\sin(n\pi x)\), and \(\sin(n\pi x)\) vanishes at both endpoints, so it is in the domain where \(G\) inverts \(-\partial_{xx}\). Applying \(G\) to both sides and dividing by \((n\pi)^2\) gives the claim. \(\square\)</p>
@@ -50,7 +50,7 @@
 <p><strong>Proof.</strong> \(G - G_m\) is diagonal with entries \(\lambda_n\) for \(n &gt; m\) and zero otherwise. The norm of a diagonal operator is the supremum of the absolute values of its entries, which here is the largest surviving eigenvalue, \(\lambda_{m+1}\). \(\square\)</p>
 <p><strong>Consequence, and the contrast with Module 0.</strong> Fact 3 showed that truncating the <em>identity</em> has \(\|I-P_m\|=1\) for every \(m\), so no mode count gives a uniform guarantee on the unit ball. Truncating \(G\) has \(\|G-G_m\| = \pi^{-2}(m+1)^{-2}\), which does. Keeping ten modes bounds the error by \(8.4\times10^{-4}\) for <em>every</em> input of norm one, with no compactness assumption and no restriction on the input set at all. The difference is that \(G\) smooths and the identity does not. This also proves \(G\) is compact, since it is the norm limit of the finite-rank operators \(G_m\).</p>
 </div>
-<p>That contrast is the load-bearing fact of this module, and it is easiest to hold as a design rule. Low-rank and truncation methods work when the operator's spectrum decays, and elliptic solution operators have decaying spectra because they integrate. They degrade on operators that do not smooth, and the degradation shows up in robustness before it shows up in clean accuracy. The JMLR paper's Table 9 (p.47) makes the distinction sharply. On clean data FNO handles one-dimensional advection with a random square-wave input as well as anything: training error 0.002, test error 0.002. Add 10 percent input noise and that test error becomes 0.094, a factor of 47, while Darcy moves only from 0.011 to 0.012 and Navier-Stokes from 0.024 to 0.039. The paper's own reading is that FNO "is less robust on the advection equation, which is not smoothing, and on Burgers equation which, whilst smoothing also forms steep fronts". So a headline accuracy number on clean data does not tell you whether the operator's spectrum was on your side. Module 1 gave the theoretical half of the same point.</p>
+<p>That contrast is the load-bearing fact of this module, and it is easiest to hold as a design rule. Low-rank and truncation methods work when the operator's spectrum decays, and elliptic solution operators have decaying spectra because they integrate. They degrade on operators that do not smooth, and the degradation shows up in robustness before it shows up in clean accuracy. The JMLR paper's Table 9 (p.47) makes the distinction sharply. On clean data FNO handles one-dimensional advection with a random square-wave input as well as anything: training error 0.002, test error 0.002. Add 10 percent input noise and that test error becomes 0.094, a factor of 47, while Darcy moves only from 0.011 to 0.012 and Navier-Stokes from 0.024 to 0.039. The paper's own reading is that FNO "is less robust on the advection equation, which is not smoothing, and on Burgers equation which, whilst smoothing also forms steep fronts". So a headline accuracy number on clean data does not tell you whether the operator's spectrum decays. Module 1 gave the theoretical half of the same point.</p>
 <p>The paper also checks all of this on the operator itself: a neural operator with zero hidden layers learns \(G\) to relative test error \(10^{-7}\), and its Figure 7 puts the learned kernel next to the analytic \(g\) (<code>research_notes/pdf-fno-jmlr.md:537-545</code>). Every remaining operator in the course has a kernel nobody can write down, so this is the last time the answer is checkable in closed form. Use it as the calibration point.</p>
 </section>
 
@@ -61,7 +61,7 @@
 <p>\[v_0 = P(a), \qquad v_{t+1}(x) = \sigma\Big(W_t\,v_t(x) + \int_D \kappa_t(x,y)\,v_t(y)\,dy + b_t(x)\Big), \qquad G_\theta(a) = Q(v_T).\]</p>
 <p>\(P\) and \(Q\) are pointwise lifting and projection maps. \(W_t\) is a matrix mixing channels at a single point, so it is local. The integral is the only term that moves information between locations, so it is the only term any of the four answers touch. \(b_t\) is a bias <em>function</em> of \(x\), not a vector, which is what lets a layer know where it is on a non-periodic domain. And \(\sigma\) acts pointwise.</p>
 </div>
-<p>The paper allows the kernel to depend on more than the two positions, and the three forms it lists (Equations 7 to 9) need keeping straight because they have quite different consequences.</p>
+<p>The paper allows the kernel to depend on more than the two positions, and the three forms it lists (Equations 7 to 9) need keeping straight because they have different consequences.</p>
 <ol class="steps">
 <li>\(\kappa(x,y)\), the plain form. The layer is linear in \(v_t\) before \(\sigma\), and the whole layer is a fixed integral operator plus a pointwise map.</li>
 <li>\(\kappa(x,y,a(x),a(y))\), which lets the kernel read the problem's coefficient field. This is the right form for Darcy, where the operator being learned genuinely depends on \(a\), and it is why a GNO on Darcy passes the coefficient into the kernel network as well as the lifting.</li>

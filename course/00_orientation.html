@@ -11,7 +11,7 @@
 </head>
 <body>
 <div class="wrap">
-<p class="eyebrow">Module 0 of 13 · one week</p>
+<p class="eyebrow">Module 0 of 14 · one week</p>
 <h1>Orientation: three objectives, one vocabulary</h1>
 <p class="dek">Four words get fixed here: function, operator, discretization, learned operator. Three goals that the podcasts run together get pulled apart, because each one is refuted by a different experiment. Then three facts from functional analysis, each proved, because the rest of the course leans on all three.</p>
 <p class="meta">Absorbs theory plan Module 1 (function spaces and what finite observations preserve). Mathematics on this page needs a network connection for MathJax.</p>
@@ -63,7 +63,7 @@
 <p>The example above is the third problem in miniature. Notice which way the failure runs: the culprit is the mode \(\sin(4\pi x)\), whose zeros land exactly on the sample points. Module 1 gives that phenomenon its name, aliasing, and Module 2 shows an FNO producing it by accident at grids it never trained on.</p>
 
 <h3>"Resolution is context length", stated exactly enough to test</h3>
-<p>The company episode sells resolution invariance by analogy with a language model's context length. The underlying claim, from the earlier episode between 00:16:12 and 00:17:51, is narrower and quite defensible: standard networks have fixed input and output sizes, neural operators model inputs and outputs as continuous functions, and so they accept and produce data at any resolution.</p>
+<p>The company episode sells resolution invariance by analogy with a language model's context length. The underlying claim, from the earlier episode between 00:16:12 and 00:17:51, is narrower and defensible: standard networks have fixed input and output sizes, neural operators model inputs and outputs as continuous functions, and so they accept and produce data at any resolution.</p>
 <p>What that guarantees and what it does not is the entire content of Module 1, so here is only the summary. A fixed set of weights can be evaluated on any grid, and as the grid refines the output converges to one continuum operator. It does not follow that the model is accurate on a grid it never saw. Accuracy at a new resolution needs assumptions about the content the training grid could not carry, and Lab 01 measures what happens when those assumptions are not checked: the error rises 56 percent at the first unseen grid for one model and 18 percent for another.</p>
 
 <h3>Why not just use PINNs</h3>
@@ -193,7 +193,7 @@ using \(\|P_m\| \le 1\) on the last term. This is the shape of every discretizat
 
 <section id="diagnostic">
 <h2>The 90 minute diagnostic</h2>
-<p>This module has no lab. The five questions below take its place, because the thing that needs measuring here is not a model but your own starting point, and the answer changes how you pace Modules 1 to 5. Answer without references. An incomplete answer tells you what to review; it says very little about whether you can learn the subject.</p>
+<p>This module has no lab. The five questions below take its place, because the thing that needs measuring here is not a model but your own starting point, and the answer changes how you pace Modules 1 to 5. Answer without references. An incomplete answer tells you what to review; it says little about whether you can learn the subject.</p>
 <ol class="steps">
 <li>Explain why \(L^2\) contains equivalence classes and why \(u(x_0)\) is not defined on an arbitrary element.</li>
 <li>Give a bounded sequence in a Hilbert space with no norm convergent subsequence. State what this implies for closed bounded sets in infinite dimensions.</li>

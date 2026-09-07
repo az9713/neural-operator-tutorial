@@ -11,7 +11,7 @@
 </head>
 <body>
 <div class="wrap">
-<p class="eyebrow">Module 9 of 13 · one week</p>
+<p class="eyebrow">Module 9 of 14 · one week</p>
 <h1>Scale: memory, modes, sharding, and the trillion context arithmetic</h1>
 <p class="dek">Where the company's numbers come from, what the public work actually reaches, and what one 4 GB laptop GPU can measure about the constants. The quadratic cost argument does rule out vanilla attention at industrial grids. It does not rule out attention, and every physics foundation model that exists is attention-based with patching or Fourier attention.</p>
 <p class="meta">Primary sources: earlier episode 01:09:14 to 01:11:47; company site and press; FNO cost \(O(n\log n)\), ICLR p.6; MG-TFNO arXiv 2310.00120; Incremental FNO 2211.15188; U-NO 2204.11127; Transolver++ 2502.02414; FourCastNet 3 2507.12144; PDEBench Appendix G. Lab: <code>../labs/03_scale/</code>.</p>
@@ -55,7 +55,7 @@ against \(16^2\times32^2\times4\times8 = 8\) MiB for the same configuration in 2
 <tr><td>The company's "5 trillion context at inference"</td><td class="num">5e12</td><td class="num">4.66 PiB</td><td class="num">about 65,000</td></tr>
 </table></div>
 <div class="warn"><p><strong>Read those two right-hand numbers as an order of magnitude and not a quotation.</strong> Four assumptions go into them, and each one can move the answer. The 1,050 bytes per point comes from a 2D kernel at 32 channels, and a 3D kernel's FFT workspace is not accounted for, which pushes the estimate up. Float32 is assumed: bfloat16 halves it. Activation checkpointing routinely buys a further factor of two to four by recomputing instead of storing. And "context" in a company statement may not mean "points held in memory during one forward pass" at all; it may mean the total size of a dataset streamed through the model, in which case the memory arithmetic does not apply and a different question should be asked. Taking the most generous reading available, bfloat16 with aggressive checkpointing, the five-trillion figure still needs on the order of 8,000 accelerators for one forward pass. That is a datacentre. What does not exist in public is any benchmark showing the model runs at that scale, which is why this claim is graded C and stays C.</p></div>
-<p>The honest summary is narrower than either the hype or the dismissal. The quadratic-attention argument is correct and is not the binding constraint, because nobody proposes dense attention over points. The binding constraint is linear activation memory times a very large number of points, and the published mechanisms for beating it are all in the next section. Whether they compose at five trillion is exactly the claim nobody outside the company can check.</p>
+<p>The honest summary is narrower than either the hype or the dismissal. The quadratic-attention argument is correct and is not the binding constraint, because nobody proposes dense attention over points. The binding constraint is linear activation memory times a large number of points, and the published mechanisms for beating it are all in the next section. Whether they compose at five trillion is exactly the claim nobody outside the company can check.</p>
 </section>
 
 <section id="public">
