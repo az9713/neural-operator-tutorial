@@ -11,7 +11,7 @@
 </head>
 <body>
 <div class="wrap">
-<p class="eyebrow">Module 5 of 13 · two to three weeks</p>
+<p class="eyebrow">Module 5 of 14 · two to three weeks</p>
 <h1>What the theorems say and do not say</h1>
 <p class="dek">Universal approximation is an existence statement over a compact set. It says nothing about parameter count, nothing about data, nothing about optimization, and nothing about inputs outside the set. This module states the neural operator theorems exactly, proves their shared construction in a setting where every step is checkable, derives the learning theory bound, and ends with a ledger of five error terms that people routinely add together without a licence.</p>
 <p class="meta">Absorbs theory plan Modules 4, 9 and 10. Primary sources: JMLR 2023, Definitions 1 to 4 (p.8 to 9), the Sources of Error paragraph (p.51), Sections 9.2 and 9.3 (p.52 to 57) and Section 10.1.3 (p.58), all read from <code>21-1524.pdf</code>; Kovachki, Lanthaler, Mishra arXiv 2107.07562; Lanthaler, Mishra, Karniadakis arXiv 2102.09618; Kovachki, Lanthaler, Stuart arXiv 2402.15715.</p>
@@ -121,7 +121,7 @@ Finally \(E_m(K)\) is compact in \(\mathbb R^m\), so by Pinkus a ReLU network \(
 <div class="math">
 <p><strong>The one inequality you do have.</strong> On page 12 the paper splits the total error for a fixed \(\theta\):
 \[\big\|\hat G_\theta(D_L,a|_{D_L}) - G^\dagger(a)\big\|_{\mathcal U} \;\le\; \big\|\hat G_\theta(D_L,a|_{D_L}) - G_\theta(a)\big\| \;+\; \big\|G_\theta(a)-G^\dagger(a)\big\|,\]
-which separates discretization from approximation (<code>research_notes/pdf-fno-jmlr.md:348-350</code>). Note the words "for a fixed \(\theta\)". The two terms interact through \(\theta\), because the parameter that minimizes the second term at one \(L\) is not the parameter training produces at another \(L\). Lab 01 is that interaction in one table: a model fitted at \(L=64\) and evaluated at \(L=1024\) pays a fixed-amplitude grid-scale oscillation worth 2.16 percent, which no single row of the ledger predicts.</p>
+which separates discretization from approximation (<code>research_notes/pdf-fno-jmlr.md:348-350</code>). Note the words "for a fixed \(\theta\)". The two terms interact through \(\theta\), because the parameter that minimizes the second term at one \(L\) is not the parameter training produces at another \(L\). Lab 01 is that interaction in one table: a model fitted at \(L=64\) and evaluated at \(L=1024\) pays a fixed-amplitude grid-scale oscillation worth about 2.2 percent of the signal, which no single row of the ledger predicts.</p>
 </div>
 </section>
 
@@ -133,7 +133,7 @@ which separates discretization from approximation (<code>research_notes/pdf-fno-
 <li><span class="grade g-a">A</span> Kovachki, Lanthaler, Mishra arXiv 2107.07562, Theorems 2.5, 2.15, 3.3 to 3.5, Remark 3.1: <code>research_notes/web-papers.md:385-448</code>.</li>
 <li><span class="grade g-a">A</span> Lanthaler, Mishra, Karniadakis arXiv 2102.09618, Theorems 3.1, 3.3, 3.6 to 3.8, Remark 3.4, Section 5: <code>:311-381</code>.</li>
 <li><span class="grade g-a">A</span> Kovachki, Lanthaler, Stuart arXiv 2402.15715, Theorems 4.1, 4.5, 5.1, Section 6: <code>:232-307</code>.</li>
-<li><span class="grade g-lab">LAB</span> The 2.16 percent Nyquist contribution and the 0.0224 to 0.0349 rise: Module 2 and <code>../labs/01_burgers/spectrum_b_m16.npz</code>.</li>
+<li><span class="grade g-lab">LAB</span> The 2.2 percent Nyquist contribution and the 0.0224 to 0.0349 rise: Module 2 and <code>../labs/01_burgers/spectrum_b_m16.npz</code>.</li>
 <li>Theory plan Modules 4, 9 and 10. Reading: Pinkus 1999 for the finite-dimensional density theorem; MIT 18.102 for compactness and uniform continuity.</li>
 </ul>
 </section>

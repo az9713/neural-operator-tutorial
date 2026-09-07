@@ -855,6 +855,43 @@ teaching material:
   E|u_hat(k)|^2 = 625/(k^2+25)^2 the total over k in Z is 625 * integral dk/(k^2+25)^2 = 625 * pi/250
   = 5 pi / 2 = 7.854 (Poisson summation; the correction is of order e^{-10 pi} = 2e-14). The tail
   over |k| > 32 sums to 1.180e-2. The ratio is 1.50e-3. Measured from the saved test-set spectrum
-  `labs/01_burgers/spectrum_b_m16.npz`, array `input_1024`, the tail fraction is 1.43e-3, agreeing
-  with the analytic value to 5 percent. The earlier 0.5 percent figure came from dividing the
-  correct tail by a wrong total.
+  `labs/01_burgers/spectrum_b_m16.npz`, array `input_1024`, the tail fraction is 1.56e-3, agreeing
+  with the analytic value to 4 percent (see the 2026-09-07 block below; the figure first written
+  here, 1.43e-3, skipped the doubling of the +k and -k bins). The earlier 0.5 percent figure came
+  from dividing the correct tail by a wrong total.
+
+### Corrections added 2026-09-07 (editorial audit of the course pages against EDITOR_PROMPT.md)
+- **"89 percent of the error jump" was the wrong ratio.** Module 2 combined the Nyquist component
+  (1.44e-2, or 2.24 percent of the test-set rms 0.644 read from `labs/01_burgers/burgers_nu0.1.pt`,
+  array `u1`, samples 1000-1199) in quadrature with the training-grid error 0.0224 and got a
+  predicted 0.0317 (0.0311 with the all-sample rms 0.667). The page then divided predicted total by
+  measured total, 0.0311/0.0351 = 0.89, and called that the fraction of the jump explained. The
+  fraction of the jump is (0.0317 - 0.0224)/(0.0351 - 0.0224) = 0.73, about three quarters; with
+  the N/2-1 bin (4.42e-3) added it is 0.79. For the n_modes=32 run the Nyquist bin (5.64e-3)
+  predicts 0.0242 against 0.0267, which is 0.39 of the jump, 0.56 with the N/2-1 bin (3.77e-3).
+  Corrected on index.html, Modules 2, 5, 8 and 14, and in HANDOFF.md.
+- **Tail fraction from the saved spectrum.** `input_1024` holds one-sided mean magnitudes for
+  k = 0..512. The energy above k = 32 as a fraction of the total is 1.56e-3 when every bin except
+  k = 0 is counted twice (the +k and -k bins), and 1.43e-3 when it is not. The doubled figure is the
+  correct one; the analytic value is 1.50e-3. Module 1 now says 1.56e-3, "agrees to four percent".
+- **GINO error claim misread.** The abstract of arXiv 2309.00583 says "a one-fourth reduction in
+  error rate compared to deep neural network approaches" on unseen geometry and boundary
+  conditions. Modules 6 and 12 had "a quarter of the error", which would be a 75 percent reduction.
+  Both now say "a one-quarter reduction in error rate". Verified against the arXiv abstract page.
+- **Aliasing tie in Module 1 was mis-stated.** The page said Module 0's sin(4 pi x) example was the
+  case "k = 0, k + N = 4". In the page's own convention e^{2 pi i k x}, sin(4 pi x) is built from
+  k = +2 and k = -2, which differ by N = 4, so the two exponentials coincide on the 4-point grid and
+  their difference, the sine, vanishes at every node. Corrected.
+- **The 2/3 rule was mis-stated.** The page said products stay inside the representable band and
+  "no fold occurs", with the inequality 2N/3 < N/2 + N/6 (which is an equality). The mechanism is
+  that a product of retained modes with N/2 < k < 2N/3 folds to k - N, whose magnitude exceeds
+  N/3, so it lands in the band the next truncation discards. `run_b_paper_spec.py:69-75` applies
+  the mask k < N // 3 before the product and after it. Corrected.
+- **Rollout horizon.** Module 7 said halving the one-step error buys "exactly one extra step" of
+  horizon for L > 1. It buys log 2 / log L steps; "exactly one" is the L = 2 case. Corrected.
+- **Condition numbers.** Module 14 carried a LAB grade on cond(L^T L) = 2.93e6 (N = 64) and 4.55e7
+  (N = 128) with no script or results file. Those are the exact sine-ratio values; Module 11 quoted
+  the asymptotic 0.164 N^4 values 2.8e6 and 4.4e7. Module 11 now gives both and states that they
+  are computed on the page from the closed form; Module 14 drops the LAB grade and says so.
+- **Cross-reference.** Module 1 sent the reader to "Module 2's exercise 2" for the anti-aliased
+  training test. That is exercise 1; exercise 2 is the W-path and coordinate-channel ablation.

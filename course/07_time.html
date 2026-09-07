@@ -11,7 +11,7 @@
 </head>
 <body>
 <div class="wrap">
-<p class="eyebrow">Module 7 of 13 · one week</p>
+<p class="eyebrow">Module 7 of 14 · one week</p>
 <h1>Time: one step, many steps, or the whole trajectory</h1>
 <p class="dek">A time-dependent PDE gives three ways to pose the learning problem, and the choice is not a matter of taste. Each formulation has a failure mode with a number attached, and the arithmetic of error accumulation says which one you can afford. This module derives that arithmetic, reads it off a published table, gives the two stabilizers that work, and states the wall none of them get past.</p>
 <p class="meta">Primary sources: FNO ICLR 2021 p.8 and Table 1; JMLR p.33 for the Reynolds estimate; MeshGraphNets p.5, Table 1 p.7 and Appendix A.5.2, read from <code>2010.03409v4.pdf</code>; Brandstetter, Worrall, Welling arXiv 2202.03376; PDEBench Section 4.3; DPOT arXiv 2403.03542. Lab: Lab 01 run A.</p>
@@ -62,7 +62,7 @@
 <p><strong>Proof.</strong> Split the step into the two things that go wrong, using \(u_{n+1}=F(u_n)\) for the true state and \(\hat u_{n+1}=F_\theta(\hat u_n)\) for the predicted one:
 \[e_{n+1} = \|F_\theta(\hat u_n) - F(u_n)\| \le \underbrace{\|F_\theta(\hat u_n)-F_\theta(u_n)\|}_{\le\,Le_n} + \underbrace{\|F_\theta(u_n)-F(u_n)\|}_{\le\,\varepsilon}.\]
 So \(e_{n+1}\le Le_n+\varepsilon\) with \(e_0=0\), and unrolling that recursion gives \(e_n \le \varepsilon(1+L+\cdots+L^{n-1})\), which is the geometric sum above. \(\square\)</p>
-<p><strong>The three regimes.</strong> If \(L&lt;1\) the dynamics contracts, the sum converges, and \(e_n \le \varepsilon/(1-L)\) for every \(n\): the rollout is stable forever, however long. If \(L=1\) the error grows linearly, \(n\varepsilon\), which is slow enough to be workable. If \(L&gt;1\) it grows like \(L^n\), and no achievable \(\varepsilon\) buys many steps, because halving \(\varepsilon\) buys exactly one extra step of horizon. Chaotic systems have \(L&gt;1\) by definition, since a positive Lyapunov exponent is exactly the statement that nearby states separate exponentially.</p>
+<p><strong>The three regimes.</strong> If \(L&lt;1\) the dynamics contracts, the sum converges, and \(e_n \le \varepsilon/(1-L)\) for every \(n\): the rollout is stable forever, however long. If \(L=1\) the error grows linearly, \(n\varepsilon\), which is slow enough to be workable. If \(L&gt;1\) it grows like \(L^n\), and no achievable \(\varepsilon\) buys many steps: to hold \(e_n\) below a tolerance \(\delta\) you need \(L^n \lesssim \delta(L-1)/\varepsilon\), so halving \(\varepsilon\) extends the horizon by \(\log 2/\log L\) steps, a fixed number that does not grow however small \(\varepsilon\) already is. At \(L = 2\) that is exactly one step. Chaotic systems have \(L&gt;1\) by definition, since a positive Lyapunov exponent is exactly the statement that nearby states separate exponentially.</p>
 </div>
 <p>The useful part is that a results table with both a one-step and a rollout column tells you which regime a problem is in, without any extra experiment. Compare the ratio of rollout-50 error to one-step error against 50, which is what pure linear accumulation would give. Using MeshGraphNets Table 1 (Module 6 has it in full):</p>
 <div class="table-wrap"><table>
@@ -92,7 +92,7 @@ So \(e_{n+1}\le Le_n+\varepsilon\) with \(e_0=0\), and unrolling that recursion 
 
 <section id="wall">
 <h2>The wall: extrapolation in time</h2>
-<p>Both stabilizers keep a rollout on its feet inside the horizon the training data covered. Neither gets past the end of it, and that limit is reported consistently across the literature.</p>
+<p>Both stabilizers keep a rollout stable inside the horizon the training data covered. Neither gets past the end of it, and that limit is reported consistently across the literature.</p>
 <p>PDEBench trains FNO on half the time steps of 1D advection and 1D Burgers and evaluates beyond them. Error "increases monotonically for \(t\) beyond the training window", and the paper's conclusion is unhedged: "present ML models cannot properly capture the dynamic behavior of the PDEs, and it is a challenging task to provide reliable predictions beyond the time experienced during training" (p.9, <code>:263</code>). DPOT, a 0.5 billion parameter pretrained model, still shows 33.5 percent full-trajectory error on long Kolmogorov turbulence rollouts, improved from 82.2 percent without pretraining (<code>foundation.md:55</code>). That is a real improvement and it is not a solution.</p>
 <div class="callout"><p><strong>The rules this leaves you with.</strong> Use a whole-trajectory model when you have the data and a fixed horizon. Use an autoregressive model with a tuned stabilizer when the horizon must be open. Measure the growth rate of a perturbation in the solver before choosing, because that is what decides whether either will work. Always report rollout error against horizon as a curve, never a single number, since a good one-step model can still drift. And keep "resolution transfer" and "time extrapolation" as separate lines in every report; they are different questions with different answers, and the project kit's evaluation section says so (<code>../05_physics_foundation_model_study_kit.html</code>).</p></div>
 </section>
