@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Outstanding tasks</title>
+<link rel="stylesheet" href="course/course.css">
+</head>
+<body>
+<div class="wrap">
+<p class="eyebrow">Task board · state at commit <code>eaeadb5</code>, 6 September 2026</p>
+<h1>Outstanding tasks</h1>
+<p class="dek">The course is complete, published and live. Nothing is in progress. Five items remain open, and one group of four items is closed as accepted, not defective. Each task below states what it settles, what it costs, and what the page already predicts, so that a run either confirms the page or refutes it.</p>
+<p class="meta">This page records the open work only. The full project state, the conventions and the session history stay in the resume file at the repository root and in <code>git log</code>. Do not copy either of those into this page.</p>
+
+<nav class="top">
+<a href="#labs">1. Run the labs</a>
+<a href="#euv">2. Two arXiv identifiers</a>
+<a href="#review">3. Second editorial pass</a>
+<a href="#title">4. A stale title</a>
+<a href="#accepted">Accepted, not defects</a>
+<a href="#rules">Rules for every task</a>
+</nav>
+
+<section id="state">
+<h2>Where the course stands</h2>
+<p>Sixteen pages are written, audited and served: <code>course/index.html</code> and Modules 00 to 14. All of them return 200. Three labs have run and their numbers appear on the pages. Every other lab is specified in full on its module page and marked "not yet run", because no page carries a plausible-looking number in place of a measured one.</p>
+<p>That marking is the source of the first task. The rewrite made each unrun lab precise enough to carry a written prediction, so each one is now an experiment that can fail rather than an exercise.</p>
+</section>
+
+<section id="labs">
+<h2>1. Run the labs the pages now specify</h2>
+<p>Four labs, in cost order. The first is the cheapest and closes the question the whole course points at.</p>
+
+<div class="table-wrap"><table>
+<tr><th>Order</th><th>Lab</th><th>What it settles</th><th>The page's prediction</th><th>Cost</th></tr>
+<tr>
+  <td>1</td>
+  <td>Module 2, exercise 2. Ablate <code>positional_embedding</code> and <code>fno_skip</code> at inference, using the saved <code>labs/01_burgers/model_b_m16.pt</code> and <code>model_b_m32.pt</code>.</td>
+  <td>Where the grid-scale artefact comes from. The Nyquist coefficient is 1.44e-2 in 1D at every unseen grid, and it accounts for about three quarters of the error rise from 0.0224 to 0.0351 at the first unseen grid. The source of the artefact is not isolated.</td>
+  <td>None written. The open question is whether that 1.44e-2 coefficient moves at all when either component is removed.</td>
+  <td>Minutes. Inference only, no training.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td>Module 7, the rollout.</td>
+  <td>Whether rollout error on this system compounds or saturates.</td>
+  <td>Burgers at nu = 0.01 is dissipative, so the ratio of rollout-50 error to one-step error should come out well below 50.</td>
+  <td>Small.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td>Module 11, the residual weight sweep on thermal.</td>
+  <td>Whether a residual loss pays for itself, and where it breaks.</td>
+  <td>Two predictions: a gain at the small data fraction and no gain at full data; and instability at lambda_r = 10. The stated mechanism is that the residual's conditioning worsens as the fourth power of the grid.</td>
+  <td>Medium. Thermal training is about 10 minutes per run.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td>Modules 10 and 13, the transfer matrix, arms A to D.</td>
+  <td>The foundation-model claim: whether one representation reuses across physical systems. This also fills the cross-physics row of Module 14.</td>
+  <td>The experiment is designed so that it can fail. No result is predicted.</td>
+  <td>About 5 hours.</td>
+</tr>
+</table></div>
+
+<h3>The procedure, the same for each one</h3>
+<ol class="steps">
+<li>Write the script in the matching <code>labs/</code> folder. Fix and record the seed.</li>
+<li>Run it. Write the numbers to a <code>results*.json</code> in that folder.</li>
+<li>Run it a second time. A single seed is not a result: runs are not bit-reproducible on CUDA, and run A gave 0.0040 and 0.0044 on two runs.</li>
+<li>Edit the module page. Replace the "not yet run" text with the measured numbers and a LAB grade.</li>
+<li>Check the page renders, then commit and push. Wait for the Pages build before you report a status code.</li>
+</ol>
+
+<div class="callout"><p>Modules 0, 1, 2, 5, 6, 8, 12 and 14 all treat the first lab's question as unsettled. One inference run changes eight pages, which is why it is first and not merely cheapest.</p></div>
+</section>
+
+<section id="euv">
+<h2>2. Verify two arXiv identifiers</h2>
+<p>Small, closed, and blocking two pages. The research notes record a cluster of EUV lithography mask work by an unrelated group, found during a search that was looking for something else. Two titles are recorded:</p>
+<ul class="src">
+<li>"Physics-Informed Neural Operator for Warm-Starting Background-Decomposed and Preconditioned PSFD: Enabling Scalable 3-D EUV Mask Simulation"</li>
+<li>"Physics-informed neural networks and neural operators for a study of EUV electromagnetic wave diffraction from a lithography mask"</li>
+</ul>
+<p>Their arXiv identifiers were never independently verified, and the note says so at <code>research_notes/lineage.md:329</code>. Modules 12 and 14 both refuse to cite either paper until that verification exists. Fetch each arXiv abstract page directly, confirm the identifier against the title and the author list, and write the result into the note. If a paper cannot be found, record that it cannot be found rather than removing the entry.</p>
+</section>
+
+<section id="review">
+<h2>3. A second editorial pass by a different model family</h2>
+<p>The editorial audit of 7 September re-checked every cited number against the research notes, the results files and the source PDFs. All of the cited numbers held. The defects were in arithmetic the pages did themselves, and eight of them were fixed.</p>
+<p>The limitation is stated plainly in the resume file: that audit was run by the same model family that wrote the pages. A pass by a different model, against <code>EDITOR_PROMPT.md</code> as the standard, would be worth its cost for that reason alone.</p>
+<div class="warn"><p><strong>The lesson from the first audit, for whoever runs the second.</strong> The cited numbers were right and the page's own ratios were wrong. Recompute every derived ratio from its inputs. Do not check a ratio by checking that its inputs are correct.</p></div>
+</section>
+
+<section id="title">
+<h2>4. A stale title at the repository root</h2>
+<p>The redirect page <code>index.html:3</code> still says "a 13 module course". <code>README.md:3</code> and <code>course/index.html:7</code> both say 14, which is correct: the bridge module was added as Module 14 and the capstone kept the number 13. One line, one commit. Found on 6 September 2026 while writing this page, so it is not in the resume file.</p>
+</section>
+
+<section id="accepted">
+<h2>Accepted departures, not defects</h2>
+<p>Four things look like open work and are not. They were examined and accepted. Do not reopen them without a reason that is not on this list.</p>
+<div class="grid">
+<div class="card"><h3>The capstone has no Sources or Exit test</h3><p>Every other page has the same six parts in the same order. Module 13 is a project brief, not a lesson, so it ends after the brief.</p></div>
+<div class="card"><h3>"rather than" appears 45 times</h3><p>In 47,500 words, about one per 1,050 words. That is inside the range of human technical prose. The figure that needed fixing was 109 occurrences, one per 437 words, and it was fixed.</p></div>
+<div class="card"><h3>Two MeshGraphNets table rows</h3><p>The rows on Modules 6 and 7 could not be re-extracted, because that table is an image and the PDF has no text layer for it. They are carried on a re-read of 6 September 2026.</p></div>
+<div class="card"><h3>Recorded video</h3><p>Chosen as a later format, alongside the HTML lessons and the notebooks. Not started, and not scheduled.</p></div>
+</div>
+</section>
+
+<section id="rules">
+<h2>Rules that apply to every task above</h2>
+<ol class="steps">
+<li><strong>Every number must trace</strong> to a line in <code>research_notes/</code>, a page of a source PDF, or a lab results file. Write "not yet run" instead of an invented figure. Never repair a citation from memory.</li>
+<li><strong>This folder is public.</strong> Before any commit, confirm that no personal path, hostname or email address entered a tracked file.</li>
+<li><strong>Four things stay out of git:</strong> <code>.ignore/</code>, the resume file, the source PDFs, and <code>labs/02_thermal/thermal_data.pt</code>, which is 601 MB and over the GitHub file limit. Regenerate the thermal data with its own script.</li>
+<li><strong>Never write TeX through a shell heredoc.</strong> The escape sequences collapse into control bytes, and <code>\bar</code> and <code>\varepsilon</code> become 0x08 and 0x0b. Use a file-writing tool or a Python script. This has damaged the project twice.</li>
+<li><strong>Read your own prose before calling a writing task done.</strong> A mechanical check passes control bytes, delimiters, tags, links and numbers, and says nothing about whether the sentences read as human writing. Read every table-driven replacement in its full sentence before committing it.</li>
+<li><strong>Delete nothing.</strong></li>
+</ol>
+</section>
+
+<nav class="foot">
+<a href="course/index.html">Go to the course</a>
+<a href="#labs">Back to task 1</a>
+</nav>
+</div>
+</body>
+</html>
