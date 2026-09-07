@@ -1,6 +1,6 @@
 # Neural operators: from the convolution theorem to a physics foundation model
 
-A 13 module course, plus a capstone, on neural operators. Thirteen HTML lessons, six Jupyter
+A 14 module course, plus a capstone, on neural operators. Fourteen HTML lessons, six Jupyter
 notebooks, and three labs that ran on one laptop GPU. Every number on every page traces to a
 research note, a page of a primary paper, or a lab result file in this repository.
 
@@ -105,6 +105,7 @@ a network connection.
 | 11 | [Physics as data engine and as reward](https://az9713.github.io/neural-operator-tutorial/course/11_physics_as_signal.html) | Curricula, residual losses, self improvement, and the optimization caveat. | residual sweep (not yet run) |
 | 12 | [Applications and industry](https://az9713.github.io/neural-operator-tutorial/course/12_applications.html) | Weather, plasma, CO2, catheters, seismic, semiconductors; company claims graded. | evidence ledger |
 | 13 | [Capstone](https://az9713.github.io/neural-operator-tutorial/course/13_capstone.html) | Operator transfer under physics shift, with the thermal die as the semiconductor target. | the full matrix |
+| 14 | [From the theorem to the company](https://az9713.github.io/neural-operator-tutorial/course/14_bridge.html) | The chain from Module 0's L2 fact to a startup's five product claims, and the two steps that are bets. | one experiment per claim |
 
 Two more pages:
 

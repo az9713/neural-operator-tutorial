@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Module 14 · From the theorem to the company</title>
+<link rel="stylesheet" href="course.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div class="wrap">
+<p class="eyebrow">Module 14 · one week · read after the capstone</p>
+<h1>From the theorem to the company</h1>
+<p class="dek">Thirteen modules built a chain: a fact about function spaces, then a layer, then an architecture, then a deployed system, then a startup that raised the whole thing to a product claim. This module walks the chain end to end and finds the link where the reasoning stops being a theorem and becomes a bet.</p>
+<p class="meta">Grades on this page: <span class="grade g-a">A</span> read in the primary paper with the page cited. <span class="grade g-b">B</span> abstract or secondary source, arXiv identifier verified. <span class="grade g-c">C</span> company statement, press or podcast, not independently checked. <span class="grade g-lab">LAB</span> produced in this repository. Sources of record: <code>../research_notes/lineage.md</code>, <code>../research_notes/company-episode.md</code>, and <code>../labs/*/results*.json</code>.</p>
+
+<nav class="top">
+<a href="index.html">Course home</a>
+<a href="#why">Why this module exists</a>
+<a href="#chain">The chain in one table</a>
+<a href="#stages">The eight stages</a>
+<a href="#math">Checking the hypotheses</a>
+<a href="#lab">Lab: one experiment per claim</a>
+<a href="#src">Sources</a>
+<a href="#exit">Exit test</a>
+</nav>
+
+<section id="why">
+<h2>Why this module exists</h2>
+<p>A reader who finishes Module 13 has all the pieces and no through-line. Module 0 proved that sampling a function throws information away. Module 2 built the Fourier layer out of a Green's function. Module 6 measured why a flat transform fails on a globe. Module 12 graded a company's claims one at a time. Each of those is a self-contained argument, and none of them says how you get from the first to the last.</p>
+<p>The distance is not decorative. In August 2026 two researchers turned down a combined 35 percent stake in a venture that had raised $12 billion and started a company whose product claim is that one model can simulate physics at five trillion points of context. That claim descends, by a traceable path, from a fact about \(L^2\) that this course proves on its second page. The path has eight steps. Six of them are theorems or measurements. Two of them are bets. This module separates the six from the two.</p>
+<p>Module 12 already grades the company's claims and gives each one a source and a caveat. This page does something different and does not repeat it. It asks, for each claim, which theorem or measurement the claim inherits from, and at exactly which step the inheritance stops. A claim can be perfectly reasonable and still rest on a step that no published result covers. Naming that step is the useful thing, and it is the only thing this module adds.</p>
+<div class="callout"><p><strong>A note on grades in this module.</strong> The eight stages are not equally well evidenced, and the difference matters more here than anywhere else in the course, because the whole point is to see where the evidence thins. Four PDFs were read at page level for this course and they carry <span class="grade g-a">A</span>. The lineage entries have verified arXiv identifiers and abstract-level summaries, so they carry <span class="grade g-b">B</span>: the numbers are the authors' own headline figures, not figures read out of a results table. Everything from the two podcast episodes and the company site is <span class="grade g-c">C</span>. A <span class="grade g-c">C</span> repeated by four outlets is still a <span class="grade g-c">C</span>.</p></div>
+</section>
+
+<section id="chain">
+<h2>The chain in one table</h2>
+<p>Each row adds one capability and pays one price. The price is the part that gets dropped when the chain is retold in public, and it is the part that decides whether the next row is possible.</p>
+<div class="table-wrap"><table>
+<tr><th>#</th><th>Stage</th><th>What it added</th><th>What it cost</th><th>Grade</th><th>Module</th></tr>
+<tr><td>1</td><td>The function-space formulation</td><td>A model whose weights do not encode a grid</td><td>Nothing yet; it is a change of description</td><td><span class="grade g-a">A</span></td><td>0, 1</td></tr>
+<tr><td>2</td><td>The Fourier layer</td><td>Global coupling at \(O(J\log J)\) instead of \(O(J^2)\)</td><td>A hard band limit at the Nyquist frequency</td><td><span class="grade g-a">A</span></td><td>2, 3</td></tr>
+<tr><td>3</td><td>Spherical harmonics (SFNO)</td><td>Stable rollout on a globe for a simulated year</td><td>A transform tied to one manifold</td><td><span class="grade g-b">B</span></td><td>6</td></tr>
+<tr><td>4</td><td>Autoregressive rollout</td><td>60-day forecasts from a 6-hour training horizon</td><td>Error compounding, bounded only by the state space</td><td><span class="grade g-b">B</span></td><td>7</td></tr>
+<tr><td>5</td><td>Geometry encoding (GINO)</td><td>One model across shapes that change per sample</td><td>A latent grid, and its own resolution limit</td><td><span class="grade g-b">B</span></td><td>6</td></tr>
+<tr><td>6</td><td>Deployment</td><td>Speed-ups of \(10^4\) to \(10^6\) in four industries</td><td>Six matching conditions, rarely all met</td><td><span class="grade g-b">B</span></td><td>12</td></tr>
+<tr><td>7</td><td>One representation across physics</td><td>The claimed transfer gain</td><td><strong>No theorem covers this step</strong></td><td><span class="grade g-b">B</span></td><td>10</td></tr>
+<tr><td>8</td><td>Trillion-scale context as a product</td><td>The company's headline</td><td><strong>No public benchmark covers this step</strong></td><td><span class="grade g-c">C</span></td><td>9, 12</td></tr>
+</table></div>
+<p>Rows 1 to 6 are the six steps that are theorems or measurements. Rows 7 and 8 are the two bets. The rest of this module walks all eight, then checks the hypotheses that rows 7 and 8 quietly assume.</p>
+</section>
+
+<section id="stages">
+<h2>The eight stages</h2>
+
+<h3>1. The function-space formulation, and the fact underneath it</h3>
+<p>The whole field rests on one observation, and Module 0 proves it rather than asserting it. Sampling a function at finitely many points destroys information that no amount of processing recovers. The proof is a single example. Take \(-u''=f\) on \((0,1)\) with \(u(0)=u(1)=0\). For \(f=\sin(\pi x)\) the solution is \(\sin(\pi x)/\pi^2\), with a peak of 0.10132. Sample it at the five points \(x_\ell=\ell/4\) and you record \((0,\,0.70711,\,1,\,0.70711,\,0)\). Now take \(g(x)=\sin(\pi x)+\sin(4\pi x)\). Because \(\sin(4\pi x_\ell)=\sin(\pi\ell)=0\) at every one of those five points, \(g\) produces the identical record. Their solutions differ by \(\sin(\pi/2)/(16\pi^2)=0.00633\) at \(x=1/8\), which is 6.25 percent of the peak. Two different inputs, one record, and a real difference in the answer.</p>
+<p>That is why a model that stores a grid in its weights is the wrong object, and it is the only motivation the function-space formulation needs. A neural operator is a map between function spaces whose parameters do not mention the grid. Anandkumar states the same idea on the earlier podcast as a generalisation of neural networks, where the input and output are continuous functions that can be infinitely resolved <span class="grade g-c">C</span> (<code>company-episode.md</code>, [00:16:12]&ndash;[00:17:51]). The formal version, Theorem 8 in the JMLR paper, is Module 1's subject, and it comes with a hypothesis that matters later on this page.</p>
+
+<h3>2. The Fourier layer, and why the transform is an FFT</h3>
+<p>Module 2 derives the layer instead of drawing it. A linear PDE's solution operator is an integral against a Green's function; a learned version of that is an integral against a learned kernel; if the kernel is translation invariant the integral is a convolution; and the convolution theorem turns it into a multiplication in the Fourier domain. Module 2 checks the last step on the periodic Poisson problem, where the multiplier is \(1/(4\pi^2k^2)\) and the kernel sums in closed form to \((z^2-z+1/6)/2\), verified numerically to eight decimals against \(\zeta(2)\).</p>
+<p>The choice of the FFT over attention is arithmetic, not preference. A dense kernel layer costs \(O(J^2)\) on \(J\) grid points. Module 3 makes that concrete: at \(J=10^6\), which is a \(1024\times1024\) grid and modest by simulation standards, the kernel matrix alone is 4 TB. Lab 03 measured what the Fourier layer does instead on the same grid: 143 ms and 1.02 GiB on a 4 GB laptop GPU <span class="grade g-lab">LAB</span>. Anandkumar's version of this on the podcast is that full attention at simulation resolution is untenable, and that Fourier transforms are a middle ground giving quasi-linear complexity with global coupling <span class="grade g-c">C</span> ([00:21:41]&ndash;[00:22:20]). The podcast statement and the 4 TB are the same fact at two grades.</p>
+<p>The price is a band limit. The layer keeps \(k_{\max}\) modes and discards the rest, and Lab 01 shows what that costs at resolutions the model never trained on: relative \(L^2\) rises from 0.0224 at 64 points to 0.0349 at 1024, and a single Fourier coefficient of magnitude \(1.44\times10^{-2}\) sitting at the Nyquist bin accounts for about 89 percent of the rise <span class="grade g-lab">LAB</span>. Hold that number; stage 8 depends on it.</p>
+
+<h3>3. Spherical harmonics, the first time the theory was wrong about the world</h3>
+<p>This is the clearest step in the chain, because a specific geometric defect produced a specific named fix. The discrete Fourier transform assumes a flat periodic box. The atmosphere is not one. Module 6 turns the mismatch into arithmetic: on a 0.25-degree grid the Earth's equator is divided into 1440 cells of \(40{,}075/1440=27.8\) km, while the row nearest the pole has cells of \(27.8\cos(89.75^\circ)=0.121\) km. That is a factor of 229 in physical size between two cells of the same grid, and a translation-invariant kernel treats them as equivalent.</p>
+<p>SFNO (arXiv 2306.03838, verified) replaces the flat transform with a spherical harmonic transform, and its headline result is stability rather than accuracy: autoregressive rollout for 1,460 six-hourly steps, a full simulated year, with physically plausible dynamics <span class="grade g-b">B</span>. Anandkumar's account matches and adds the failure mode, that a flat-Earth model blows up quickly on long rollouts while the spherical one degrades gracefully, with residual instability near the poles <span class="grade g-c">C</span> ([01:03:11]&ndash;[01:03:59]). The lesson generalises past weather: the transform has to match the manifold, and choosing it is a modelling decision with a measurable consequence.</p>
+
+<h3>4. Rollout, where a small error becomes a large one</h3>
+<p>Module 7 derives the recursion that governs every autoregressive surrogate. If the learned map has Lipschitz constant \(L\) and one-step error at most \(\varepsilon\), then after \(n\) steps the error obeys \(e_n \le \varepsilon(L^n-1)/(L-1)\). For \(L>1\) that is exponential, which should make long forecasts impossible.</p>
+<p>They are not impossible, and the reason is the same one Module 7 reads off the MeshGraphNets table. The state space is bounded, so the error saturates instead of diverging: over 400 steps FlagSimple's ratio reaches 129, far short of the thousands \(L^{400}\) would suggest, because the flag cannot be more wrong than a completely different flag <span class="grade g-a">A</span>. FourCastNet 3 (arXiv 2507.12144, verified) is the industrial form of the same effect, producing 60-day global forecasts at 0.25 degrees and six-hourly resolution while running 8 to 60 times faster than conventional ensembles <span class="grade g-b">B</span>. Anandkumar reports that the model trains on a 6-hour horizon with a little multi-step fine-tuning and calls the generalisation to multi-month rollouts very surprising <span class="grade g-c">C</span> ([01:00:03]&ndash;[01:00:40]). Module 7's arithmetic is the reason it is not surprising, and also the reason the result does not transfer for free: saturation is a property of the system's dynamics, not of the architecture.</p>
+
+<h3>5. Geometry that changes between samples</h3>
+<p>Weather has one geometry. Engineering does not; a car and a different car are different domains. GINO (arXiv 2309.00583, verified) encodes an arbitrary shape through a signed distance function and graph layers into a latent regular grid where Fourier layers can run, and reports a 26,000-fold speed-up on 3D vehicle aerodynamics at Reynolds numbers up to five million <span class="grade g-b">B</span>. Anandkumar describes the same construction as mapping arbitrary shapes into a shared latent geometric space so one model generalises across geometries <span class="grade g-c">C</span> ([01:11:36]&ndash;[01:12:14]).</p>
+<p>Module 6 makes the limit explicit. The latent grid has its own resolution, so the encoding is a second discretization sitting inside a method whose selling point is discretization independence. Nothing about that is fatal, and it is the reason the property has to be stated as three separate claims, as Module 1 does, instead of one.</p>
+
+<h3>6. Deployment, and the six conditions a speed-up has to meet</h3>
+<p>Four public results carry the field into industry, and their headline numbers are large: FourCastNet generates a week-long forecast in under 2 seconds (arXiv 2202.11214) <span class="grade g-b">B</span>; an FNO surrogate predicts tokamak plasma evolution six orders of magnitude faster than a numerical MHD solver, on simulated and real MAST data (arXiv 2302.06542) <span class="grade g-b">B</span>; nested FNOs give a roughly 700,000-fold speed-up on CO<sub>2</sub> storage prediction (arXiv 2210.17051, published in <em>Energy &amp; Environmental Science</em> 16(4)) <span class="grade g-b">B</span>; and an FNO-based search over catheter wall geometries produced a design with one to two orders of magnitude better suppression of bacterial contamination (arXiv 2304.14554) <span class="grade g-b">B</span>.</p>
+<p>Module 12 supplies the discipline these numbers need. A speed-up compares two things, and it means nothing unless six conditions match: same problem, same accuracy target, same hardware, same resolution, offline cost included, and a stated number of calls. Applying the last two to the FNO Bayesian inverse problem gives a break-even count of \(n^*=43{,}200/2.195\approx19{,}700\) calls; the experiment used 30,000, so the honest result is that the surrogate won by a factor of 1.5 on total time, not the 440 the per-call ratio advertises <span class="grade g-a">A</span>. The catheter result is the one row in this list where the deliverable is a physical object instead of a number, which is a stronger form of evidence than any speed ratio.</p>
+
+<h3>7. The first bet: one representation across several physics</h3>
+<p>Stages 1 to 6 all have the same shape. One operator, one physical system, one geometry, trained on data from that system. The foundation-model claim is different in kind, and this is the step where the chain leaves theorem territory. It says a model pretrained on several physical systems needs less data on a new system than an equal-size model trained on that system alone.</p>
+<p>No theorem in this course implies that, and Module 5 explains why one cannot: universal approximation is an existence statement over a fixed compact set, and it says nothing about what happens when the set changes. The evidence is empirical and mixed. Module 10 records that the narrow version holds, with pretraining beating scratch by one to two orders of magnitude in the low-data, near-distribution regime across several independent results, while the same papers document negative transfer on specific systems and report it instead of burying it <span class="grade g-b">B</span>. Anandkumar's own statement is the narrow one: a model cannot transfer to a regime with no related data, but coupled-physics fine-tuning needs far fewer samples than training from scratch <span class="grade g-c">C</span> ([01:14:20]&ndash;[01:15:48]).</p>
+<p>The company's version is broader. The claim reported from the launch episode is that the shared model wins, meaning a multi-physics model beats equal-parameter single-domain specialists <span class="grade g-c">C</span> (<code>company-episode.md</code>, secondary summary of episode KS_IpnX7n9I). That is precisely arm C against arm A of Module 10's matrix, which Module 13 specifies in full and which nobody in this repository has run.</p>
+
+<h3>8. The second bet: trillion-scale context as a product</h3>
+<p>Accelerated Understanding launched on 25 August 2026, founded by Anima Anandkumar and Benedikt Jenik, after they declined a combined 35 percent stake in Project Prometheus together with reported financing of more than $2 billion. The company's own funding is undisclosed, which is not the same as absent. Its stated technical claims are a 4D architecture that does not flatten dimensions, up to 1 trillion parameters at training and 5 trillion points of context at inference, resolution invariance at any level of detail, cross-physics uplift, and a self-improvement loop that uses physical laws as dense directional feedback <span class="grade g-c">C</span>.</p>
+<p>Every one of those five descends from a stage above. The table below says from which, and where the descent stops. The last column is the point of this module.</p>
+<div class="table-wrap"><table>
+<tr><th>Claim</th><th>Descends from</th><th>Inheritance stops at</th></tr>
+<tr><td>4D, no flattening of dimensions</td><td>Stage 4. Module 7's three formulations; the space-time formulation is the one that does not flatten</td><td>Nothing, for the formulation itself. Module 7 gives its cost, which is memory linear in the time axis, and the company has not said which of the three it uses</td></tr>
+<tr><td>5 trillion points of context</td><td>Stage 2. The \(O(J\log J)\) scaling that makes large \(J\) thinkable at all</td><td>The scaling is per layer and says nothing about total memory. Module 9 costs the claim from a measured constant and gets 4.66 PiB, about 65,000 accelerators, or about 8,000 under bf16 with activation checkpointing</td></tr>
+<tr><td>Resolution invariance at any level of detail</td><td>Stages 1 and 2. Theorem 8, and the fact that FNO weights do not encode a grid</td><td>The architecture is invariant; the error is not. Lab 01's model is discretization invariant by construction and still loses accuracy at unseen grids, 89 percent of it attributable to one Nyquist coefficient</td></tr>
+<tr><td>Cross-physics uplift</td><td>Stage 7. The narrow, published version of the transfer result</td><td>The published version is near-distribution and low-data. The product version is neither, and the arm A against arm C control that separates them has not been run here or reported there</td></tr>
+<tr><td>Self-improvement from physical laws</td><td>Stage 6, and Module 11's residual losses</td><td>The residual is an operator with a condition number, and Module 11 derives it. It gets worse as the fourth power of the grid, which is the wrong direction for a claim about industrial resolution</td></tr>
+</table></div>
+<p>Three of these five stop at a place this course can measure. That is the useful output of walking the chain, and it is what the next two sections do.</p>
+</section>
+
+<section id="math">
+<h2>Checking the hypotheses the last two stages assume</h2>
+<p>Each claim inherits a theorem, and a theorem has hypotheses. This section states the hypothesis behind each of the three measurable stopping points and checks it against the setting the claim is made in. No new theorem appears here. Every step is a result proved earlier in the course, applied to a new set of numbers.</p>
+
+<h3>Does the compactness hypothesis survive multi-physics?</h3>
+<p><strong>Claim.</strong> Theorem 8 guarantees an operator approximation to any accuracy on a <em>compact</em> set of inputs. A model advertised across several physical systems draws its inputs from a union of families. A finite union of compact sets is compact; an arbitrary union is not.</p>
+<p><strong>Proof of the finite case.</strong> Let \(K_1,\dots,K_m\) be compact and let \(\{U_\alpha\}\) be an open cover of \(K=\bigcup_i K_i\). It covers each \(K_i\), so each has a finite subcover of size \(n_i\). The union of those \(m\) finite subcovers is a finite subcover of \(K\), of size at most \(\sum_i n_i\). \(\square\)</p>
+<p><strong>Why the infinite case fails, and it is Module 0's Claim 5 again.</strong> Take \(K_j=\{e_j\}\), a single point, for an orthonormal sequence \(e_1,e_2,\dots\). Each \(K_j\) is compact. Their union is the set \(\{e_j\}\), and any two distinct elements satisfy \(\|e_i-e_j\|=\sqrt2\), so no subsequence is Cauchy and the union is not compact. Module 5's counterexample then applies directly: on a non-compact input set, for any finite-dimensional encoder of rank \(p\), the output of \(D_p\psi E_m\) lies in a \(p\)-dimensional subspace \(V\), so choosing a unit target orthogonal to \(V\) forces an error of at least 1, whatever the parameters are.</p>
+<p><strong>The rescue, and it is the real one.</strong> A product does not need an arbitrary union. It needs the finitely many physics families it ships with, each with inputs drawn from a distribution concentrated on a compact ball, which is exactly the condition Module 0 verified for Lab 01: with \(\mathbb E\|u_0\|_{H^s}^2=\sum_k(1+k^2)^s\cdot625/(k^2+25)^2\) finite for \(s&lt;3/2\), Markov puts the inputs inside a compact \(H^1\) ball with probability as close to 1 as you like. So the hypothesis is satisfiable and is not automatic. It is a statement about the training distribution that a vendor can make and a customer can ask for, and "any level of detail across arbitrary physics" is not that statement.</p>
+
+<h3>What the residual claim costs at the resolution she names</h3>
+<p><strong>Claim.</strong> The self-improvement loop scores outputs with the governing equations, which is a residual loss, and Module 11 derived its conditioning for this course's own thermal problem. The five-point Laplacian on an \(N\times N\) interior grid has eigenvalues \(\lambda_{j}= \frac{4}{h^2}\sin^2\!\big(\frac{j\pi}{2(N+1)}\big)\) summed over the two axes, giving \(\lambda_{\min}\to\pi^2\) and \(\lambda_{\max}\to4(N+1)^2\) in each axis, so \(\mathrm{cond}(L)\approx0.405N^2\) and, because a least-squares residual squares it, \(\mathrm{cond}(L^\top L)\approx0.164N^4\).</p>
+<p><strong>The numbers.</strong> Module 11 verified this numerically at \(2.93\times10^6\) for \(N=64\) and \(4.55\times10^7\) for \(N=128\) <span class="grade g-lab">LAB</span>. Anandkumar names industrial scale as roughly 1,000 grid points per dimension <span class="grade g-c">C</span> ([01:09:14]&ndash;[01:09:54]). At \(N=1000\) the same formula gives \(0.164\times10^{12}=1.64\times10^{11}\).</p>
+<p><strong>What follows, and what does not.</strong> A condition number of \(10^{11}\) in single precision leaves no significant digits, which is why Module 11 predicts a residual weight of \(\lambda_r=10\) will already be unstable at \(64^2\). It does not follow that the loop cannot work, and this is the limit case the claim needs. Two escapes exist and both are in Module 11: compute the residual spectrally, as PINO does, where differentiation is multiplication by \(ik\) and no ill-conditioned matrix is formed at all; or use the residual as a reward signal for a search rather than as a gradient. The claim as stated is compatible with either. What the arithmetic rules out is the naive reading, that adding a finite-difference residual term is a free improvement that gets better as the grid gets finer. It gets worse, as \(N^4\).</p>
+
+<h3>The one number that already contradicts the strong reading of resolution invariance</h3>
+<p><strong>Claim.</strong> Discretization invariance is a property of the architecture and not a bound on the error, and this course's own models demonstrate the gap on both labs.</p>
+<p><strong>Evidence.</strong> Lab 01's FNO is discretization invariant by construction: one fixed parameter vector, evaluated at 64, 128, 256 and 1024 points with no retraining. Its relative \(L^2\) still rises from 0.0224 to 0.0349, and the rise is not diffuse. A single coefficient of magnitude \(1.44\times10^{-2}\) appears at the Nyquist bin at every unseen resolution, identically, and combining it in quadrature with the training-grid error, \(\sqrt{0.0224^2+0.0216^2}=0.0311\), explains about 89 percent of the measured jump <span class="grade g-lab">LAB</span>. In two dimensions the same defect appears as visible stripes: Lab 02's banded error in the high-frequency band goes from 0.0079 K to 0.2127 K between \(64^2\) and \(128^2\), a factor of 27, while the mid band moves by 1.4 <span class="grade g-lab">LAB</span>.</p>
+<p><strong>The rescue.</strong> The defect is fixed in magnitude rather than accumulating, and it has a known cause, so it is diagnosable and probably fixable. The point for this module is narrower and harder to escape: a model can satisfy the theorem exactly and still be less accurate at a new resolution, so "resolution invariant" and "accurate at any resolution" are two claims, and only the first has a proof behind it. Any vendor claim of the second is an empirical claim, and Module 8 gives the four-line measurement that settles it.</p>
+<div class="warn"><p><strong>What this section does not show.</strong> None of the above is evidence that the company's models have these defects. This course has no access to them, and none of the numbers here were measured on their system. The argument is about what the published theory does and does not guarantee, and therefore about which questions a buyer or a reviewer should ask. Treating a limitation of this course's small FNO as a fact about a product would be exactly the error Module 12 exists to prevent.</p></div>
+</section>
+
+<section id="lab">
+<h2>Lab: one experiment per claim</h2>
+<p>The chain ends in five claims, and each one has an experiment that would move it off <span class="grade g-c">C</span>. Three can be run on the hardware this course already uses. Two cannot, and saying so is part of the exercise.</p>
+<div class="table-wrap"><table>
+<tr><th>Claim</th><th>The experiment that settles it</th><th>Runnable here?</th><th>Status</th></tr>
+<tr><td>Resolution invariance at any detail level</td><td>Plot the output spectrum at twice the training grid and check for a fixed-magnitude coefficient at the Nyquist bin. Report banded fRMSE, not bulk error</td><td>Yes, and it is done</td><td><span class="grade g-lab">LAB</span> Labs 01 and 02; the defect is present in both</td></tr>
+<tr><td>Cross-physics uplift</td><td>Module 10's arm A against arm C at equal capacity and equal step budget, on data fractions 0.01 to 1.0, three seeds, split by initial-condition family</td><td>Yes, about four hours</td><td>Specified in Module 13. <strong>Not yet run</strong></td></tr>
+<tr><td>Self-improvement from physical laws</td><td>Module 11's residual weight sweep, \(\lambda_r\in\{0,0.1,1,10\}\) at \(64^2\) and \(128^2\), reporting field error and residual error separately</td><td>Yes</td><td>Specified in Module 11. <strong>Not yet run</strong></td></tr>
+<tr><td>5 trillion points of context</td><td>Measure bytes per grid point on the real architecture and multiply. Module 9 does this for an FNO and gets 1,050 B/point</td><td>No, the architecture is not public</td><td>Costable only under stated assumptions. <span class="grade g-c">C</span> stands</td></tr>
+<tr><td>4D with no flattening</td><td>Ask which of Module 7's three formulations the model uses, then apply that formulation's known memory and error behaviour</td><td>No, it is a disclosure question</td><td>Unanswerable from public material. <span class="grade g-c">C</span> stands</td></tr>
+</table></div>
+<p>The two unrunnable rows are not a complaint. They are the specification of what a company would have to publish for an outside reader to check the claim, and both are modest: one number and one architectural sentence.</p>
+</section>
+
+<section id="src">
+<h2>Sources</h2>
+<div class="grid">
+<div class="card"><h3>Read at page level <span class="grade g-a">A</span></h3><p>The FNO papers, ICLR 2021 (2010.08895v3) and JMLR 2023 (21-1524), for Theorem 8 and the compactness hypothesis. MeshGraphNets and PDEBench for the rollout table and the metric suite. Cited by page throughout Modules 1, 5, 7 and 8.</p></div>
+<div class="card"><h3>Abstract level, identifier verified <span class="grade g-b">B</span></h3><p>SFNO 2306.03838, FourCastNet 2202.11214, FourCastNet 3 2507.12144, GINO 2309.00583, plasma 2302.06542, CO<sub>2</sub> 2210.17051, catheter 2304.14554. All in <code>../research_notes/lineage.md</code> with the verification status of each identifier recorded there.</p></div>
+<div class="card"><h3>Podcast and company <span class="grade g-c">C</span></h3><p>The earlier episode (79mIutht1f4), transcribed in full at <code>../research_notes/earlier_episode_transcript.txt</code>, with line timestamps. The launch episode (KS_IpnX7n9I) is available only through a secondary aggregator, so anything drawn from it is second hand and marked as such. Company site and launch coverage in <code>../research_notes/company-episode.md</code>.</p></div>
+<div class="card"><h3>Measured here <span class="grade g-lab">LAB</span></h3><p>Lab 01 Burgers, Lab 02 thermal die, Lab 03 scale, with scripts, seeds and results files in <code>../labs/</code>. The four numbers this module leans on are 0.0224 to 0.0349, \(1.44\times10^{-2}\), the 27-fold high-band rise, and 1,050 B/point.</p></div>
+</div>
+<div class="callout"><p><strong>Items this course could not verify and does not use.</strong> The Reuters coverage of the launch, referenced only through the founders' own post. The Rappler founder profile and the Tech Times article, both returning HTTP 403. Any funding figure or investor name for Accelerated Understanding. Whether the MIT-affiliated Benedikt Jenik who worked on self-driving perception is the same person as the co-founder, which is a suggestive name match and nothing more. The spherical harmonic mode count in FourCastNet 3, where Anandkumar says on the record that she does not remember the details. Each is listed in <code>../research_notes/company-episode.md</code> under "Not verified".</p></div>
+</section>
+
+<section id="exit">
+<h2>Exit test</h2>
+<p>Close the page. A reader who has finished this module can do all seven.</p>
+<ol class="steps">
+<li>Name the eight stages of the chain in order, and say which two are bets.</li>
+<li>Give the two-function example that proves a finite sample destroys information, with the numerical size of the difference it hides.</li>
+<li>State why the transform in a Fourier layer has to match the manifold, using the equator and polar cell sizes on a 0.25-degree grid.</li>
+<li>Write the rollout recursion, and explain why a 6-hour training horizon can still give a 60-day forecast.</li>
+<li>Prove that a finite union of compact sets is compact, and give the countable counterexample. Then say what Module 5's theorem does when compactness fails.</li>
+<li>Compute \(\mathrm{cond}(L^\top L)\) for a residual loss at \(N=1000\), and name the two ways to avoid paying it.</li>
+<li>For each of the company's five claims, name the stage it descends from and the step where the inheritance stops. Then say which three are measurable on a laptop GPU.</li>
+</ol>
+</section>
+
+<nav class="foot"><a href="13_capstone.html">&larr; Capstone: operator transfer</a><a href="index.html">Course home &rarr;</a></nav>
+</div>
+</body>
+</html>
